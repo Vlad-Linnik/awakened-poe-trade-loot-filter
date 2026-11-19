@@ -450,7 +450,7 @@
     "done_rebuilt": "Filter rebuilt with your changes.",
     "done_undo": "Last change reverted.",
     "done_updated": "Updated: latest filter + your changes.",
-    "related": "Other rules for \"{0}\" (another stack size, area level…)",
+    "related": "Other rules for \"{0}\" (other stack, links, item level, rarity…)",
     "always": "always",
     "this_one_hint": "Show this rule as the applied one",
     "browse_hotkey": "Open the loot filter editor (all rules)",
@@ -465,6 +465,7 @@
     "remove_from_tier": "Remove from tier",
     "add_item": "Add an item to the tier (type a name)…",
     "remove_condition": "Remove condition",
-    "add_condition": "Add a condition, e.g. ItemLevel >= 75"
+    "add_condition": "Add a condition, e.g. ItemLevel >= 75",
+    "show_all": "Show all ({0})"
   }
 }

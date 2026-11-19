@@ -77,8 +77,12 @@
 
             <!-- other rules for this kind of item: other stack sizes, area levels -->
             <div v-if="related.length" class="flex flex-col gap-1 mt-1">
-              <div class="text-xs uppercase text-gray-500">{{ t(':related', [item!.info.name]) }}</div>
-              <template v-for="ev of related" :key="ev.block.index">
+              <div class="flex items-center gap-2">
+                <span class="text-xs uppercase text-gray-500 flex-1">{{ t(':related', [item!.info.name]) }} · {{ related.length }}</span>
+                <input v-if="related.length > 12" v-model.trim="relatedSearch" :placeholder="t(':search')"
+                  class="rounded bg-gray-900 px-1 w-32 text-xs">
+              </div>
+              <template v-for="ev of relatedShown" :key="ev.block.index">
                 <div class="rounded bg-gray-900 px-2 py-1 flex items-center gap-2">
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-1 min-w-0">
@@ -103,6 +107,8 @@
                   @save="saveTier(ev.block, $event)" @reset="resetTier(ev.block)"
                   @disable="disableTier(ev.block)" @close="editing = null" />
               </template>
+              <button v-if="relatedFiltered.length > relatedShown.length" class="btn text-xs"
+                @click="relatedShowAll = true">{{ t(':show_all', [relatedFiltered.length]) }}</button>
             </div>
             <button v-if="assumed.size" class="text-xs text-gray-400 underline self-start" @click="assumed = new Set()">{{ t(':reset_assumed') }}</button>
           </div>
@@ -261,6 +267,8 @@ MainProcess.onEvent('MAIN->CLIENT::item-text', (e) => {
   if (!res.isOk()) return
   checkPosition.value = e.position
   mode.value = 'item'
+  relatedSearch.value = ''
+  relatedShowAll.value = false
   item.value = res.value
   assumed.value = new Set()
   history.value = []
@@ -371,6 +379,16 @@ const related = computed(() => {
   const shown = new Set(affecting.value.map(e => e.block.index))
   return relatedBlocks(parsed.value, fItem.value).filter(ev => !shown.has(ev.block.index))
 })
+
+const relatedSearch = ref('')
+const relatedShowAll = ref(false)
+const relatedFiltered = computed(() => {
+  const q = relatedSearch.value.toLowerCase()
+  if (!q) return related.value
+  return related.value.filter(ev =>
+    `${ruleTitle(ev.block)} ${ev.block.headerComment} ${ev.unknown.map(c => c.raw).join(' ')}`.toLowerCase().includes(q))
+})
+const relatedShown = computed(() => relatedShowAll.value ? relatedFiltered.value : relatedFiltered.value.slice(0, 30))
 
 function chipStyle (block: FilterBlock) {
   return { ...styleCss(styleFromActions(block.actions), block.visibility === 'Hide'), fontSize: '0.75rem', borderWidth: '1px' }

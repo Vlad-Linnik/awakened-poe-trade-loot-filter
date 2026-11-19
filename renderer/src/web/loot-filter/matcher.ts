@@ -48,16 +48,49 @@ export function matchItem (filter: ParsedFilter, item: FilterItem, opts?: {
   return { final: last, continued, uncertain }
 }
 
-// Every rule this kind of item can end up in, whatever its stack size or the area level:
-// conditions on those are treated as unknown. Stops at the first rule that always applies.
+// Every rule an item of this base type can end up in, whatever its properties that
+// differ between items of the same base: stack size and area level for currency/cards;
+// also sockets, links, item level, quality, rarity, mods… for equipment; level and quality for gems.
+// `unknown` lists the conditions the rule depends on. Stops at the first rule
+// that always applies to this base type.
+const ALWAYS_VARIES = ['StackSize', 'AreaLevel']
+const GEM_VARIES = [...ALWAYS_VARIES, 'GemLevel', 'Quality', 'Corrupted', 'TransfiguredGem']
+const GEAR_VARIES = [
+  ...ALWAYS_VARIES,
+  'ItemLevel', 'Quality', 'Rarity', 'Sockets', 'LinkedSockets', 'SocketGroup',
+  'Identified', 'Corrupted', 'CorruptedMods', 'Mirrored', 'FracturedItem', 'SynthesisedItem', 'Replica',
+  'HasInfluence', 'ElderItem', 'ShaperItem', 'HasExplicitMod', 'HasImplicitMod', 'AnyEnchantment', 'HasEnchantment',
+  'EnchantmentPassiveNode', 'EnchantmentPassiveNum', 'MemoryStrands', 'UnidentifiedItemTier',
+  'HasCruciblePassiveTree', 'Foulborn', 'MapTier', 'BlightedMap', 'UberBlightedMap', 'ShapedMap', 'ElderMap'
+]
+
+function variesFor (item: FilterItem): Set<string> {
+  if (item.gemLevel != null) return new Set(GEM_VARIES)
+  // equipment, maps, jewels… have an item level; currency and cards don't
+  if (item.itemLevel != null || item.sockets != null) {
+    const set = new Set(GEAR_VARIES)
+    // a unique stays unique; items without sockets (rings, jewels…) never get them
+    if (item.rarity === 'Unique') set.delete('Rarity')
+    if (item.sockets == null) ['Sockets', 'LinkedSockets', 'SocketGroup'].forEach(k => set.delete(k))
+    return set
+  }
+  return new Set(ALWAYS_VARIES)
+}
+
 export function relatedBlocks (filter: ParsedFilter, item: FilterItem): BlockEval[] {
-  const variant: FilterItem = { ...item, stackSize: undefined, areaLevel: undefined }
+  const varies = variesFor(item)
   const out: BlockEval[] = []
   for (const block of filter.blocks) {
-    const ev = evalBlock(block, variant)
-    if (ev.result === false) continue
-    out.push(ev)
-    if (ev.result === true && !block.continue) break
+    const unknown: FilterLine[] = []
+    let possible = true
+    for (const cond of block.conditions) {
+      const r = varies.has(cond.keyword) ? null : evalCondition(cond, item)
+      if (r === false) { possible = false; break }
+      if (r === null) unknown.push(cond)
+    }
+    if (!possible) continue
+    out.push({ block, result: unknown.length ? null : true, unknown })
+    if (!unknown.length && !block.continue) break
   }
   return out
 }
