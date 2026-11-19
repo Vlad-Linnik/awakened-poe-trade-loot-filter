@@ -67,6 +67,7 @@ import SettingsMaps from '../map-check/settings-maps.vue'
 import SettingsStashSearch from '../stash-search/stash-search-editor.vue'
 import SettingsStopwatch from '../stopwatch/settings-stopwatch.vue'
 import SettingsItemSearch from '../item-search/settings-item-search.vue'
+import SettingsLootFilter from '../loot-filter/settings-loot-filter.vue'
 
 function shuffle<T> (array: T[]): T[] {
   let currentIndex = array.length
@@ -213,7 +214,7 @@ function menuByType (type?: string) {
       return [
         [SettingsHotkeys, SettingsChat],
         [SettingsGeneral],
-        [SettingsPricecheck, SettingsMaps, SettingsItemcheck],
+        [SettingsPricecheck, SettingsMaps, SettingsItemcheck, SettingsLootFilter],
         [SettingsDebug, SettingsAbout]
       ]
   }

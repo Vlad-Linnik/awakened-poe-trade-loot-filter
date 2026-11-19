@@ -6,6 +6,7 @@ import type * as widget from './overlay/widgets'
 import type { StashSearchWidget } from './stash-search/widget'
 import type { ItemCheckWidget } from './item-check/widget'
 import type { ItemSearchWidget } from './item-search/widget'
+import type { LootFilterWidget } from './loot-filter/api'
 import { registry as widgetRegistry } from './overlay/widget-registry.js'
 
 const _config = shallowRef<Config | null>(null)
@@ -123,7 +124,7 @@ export interface Config {
 }
 
 export const defaultConfig = (): Config => ({
-  configVersion: 18,
+  configVersion: 21,
   overlayKey: 'Shift + Space',
   overlayBackground: 'rgba(129, 139, 149, 0.15)',
   overlayBackgroundClose: true,
@@ -435,6 +436,34 @@ function upgradeConfig (_config: Config): Config {
 
     config.configVersion = 18
   }
+
+  if (config.configVersion < 19) {
+    if (!config.widgets.some(w => w.wmType === 'loot-filter')) {
+      const spec = widgetRegistry.getWidgetComponent('loot-filter')!.widget
+      const lootFilter = spec.initInstance!()
+      lootFilter.wmId = Math.max(0, ...config.widgets.map(_ => _.wmId)) + 1
+      config.widgets.push(lootFilter)
+    }
+
+    config.configVersion = 19
+  }
+
+  if (config.configVersion < 20) {
+    // Alt is the "highlight items" key in PoE, holding it interferes with the hotkey
+    const lootFilter = config.widgets.find(w => w.wmType === 'loot-filter')
+    if (lootFilter && lootFilter.hotkey === 'Alt + F') {
+      lootFilter.hotkey = 'Ctrl + Shift + F'
+    }
+
+    config.configVersion = 20
+  }
+
+  if (config.configVersion < 21) {
+    const lootFilter = config.widgets.find(w => w.wmType === 'loot-filter')
+    if (lootFilter) lootFilter.browseHotkey ??= 'Ctrl + Shift + L'
+
+    config.configVersion = 21
+  }
   /* eslint-enable */
 
   return config as unknown as Config
@@ -492,6 +521,19 @@ function getConfigForHost (): HostConfig {
     actions.push({
       shortcut: itemCheck.hotkey,
       action: { type: 'copy-item', target: 'item-check', focusOverlay: true }
+    })
+  }
+  const lootFilter = AppConfig('loot-filter') as LootFilterWidget | undefined
+  if (lootFilter?.hotkey) {
+    actions.push({
+      shortcut: lootFilter.hotkey,
+      action: { type: 'copy-item', target: 'loot-filter', focusOverlay: true }
+    })
+  }
+  if (lootFilter?.browseHotkey) {
+    actions.push({
+      shortcut: lootFilter.browseHotkey,
+      action: { type: 'trigger-event', target: 'loot-filter-browse', focusOverlay: true }
     })
   }
   const delveGrid = AppConfig('delve-grid') as widget.DelveGridWidget

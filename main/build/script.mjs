@@ -40,7 +40,9 @@ const mainContext = await esbuild.context({
   outfile: 'dist/main.js',
   define: {
     'process.env.STATIC': (isDev) ? '"../build/icons"' : '"."',
-    'process.env.VITE_DEV_SERVER_URL': (isDev) ? '"http://localhost:5173"' : 'null'
+    'process.env.VITE_DEV_SERVER_URL': (isDev) ? '"http://localhost:5173"' : 'null',
+    // "owner/repo" of the fork that publishes releases with the loot filter editor (set by CI)
+    'process.env.APT_UPDATES_REPO': JSON.stringify(process.env.APT_UPDATES_REPO ?? '')
   },
   plugins: (isDev) ? [{
     name: 'electron-runner',

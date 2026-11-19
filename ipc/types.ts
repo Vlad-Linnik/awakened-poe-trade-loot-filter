@@ -23,6 +23,7 @@ export interface ShortcutAction {
   } | {
     type: 'trigger-event'
     target: string
+    focusOverlay?: boolean
   } | {
     type: 'stash-search'
     text: string
@@ -174,6 +175,10 @@ type IpcUserAction =
   } | {
     action: 'stash-search'
     text: string
+  } | {
+    action: 'paste-in-chat'
+    text: string
+    send: boolean
   }>
 
 interface Event<TName extends string, TPayload = undefined> {

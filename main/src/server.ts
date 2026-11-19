@@ -19,7 +19,7 @@ addFileUploadRoutes(server)
 
 if (!process.env.VITE_DEV_SERVER_URL) {
   server.addListener('request', (req, res) => {
-    if (req.url?.startsWith('/config') || req.url?.startsWith('/uploads') || req.url?.startsWith('/proxy')) return
+    if (req.url?.startsWith('/config') || req.url?.startsWith('/uploads') || req.url?.startsWith('/proxy') || req.url?.startsWith('/loot-filter')) return
 
     const filePath = (req.url === '/') ? '/index.html' : req.url!
     switch (path.extname(filePath)) {

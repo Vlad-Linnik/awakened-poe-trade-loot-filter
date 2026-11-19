@@ -7,7 +7,7 @@ import { guessFileLocation } from './utils'
 import type { Logger } from '../RemoteLogger'
 import type { ServerEvents } from '../server'
 
-const POSSIBLE_PATH =
+export const GAME_CONFIG_POSSIBLE_PATH =
   (process.platform === 'win32') ? [
     path.join(app.getPath('documents'), 'My Games\\Path of Exile\\production_Config.ini')
   ] : (process.platform === 'linux') ? [
@@ -40,7 +40,7 @@ export class GameConfig {
     }
 
     if (!filePath.length) {
-      const guessedPath = await guessFileLocation(POSSIBLE_PATH)
+      const guessedPath = await guessFileLocation(GAME_CONFIG_POSSIBLE_PATH)
       if (guessedPath != null) {
         filePath = guessedPath
       } else {

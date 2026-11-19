@@ -2,6 +2,10 @@ import { autoUpdater } from 'electron-updater'
 import type { ServerEvents } from './server'
 import type { UpdateInfo } from '../../ipc/types'
 
+// Builds with the loot filter editor update only from the fork's releases (set by CI).
+// Local builds have no update source: GitHub releases of the original app would remove the feature.
+const UPDATES_REPO = process.env.APT_UPDATES_REPO ?? ''
+
 export class AppUpdater {
   private _checkedAtStartup = false
   private _info: UpdateInfo = { state: 'initial' }
@@ -36,9 +40,14 @@ export class AppUpdater {
 
     if (!autoUpdater.autoDownload || process.platform === 'darwin') {
       this.noAutoUpdatesReason = 'not-supported'
-    } else if (process.argv.includes('--no-updates')) {
+    } else if (process.argv.includes('--no-updates') || !UPDATES_REPO) {
       autoUpdater.autoDownload = false
       this.noAutoUpdatesReason = 'disabled-by-flag'
+    }
+
+    if (UPDATES_REPO) {
+      const [owner, repo] = UPDATES_REPO.split('/')
+      autoUpdater.setFeedURL({ provider: 'github', owner, repo })
     }
 
     autoUpdater.on('checking-for-update', () => {

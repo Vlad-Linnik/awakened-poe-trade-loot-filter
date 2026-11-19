@@ -1,7 +1,7 @@
 import { promises as fs, watchFile, unwatchFile } from 'fs'
 import path from 'path'
 import { app } from 'electron'
-import { guessFileLocation } from './utils'
+import { guessFileLocation, steamLibraries } from './utils'
 import { ServerEvents } from '../server'
 import { Logger } from '../RemoteLogger'
 
@@ -45,7 +45,13 @@ export class GameLogWatcher {
     }
 
     if (!logFile.length) {
-      const guessedPath = await guessFileLocation(POSSIBLE_PATH)
+      let guessedPath = await guessFileLocation(POSSIBLE_PATH)
+      if (guessedPath == null) {
+        // Steam library on another drive
+        const libs = await steamLibraries()
+        guessedPath = await guessFileLocation(libs.map(lib =>
+          path.join(lib, 'steamapps', 'common', 'Path of Exile', 'logs', 'Client.txt')))
+      }
       if (guessedPath != null) {
         logFile = guessedPath
       } else {

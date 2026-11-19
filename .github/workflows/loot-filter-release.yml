@@ -1,0 +1,137 @@
+# Keeps this fork in sync with the original app and publishes Windows releases
+# with the loot filter editor. Installed apps (Setup exe) auto-update from these releases.
+#
+# - daily: merges new commits of SnosMe/awakened-poe-trade (master) into this branch
+# - on a merge conflict: opens an issue and publishes nothing
+# - builds and publishes a release when the branch has commits that were not released yet
+
+name: Loot filter release
+
+on:
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch:
+  push:
+    branches: [loot-filter-inspector]
+    paths-ignore: ['docs/**', '**.md']
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: loot-filter-release
+  cancel-in-progress: false
+
+env:
+  BRANCH: loot-filter-inspector
+  UPSTREAM: https://github.com/SnosMe/awakened-poe-trade.git
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    outputs:
+      release: ${{ steps.check.outputs.release }}
+      version: ${{ steps.check.outputs.version }}
+      sha: ${{ steps.check.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ env.BRANCH }}
+          fetch-depth: 0
+
+      - name: Merge new commits of the original app
+        id: merge
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add upstream "$UPSTREAM"
+          git fetch --no-tags upstream master
+          if git merge-base --is-ancestor upstream/master HEAD; then
+            echo "Up to date with the original app"
+          elif git merge --no-edit -m "Merge the original app (SnosMe/awakened-poe-trade)" upstream/master; then
+            git push origin "HEAD:$BRANCH"
+          else
+            git merge --abort
+            echo "conflict=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Report merge conflict
+        if: steps.merge.outputs.conflict == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="New version of the original app needs a manual merge"
+          if [ -z "$(gh issue list --state open --search "$title in:title" --json number --jq '.[].number')" ]; then
+            gh issue create --title "$title" --body "The daily sync could not merge \`SnosMe/awakened-poe-trade\` master into \`$BRANCH\` automatically (conflict). No release was published. Merge it locally (\`git pull $UPSTREAM master\`), resolve the conflicts and push."
+          fi
+          exit 1
+
+      - name: Decide whether to release
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha=$(git rev-parse HEAD)
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          last_tag=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' || true)
+          if [ -n "$last_tag" ] && git fetch --no-tags origin "refs/tags/$last_tag:refs/tags/$last_tag" 2>/dev/null \
+             && [ "$(git rev-list -n 1 "$last_tag")" = "$sha" ]; then
+            echo "Already released: $last_tag"
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # version of the original app + 3-digit build number: 3.30.102 -> 3.30.102007
+          base=$(node -p "require('./main/package.json').version")
+          build=$(printf '%03d' $(( GITHUB_RUN_NUMBER % 1000 )))
+          version="${base}${build}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "release=true" >> "$GITHUB_OUTPUT"
+          echo "Will release $version"
+
+  build:
+    needs: sync
+    if: needs.sync.outputs.release == 'true'
+    runs-on: windows-2022
+    env:
+      VERSION: ${{ needs.sync.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.sync.outputs.sha }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - run: npm ci
+        working-directory: ./renderer
+      - run: npm run build
+        working-directory: ./renderer
+
+      - run: npm ci
+        working-directory: ./main
+      - run: npm version "$env:VERSION" --no-git-tag-version --allow-same-version
+        working-directory: ./main
+      - run: npm run build
+        working-directory: ./main
+        env:
+          APT_UPDATES_REPO: ${{ github.repository }}
+
+      - name: Tag the release commit
+        shell: bash
+        run: |
+          git tag "v$VERSION" "${{ needs.sync.outputs.sha }}"
+          git push origin "v$VERSION"
+
+      - name: Package and publish
+        working-directory: ./main
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          npx electron-builder build --win nsis portable --publish always
+          -c.publish.provider=github
+          -c.publish.owner=${{ github.repository_owner }}
+          -c.publish.repo=${{ github.event.repository.name }}
+          -c.publish.releaseType=release
+          "-c.portable.artifactName=APT-LootFilter-Portable-\${version}.exe"

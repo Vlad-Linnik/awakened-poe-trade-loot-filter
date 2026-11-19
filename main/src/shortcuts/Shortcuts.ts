@@ -60,6 +60,9 @@ export class Shortcuts {
     this.server.onEventAnyClient('CLIENT->MAIN::user-action', (e) => {
       if (e.action === 'stash-search') {
         stashSearch(e.text, this.clipboard, this.overlay)
+      } else if (e.action === 'paste-in-chat') {
+        this.overlay.assertGameActive()
+        typeInChat(e.text, e.send, this.clipboard)
       }
     })
 
@@ -151,6 +154,10 @@ export class Shortcuts {
             name: 'MAIN->CLIENT::widget-action',
             payload: { target: entry.action.target }
           })
+          if (entry.action.focusOverlay) {
+            this.areaTracker.removeListeners()
+            this.overlay.assertOverlayActive()
+          }
         } else if (entry.action.type === 'stash-search') {
           stashSearch(entry.action.text, this.clipboard, this.overlay)
         } else if (entry.action.type === 'copy-item') {

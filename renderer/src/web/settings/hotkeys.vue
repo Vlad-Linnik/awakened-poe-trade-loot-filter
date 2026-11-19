@@ -28,6 +28,7 @@ import { useI18n } from 'vue-i18n'
 import { configProp, configModelValue, _configModelValue, findWidget } from './utils'
 import { PriceCheckWidget, DelveGridWidget } from '@/web/overlay/interfaces'
 import { ItemCheckWidget } from '../item-check/widget.js'
+import type { LootFilterWidget } from '../loot-filter/api'
 
 import UiRadio from '@/web/ui/UiRadio.vue'
 import HotkeysGeneric, { HotkeySchema } from '../settings/HotkeysGeneric.vue'
@@ -38,6 +39,7 @@ const hotkeys = computed<HotkeySchema[]>(() => {
   const priceCheckWidget = findWidget<PriceCheckWidget>('price-check', props.config)!
   const itemCheckWidget = findWidget<ItemCheckWidget>('item-check', props.config)!
   const delveGridWidget = findWidget<DelveGridWidget>('delve-grid', props.config)!
+  const lootFilterWidget = findWidget<LootFilterWidget>('loot-filter', props.config)!
   return [{
     translationKey: 'price_check.name',
     items: [{
@@ -60,6 +62,12 @@ const hotkeys = computed<HotkeySchema[]>(() => {
   }, {
     translationKey: 'item.info',
     config: _configModelValue(itemCheckWidget, 'hotkey')
+  }, {
+    translationKey: 'loot_filter.hotkey',
+    config: _configModelValue(lootFilterWidget, 'hotkey')
+  }, {
+    translationKey: 'loot_filter.browse_hotkey',
+    config: _configModelValue(lootFilterWidget, 'browseHotkey')
   }, {
     translationKey: 'settings.delve_grid',
     config: _configModelValue(delveGridWidget, 'toggleKey')
