@@ -45,6 +45,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # .gitattributes: README.md merge=ours (the fork has its own README)
+          git config merge.ours.driver true
           git remote add upstream "$UPSTREAM"
           git fetch --no-tags upstream master
           if git merge-base --is-ancestor upstream/master HEAD; then
