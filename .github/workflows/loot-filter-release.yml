@@ -123,6 +123,26 @@ jobs:
           git tag "v$VERSION" "${{ needs.sync.outputs.sha }}"
           git push origin "v$VERSION"
 
+      # electron-builder.yml publishes to the original repository;
+      # CLI overrides are merged into that list instead of replacing it, so rewrite the file
+      - name: Publish to this repository
+        working-directory: ./main
+        shell: bash
+        env:
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+        run: |
+          node -e "
+            const fs = require('fs')
+            const before = fs.readFileSync('electron-builder.yml', 'utf8')
+            const after = before.replace(/^publish:\r?\n(  - .*\r?\n)+/m,
+              'publish:\n  - provider: github\n    owner: ' + process.env.OWNER + '\n    repo: ' + process.env.REPO + '\n    releaseType: release\n')
+            if (after === before) { console.error('publish section not found'); process.exit(1) }
+            fs.writeFileSync('electron-builder.yml', after)
+          "
+          grep -A4 '^publish:' electron-builder.yml
+          grep -q "owner: $OWNER" electron-builder.yml
+
       - name: Package and publish
         working-directory: ./main
         shell: bash
@@ -130,8 +150,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: >
           npx electron-builder build --win nsis portable --publish always
-          -c.publish.provider=github
-          -c.publish.owner=${{ github.repository_owner }}
-          -c.publish.repo=${{ github.event.repository.name }}
-          -c.publish.releaseType=release
           "-c.portable.artifactName=APT-LootFilter-Portable-\${version}.exe"
