@@ -74,7 +74,7 @@ jobs:
         run: |
           sha=$(git rev-parse HEAD)
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
-          last_tag=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' || true)
+          last_tag=$(gh release list --exclude-drafts --limit 1 --json tagName --jq '.[0].tagName' || true)
           if [ -n "$last_tag" ] && git fetch --no-tags origin "refs/tags/$last_tag:refs/tags/$last_tag" 2>/dev/null \
              && [ "$(git rev-list -n 1 "$last_tag")" = "$sha" ]; then
             echo "Already released: $last_tag"
@@ -136,14 +136,26 @@ jobs:
             const fs = require('fs')
             const before = fs.readFileSync('electron-builder.yml', 'utf8')
             const after = before.replace(/^publish:\r?\n(  - .*\r?\n)+/m,
-              'publish:\n  - provider: github\n    owner: ' + process.env.OWNER + '\n    repo: ' + process.env.REPO + '\n    releaseType: release\n')
+              'publish:\n  - provider: github\n    owner: ' + process.env.OWNER + '\n    repo: ' + process.env.REPO + '\n    releaseType: draft\n')
             if (after === before) { console.error('publish section not found'); process.exit(1) }
             fs.writeFileSync('electron-builder.yml', after)
           "
           grep -A4 '^publish:' electron-builder.yml
           grep -q "owner: $OWNER" electron-builder.yml
 
-      - name: Package and publish
+      # one draft release first: otherwise every build target creates its own release
+      - name: Create draft release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes="Awakened PoE Trade with the loot filter editor.
+
+          Install **Awakened PoE Trade Setup $VERSION.exe**: the installed app updates itself from this repository.
+          The portable exe does not update automatically."
+          gh release create "v$VERSION" --draft --verify-tag --title "$VERSION" --notes "$notes"
+
+      - name: Package and upload
         working-directory: ./main
         shell: bash
         env:
@@ -151,3 +163,12 @@ jobs:
         run: >
           npx electron-builder build --win nsis portable --publish always
           "-c.portable.artifactName=APT-LootFilter-Portable-\${version}.exe"
+
+      - name: Publish the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "v$VERSION" --json assets --jq '.assets[].name'
+          gh release view "v$VERSION" --json assets --jq '.assets[].name' | grep -qx latest.yml
+          gh release edit "v$VERSION" --draft=false --latest
