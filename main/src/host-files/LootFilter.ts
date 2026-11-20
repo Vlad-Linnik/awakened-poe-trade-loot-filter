@@ -6,6 +6,7 @@ import type { Server, IncomingMessage, ServerResponse } from 'http'
 import { guessFileLocation, poeLogFromProcess } from './utils'
 import { GAME_CONFIG_POSSIBLE_PATH, type GameConfig } from './GameConfig'
 import type { Logger } from '../RemoteLogger'
+import type { ServerEvents } from '../server'
 
 export type LootFilterKind = 'local' | 'online' | 'managed'
 
@@ -30,8 +31,7 @@ export interface LootFilterInfo extends FileData {
 const MAX_BACKUPS = 30
 export const MANAGED_HEADER = '#APT-MANAGED-COPY'
 
-// Area level is not in the item text: take the last generated area from Client.txt
-async function lastAreaLevel (logPath: string | null): Promise<number | null> {
+async function readLogTail (logPath: string | null): Promise<string | null> {
   if (!logPath) return null
   let file: fs.FileHandle | null = null
   try {
@@ -40,11 +40,7 @@ async function lastAreaLevel (logPath: string | null): Promise<number | null> {
     const length = Math.min(size, 1024 * 1024)
     const buf = Buffer.alloc(length)
     await file.read(buf, 0, length, size - length)
-    const text = buf.toString('utf-8')
-    const re = /Generating level (\d+) area "/g
-    let last: number | null = null
-    for (const m of text.matchAll(re)) last = Number(m[1])
-    return last
+    return buf.toString('utf-8')
   } catch {
     return null
   } finally {
@@ -52,11 +48,76 @@ async function lastAreaLevel (logPath: string | null): Promise<number | null> {
   }
 }
 
-export function addLootFilterRoutes (server: Server, gameConfig: GameConfig, logger: Logger, getLogPath: () => string | null) {
+// The game logs when it (re)loads an online filter: selected in options, refreshed, or `/itemfilter <online>`.
+// `2026/11/20 01:48:25 791532218 788474e5 [INFO Client 16048] [Item Filter] Finished reloading online filter D4gaYKCQ. Result: true. ...`
+function lastOnlineFilterLoad (logText: string | null): { id: string, time: number } | null {
+  if (!logText) return null
+  const re = /^(\d{4})\/(\d\d)\/(\d\d) (\d\d):(\d\d):(\d\d) .*\[Item Filter\] Finished reloading online filter (\S+)\. Result: true/gm
+  let last: { id: string, time: number } | null = null
+  for (const m of logText.matchAll(re)) {
+    const [, y, mo, d, h, mi, sec, id] = m
+    last = { id, time: new Date(+y, +mo - 1, +d, +h, +mi, +sec).getTime() }
+  }
+  return last
+}
+
+// Area level is not in the item text: take the last generated area from Client.txt
+function lastAreaLevel (logText: string | null): number | null {
+  if (!logText) return null
+  let last: number | null = null
+  for (const m of logText.matchAll(/Generating level (\d+) area "/g)) last = Number(m[1])
+  return last
+}
+
+export function addLootFilterRoutes (
+  server: Server,
+  gameConfig: GameConfig,
+  logger: Logger,
+  getLogPath: () => string | null,
+  events: ServerEvents
+) {
   const aptData = path.join(app.getPath('userData'), 'apt-data')
   const backupsPath = path.join(aptData, 'filter-backups')
   const rulesPath = path.join(aptData, 'loot-filter-rules.json')
+  const statePath = path.join(aptData, 'loot-filter-state.json')
   let logFromProcess: string | null = null
+
+  // `/itemfilter` doesn't update production_Config.ini right away, so remember what we switched to.
+  // `iniValue` is what the config said at that moment: a different value later means
+  // the filter was changed in the game options after our switch.
+  interface Switch { name: string, time: number, iniValue: string | null }
+  let lastSwitch: Switch | null = null
+  let stateLoaded = false
+  async function loadState () {
+    if (stateLoaded) return
+    stateLoaded = true
+    try {
+      lastSwitch = (JSON.parse(await fs.readFile(statePath, 'utf-8')) as { lastSwitch?: Switch }).lastSwitch ?? null
+    } catch {}
+  }
+  events.onEventAnyClient('CLIENT->MAIN::user-action', (e) => {
+    if (e.action !== 'paste-in-chat' || !e.text.startsWith('/itemfilter ')) return
+    const name = e.text.slice('/itemfilter '.length).trim()
+    ;(async () => {
+      await loadState()
+      const configFile = await findGameConfigFile()
+      const iniValue = configFile ? await readIniFilter(configFile) : null
+      lastSwitch = { name, time: Date.now(), iniValue }
+      await fs.mkdir(aptData, { recursive: true })
+      await fs.writeFile(statePath, JSON.stringify({ lastSwitch }), 'utf-8')
+    })().catch(() => {})
+  })
+
+  async function readIniFilter (configFile: string): Promise<string | null> {
+    const cfgText = stripBom(await fs.readFile(configFile, 'utf-8'))
+    const parsed = ini.parse(cfgText) as Record<string, Record<string, unknown>>
+    for (const section of Object.values(parsed)) {
+      if (section && typeof section === 'object' && typeof section.item_filter === 'string') {
+        return section.item_filter
+      }
+    }
+    return null
+  }
 
   async function findLogFile () {
     const known = getLogPath()
@@ -118,34 +179,56 @@ export function addLootFilterRoutes (server: Server, gameConfig: GameConfig, log
       return await classify(filterDir, await readFile(overridePath))
     }
 
-    const cfgText = stripBom(await fs.readFile(configFile, 'utf-8'))
-    const parsed = ini.parse(cfgText) as Record<string, Record<string, unknown>>
-    let filterName: string | null = null
-    for (const section of Object.values(parsed)) {
-      if (section && typeof section === 'object' && typeof section.item_filter === 'string') {
-        filterName = section.item_filter
-        break
-      }
+    await loadState()
+    const iniValue = await readIniFilter(configFile)
+    const iniTime = (await fs.stat(configFile)).mtimeMs
+    const onlineLoad = lastOnlineFilterLoad(await readLogTail(await findLogFile()))
+
+    // the most recent of: config (if it changed after our last switch), our last `/itemfilter`,
+    // the last online filter loaded by the game
+    const candidates: Array<{ name: string, time: number }> = []
+    if (iniValue) {
+      const unchangedSinceSwitch = lastSwitch != null && lastSwitch.iniValue === iniValue
+      candidates.push({ name: iniValue, time: unchangedSinceSwitch ? 0 : iniTime })
     }
-    if (!filterName) {
+    if (lastSwitch) candidates.push({ name: lastSwitch.name, time: lastSwitch.time })
+    // log timestamps have 1s precision
+    if (onlineLoad) candidates.push({ name: onlineLoad.id, time: onlineLoad.time + 999 })
+    candidates.sort((a, b) => b.time - a.time)
+
+    if (!candidates.length) {
       throw new Error('No item filter is selected in the game options.')
     }
-
-    // online filters are selected by id: `item_filter=Wa42ZyUE` -> OnlineFilters/Wa42ZyUE
-    const candidates = [
-      path.join(filterDir, 'OnlineFilters', filterName),
-      path.join(filterDir, filterName),
-      path.join(filterDir, `${filterName}.filter`)
-    ]
-    const allowedDirs = [path.resolve(filterDir), path.resolve(filterDir, 'OnlineFilters')].map(d => d.toLowerCase())
-    for (const candidate of candidates) {
-      // the name comes from a config file, don't let it point outside the filter folder
-      if (!allowedDirs.includes(path.dirname(path.resolve(candidate)).toLowerCase())) continue
-      const file = await tryReadFile(candidate)
+    for (const { name } of candidates) {
+      const file = await resolveFilter(filterDir, name)
       if (file) return await classify(filterDir, file)
     }
+    throw new Error(`Filter "${candidates[0].name}" was not found in "${filterDir}". If it is an online filter, press the refresh button next to it in the game options.`)
+  }
 
-    throw new Error(`Filter "${filterName}" was not found in "${filterDir}". If it is an online filter, press the refresh button next to it in the game options.`)
+  // `name` is a local file name (with or without .filter), an online filter id, or an online filter name
+  async function resolveFilter (filterDir: string, name: string) {
+    const onlineDir = path.join(filterDir, 'OnlineFilters')
+    const candidates = [
+      path.join(onlineDir, name),
+      path.join(filterDir, name),
+      path.join(filterDir, `${name}.filter`)
+    ]
+    const allowedDirs = [path.resolve(filterDir), path.resolve(onlineDir)].map(d => d.toLowerCase())
+    for (const candidate of candidates) {
+      // the name comes from a config file / chat command, don't let it point outside the filter folder
+      if (!allowedDirs.includes(path.dirname(path.resolve(candidate)).toLowerCase())) continue
+      const file = await tryReadFile(candidate)
+      if (file) return file
+    }
+    // `/itemfilter <online filter name>`: find the cached online filter by its `#name:`
+    let entries: string[] = []
+    try { entries = await fs.readdir(onlineDir) } catch {}
+    for (const entry of entries) {
+      const file = await tryReadFile(path.join(onlineDir, entry))
+      if (file && headerValue(file.contents, 'name') === name) return file
+    }
+    return null
   }
 
   async function loadRules () {
@@ -221,7 +304,7 @@ export function addLootFilterRoutes (server: Server, gameConfig: GameConfig, log
     if (req.method === 'GET' && url.pathname === '/loot-filter/active') {
       respond(res, async () => ({
         ...await getActiveFilter(url.searchParams.get('path') || null),
-        areaLevel: await lastAreaLevel(await findLogFile())
+        areaLevel: lastAreaLevel(await readLogTail(await findLogFile()))
       }))
     } else if (req.method === 'POST' && url.pathname === '/loot-filter/save') {
       readJson(req)

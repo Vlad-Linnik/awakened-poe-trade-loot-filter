@@ -61,7 +61,7 @@ const GEAR_VARIES = [
   'Identified', 'Corrupted', 'CorruptedMods', 'Mirrored', 'FracturedItem', 'SynthesisedItem', 'Replica',
   'HasInfluence', 'ElderItem', 'ShaperItem', 'HasExplicitMod', 'HasImplicitMod', 'AnyEnchantment', 'HasEnchantment',
   'EnchantmentPassiveNode', 'EnchantmentPassiveNum', 'MemoryStrands', 'UnidentifiedItemTier',
-  'HasCruciblePassiveTree', 'Foulborn', 'MapTier', 'BlightedMap', 'UberBlightedMap', 'ShapedMap', 'ElderMap'
+  'HasCruciblePassiveTree', 'Foulborn', 'BlightedMap', 'UberBlightedMap', 'ShapedMap', 'ElderMap'
 ]
 
 function variesFor (item: FilterItem): Set<string> {
@@ -77,19 +77,77 @@ function variesFor (item: FilterItem): Set<string> {
   return new Set(ALWAYS_VARIES)
 }
 
+// Which item classes can have a property at all (filter class names, PoE 1)
+const WEAPONS = /Bows|Claws|Daggers|Axes|Maces|Swords|Sceptres|Staves|Wands|Fishing Rods|Spears|Flails|Quarterstaves|Crossbows/i
+const ARMOUR = /Body Armours|Helmets|Gloves|Boots|Shields|Quivers|Foci|Bucklers/i
+const JEWELLERY = /Rings|Amulets|Belts/i
+const JEWELS = /Jewel/i
+const FLASKS = /Flask|Tincture|Charm/i
+const MAPS = /^Maps$/i
+
+const isEquipment = (cls: string) => WEAPONS.test(cls) || ARMOUR.test(cls) || JEWELLERY.test(cls)
+const FEATURE_CLASSES: Record<string, (cls: string) => boolean> = {
+  Sockets: cls => WEAPONS.test(cls) || ARMOUR.test(cls),
+  LinkedSockets: cls => WEAPONS.test(cls) || ARMOUR.test(cls),
+  SocketGroup: cls => WEAPONS.test(cls) || ARMOUR.test(cls),
+  FracturedItem: cls => isEquipment(cls) || JEWELS.test(cls),
+  SynthesisedItem: cls => isEquipment(cls),
+  HasInfluence: cls => isEquipment(cls),
+  ElderItem: cls => isEquipment(cls),
+  ShaperItem: cls => isEquipment(cls),
+  HasCruciblePassiveTree: cls => WEAPONS.test(cls) || /Shields/i.test(cls),
+  Fated: cls => isEquipment(cls),
+  Replica: cls => isEquipment(cls) || JEWELS.test(cls) || FLASKS.test(cls),
+  Foulborn: cls => isEquipment(cls) || JEWELS.test(cls) || FLASKS.test(cls),
+  MemoryStrands: cls => isEquipment(cls) || JEWELS.test(cls) || FLASKS.test(cls),
+  UnidentifiedItemTier: cls => isEquipment(cls) || JEWELS.test(cls) || FLASKS.test(cls),
+  HasExplicitMod: cls => isEquipment(cls) || JEWELS.test(cls) || FLASKS.test(cls),
+  CorruptedMods: cls => isEquipment(cls) || JEWELS.test(cls),
+  AnyEnchantment: cls => isEquipment(cls) || JEWELS.test(cls),
+  HasEnchantment: cls => isEquipment(cls) || JEWELS.test(cls),
+  EnchantmentPassiveNode: cls => JEWELS.test(cls),
+  EnchantmentPassiveNum: cls => JEWELS.test(cls),
+  MapTier: cls => MAPS.test(cls),
+  BlightedMap: cls => MAPS.test(cls),
+  UberBlightedMap: cls => MAPS.test(cls),
+  ShapedMap: cls => MAPS.test(cls),
+  ElderMap: cls => MAPS.test(cls)
+}
+
+function canVary (keyword: string, item: FilterItem) {
+  const applies = FEATURE_CLASSES[keyword]
+  // unknown (guessed) class: don't rule anything out
+  if (!applies || !item.class || item.classIsGuess) return true
+  return applies(item.class)
+}
+
+// Rules written for this item (they name its class or base type) that it can end up in,
+// whatever its properties that differ between items of the same base (see variesFor).
+// `unknown` lists the conditions the rule depends on. Rules that don't name the item
+// (e.g. "any fractured item") are not listed. Stops at the first rule that always applies.
 export function relatedBlocks (filter: ParsedFilter, item: FilterItem): BlockEval[] {
   const varies = variesFor(item)
   const out: BlockEval[] = []
   for (const block of filter.blocks) {
     const unknown: FilterLine[] = []
     let possible = true
+    let targetsItem = false
     for (const cond of block.conditions) {
-      const r = varies.has(cond.keyword) ? null : evalCondition(cond, item)
+      let r: Tri
+      if (varies.has(cond.keyword) && canVary(cond.keyword, item)) {
+        r = null
+      } else if (cond.keyword === 'Fated' || cond.keyword === 'Foulborn') {
+        // not parsed from the item text; impossible for classes without it
+        r = canVary(cond.keyword, item) ? null : !/^true$/i.test(cond.values[0] ?? 'True')
+      } else {
+        r = evalCondition(cond, item)
+      }
       if (r === false) { possible = false; break }
       if (r === null) unknown.push(cond)
+      if (r === true && (cond.keyword === 'Class' || cond.keyword === 'BaseType')) targetsItem = true
     }
     if (!possible) continue
-    out.push({ block, result: unknown.length ? null : true, unknown })
+    if (targetsItem) out.push({ block, result: unknown.length ? null : true, unknown })
     if (!unknown.length && !block.continue) break
   }
   return out

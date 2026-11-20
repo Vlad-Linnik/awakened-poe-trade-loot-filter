@@ -35,7 +35,7 @@ app.on('ready', async () => {
   const poeWindow = new GameWindow()
   const appUpdater = new AppUpdater(eventPipe)
   const _httpProxy = new HttpProxy(server, logger)
-  addLootFilterRoutes(server, gameConfig, logger, () => gameLogWatcher.actualPath)
+  addLootFilterRoutes(server, gameConfig, logger, () => gameLogWatcher.actualPath, eventPipe)
 
   setTimeout(
     async () => {

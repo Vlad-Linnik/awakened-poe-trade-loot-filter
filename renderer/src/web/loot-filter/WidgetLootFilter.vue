@@ -76,12 +76,13 @@
             </template>
 
             <!-- other rules for this kind of item: other stack sizes, area levels -->
-            <div v-if="related.length" class="flex flex-col gap-1 mt-1">
-              <div class="flex items-center gap-2">
+            <details v-if="related.length" class="flex flex-col gap-1 mt-1" :open="related.length <= 8">
+              <summary class="flex items-center gap-2 cursor-pointer">
                 <span class="text-xs uppercase text-gray-500 flex-1">{{ t(':related', [item!.info.name]) }} · {{ related.length }}</span>
                 <input v-if="related.length > 12" v-model.trim="relatedSearch" :placeholder="t(':search')"
-                  class="rounded bg-gray-900 px-1 w-32 text-xs">
-              </div>
+                  class="rounded bg-gray-900 px-1 w-32 text-xs" @click.stop>
+              </summary>
+              <div class="flex flex-col gap-1 mt-1">
               <template v-for="ev of relatedShown" :key="ev.block.index">
                 <div class="rounded bg-gray-900 px-2 py-1 flex items-center gap-2">
                   <div class="flex-1 min-w-0">
@@ -109,7 +110,8 @@
               </template>
               <button v-if="relatedFiltered.length > relatedShown.length" class="btn text-xs"
                 @click="relatedShowAll = true">{{ t(':show_all', [relatedFiltered.length]) }}</button>
-            </div>
+              </div>
+            </details>
             <button v-if="assumed.size" class="text-xs text-gray-400 underline self-start" @click="assumed = new Set()">{{ t(':reset_assumed') }}</button>
           </div>
 
@@ -470,11 +472,18 @@ function afterWrite (message: string, command: string) {
   editing.value = null
   moveTarget.value = null
   status.value = message
-  if (props.config.reloadAfterHide) {
+  if (!props.config.reloadAfterHide) {
+    pendingCommand.value = command
+    return
+  }
+  if (command.startsWith('/itemfilter ')) {
+    // the game may not see a just created filter file yet: wait a bit,
+    // and keep the button to switch again if it failed
+    pendingCommand.value = command
+    setTimeout(() => api.sendChatCommand(command), 1500)
+  } else {
     pendingCommand.value = null
     api.sendChatCommand(command)
-  } else {
-    pendingCommand.value = command
   }
 }
 
