@@ -6,7 +6,7 @@
       <div :class="$style.titlebar" class="px-3 py-2 flex items-baseline gap-2">
         <span v-if="mode === 'browse'" class="font-bold truncate">{{ t(':browse_title') }}</span>
         <template v-else>
-          <img v-if="item?.info.icon" :src="item.info.icon" class="w-6 h-6 object-contain self-center">
+          <img v-if="safeIcon(item?.info.icon)" :src="safeIcon(item?.info.icon)!" class="w-6 h-6 object-contain self-center">
           <span class="font-bold truncate font-poe" :title="fItem?.baseType">{{ item?.info.name ?? '…' }}</span>
         </template>
         <span class="flex-1"></span>
@@ -257,7 +257,7 @@ import {
   buildCopy, copyName, copySourceVersion,
   type EditsStore, type FilterEdits, type FilterSource, type TierPatch, type BlockSelector
 } from './edits'
-import { iconForBlock } from './fb'
+import { iconForBlock, safeIcon } from './fb'
 import { blockTitle, conditionHints } from './names'
 import { styleFromActions, styleCss } from './style'
 import * as api from './api'
@@ -429,7 +429,7 @@ function chipStyle (block: FilterBlock) {
   return { ...styleCss(styleFromActions(block.actions), block.visibility === 'Hide'), fontSize: '0.75rem', borderWidth: '1px' }
 }
 
-const finalIcon = computed(() => finalBlock.value ? (iconForBlock(finalBlock.value) ?? item.value?.info.icon ?? null) : null)
+const finalIcon = computed(() => finalBlock.value ? (iconForBlock(finalBlock.value) ?? safeIcon(item.value?.info.icon)) : null)
 
 function findInCustomizer (block: FilterBlock) {
   browseFocus.value = { selector: selectorOf(block), item: fItem.value?.baseType }

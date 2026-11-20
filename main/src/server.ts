@@ -30,6 +30,11 @@ if (!process.env.VITE_DEV_SERVER_URL) {
     }
 
     fs.createReadStream(path.join(__dirname, filePath))
+      // e.g. an <img> with a broken src: answer 404 instead of crashing the app
+      .once('error', () => {
+        if (!res.headersSent) res.statusCode = 404
+        res.end()
+      })
       .pipe(res)
   })
 }

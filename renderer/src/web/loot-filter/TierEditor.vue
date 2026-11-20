@@ -114,6 +114,7 @@ import { ITEMS_ITERATOR } from '@/assets/data'
 import { parseLine, stripComment, type FilterBlock, type Visibility } from './filter-parser'
 import { styleFromActions, styleToActions, STYLE_KEYWORDS, type FilterStyle } from './style'
 import StyleBar from './StyleBar.vue'
+import { safeIcon } from './fb'
 
 export interface TierChange {
   visibility?: Visibility
@@ -234,13 +235,13 @@ function addItem (name: string) {
 const suggestions = computed(() => {
   const q = newItem.value.trim()
   if (q.length < 2) return []
-  const out: Array<{ ref: string, name: string, icon: string }> = []
+  const out: Array<{ ref: string, name: string, icon: string | null }> = []
   const seen = new Set<string>()
   for (const base of ITEMS_ITERATOR(q)) {
     if (base.namespace === 'UNIQUE' || base.namespace === 'CAPTURED_BEAST') continue
     if (seen.has(base.refName) || items.value.includes(base.refName)) continue
     seen.add(base.refName)
-    out.push({ ref: base.refName, name: base.name, icon: base.icon })
+    out.push({ ref: base.refName, name: base.name, icon: safeIcon(base.icon) })
     if (out.length >= 10) break
   }
   return out

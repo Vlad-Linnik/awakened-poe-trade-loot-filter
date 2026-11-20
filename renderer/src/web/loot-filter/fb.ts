@@ -6,13 +6,19 @@ import type { FilterBlock } from './filter-parser'
 
 const NAMESPACES = ['ITEM', 'DIVINATION_CARD', 'GEM'] as const
 
+// item data has placeholders like "%NOT_FOUND%" for some items: never use them as <img src>
+export function safeIcon (icon: string | null | undefined): string | null {
+  if (!icon) return null
+  return (icon.startsWith('https://') || icon.startsWith('/images/')) ? icon : null
+}
+
 const iconCache = new Map<string, string | null>()
 export function iconForBase (name: string): string | null {
   if (iconCache.has(name)) return iconCache.get(name)!
   let icon: string | null = null
   for (const ns of NAMESPACES) {
-    const found = ITEM_BY_REF(ns, name)?.find(b => b.icon)
-    if (found) { icon = found.icon; break }
+    const found = ITEM_BY_REF(ns, name)?.find(b => safeIcon(b.icon))
+    if (found) { icon = safeIcon(found.icon); break }
   }
   iconCache.set(name, icon)
   return icon
