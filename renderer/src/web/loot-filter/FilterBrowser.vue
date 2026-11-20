@@ -76,7 +76,7 @@ import { moveTargets } from './filter-edit'
 import { findBlock, selectorOf, type BlockSelector, type TierPatch } from './edits'
 import { styleFromActions, styleCss } from './style'
 import { iconForBlocks, iconForBase, sampleName, shapeGlyph, effectColor } from './fb'
-import { CATEGORIES, GROUPS, categoryOf } from './fb-categories'
+import { CATEGORIES, GROUPS, placeOf } from './fb-categories'
 import { blockTierName, conditionHints } from './names'
 import TierEditor, { type TierChange } from './TierEditor.vue'
 
@@ -123,8 +123,8 @@ watch(() => props.focus, (focus) => {
   if (!block) return
   selectedSel.value = selectorOf(block)
   highlight.value = focus.item ?? null
-  const cat = categoryOf(block).title
-  opened.value = new Set([...opened.value, cat, `${cat}/${block.section ?? block.topSection ?? cat}`])
+  const place = placeOf(block)
+  opened.value = new Set([...opened.value, place.category.title, `${place.category.title}/${place.sub}`])
 }, { immediate: true })
 
 function baseTypes (block: FilterBlock) {
@@ -148,13 +148,12 @@ const groups = computed(() => {
       const text = `${props.ruleTitle(block)} ${blockTierName(block, t)} ${block.headerComment} ${block.section ?? ''} ${block.topSection ?? ''}`.toLowerCase()
       if (!matchedItems.length && !text.includes(q)) continue
     }
-    const cat = categoryOf(block)
+    const { category: cat, sub: subTitle } = placeOf(block)
     let sec = byCategory.get(cat.id)
     if (!sec) {
       sec = { title: cat.title, group: cat.group, subs: [], blocks: [], icon: iconForBase(cat.icon), changes: 0, order: CATEGORIES.indexOf(cat) }
       byCategory.set(cat.id, sec)
     }
-    const subTitle = block.section ?? block.topSection ?? cat.title
     let sub = sec.subs.find(x => x.title === subTitle)
     if (!sub) {
       sub = { title: subTitle, blocks: [], icon: null, changes: 0 }
@@ -167,7 +166,9 @@ const groups = computed(() => {
       sec.changes++
     }
   }
-  for (const sec of byCategory.values()) {
+  for (const [id, sec] of byCategory) {
+    const order = CATEGORIES.find(c => c.id === id)!.subs
+    sec.subs.sort((a, b) => order.indexOf(a.title) - order.indexOf(b.title))
     for (const sub of sec.subs) sub.icon = iconForBlocks(sub.blocks.map(e => e.block)) ?? sec.icon
   }
   return GROUPS
