@@ -413,8 +413,15 @@ export function blockTierName (block: FilterBlock, t: T): string {
 }
 
 // "Supplies: Wisdom Stacking — Tier 1"
+// NeverSink's catch-all sections ("All rules - except gold and six-links") say nothing about the rule
+const GENERIC_SECTION = /^(all rules|global|exceptions?\b)/i
+
 export function blockTitle (block: FilterBlock, t: T): string {
-  const context = block.section ?? block.topSection ?? (block.tags.type ? typeName(block.tags.type) : '')
+  let context = block.section ?? block.topSection ?? ''
+  if ((!context || GENERIC_SECTION.test(context)) && block.tags.type) {
+    // "maps->influenced" -> "Maps › Influenced"
+    context = block.tags.type.split('->').map(p => splitWords(p)).join(' › ')
+  }
   const name = blockTierName(block, t)
   return context ? `${context} — ${name}` : name
 }

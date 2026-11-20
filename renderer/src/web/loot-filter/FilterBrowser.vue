@@ -3,9 +3,11 @@
     <input v-model.trim="search" :placeholder="t(':browse_search')" :class="$style.search">
 
     <div class="flex-1 overflow-y-auto min-h-0 flex flex-col gap-2 pr-1">
-      <div v-if="!sections.length" class="text-gray-400 text-sm">{{ t(':browse_nothing') }}</div>
+      <div v-if="!groups.length" class="text-gray-400 text-sm">{{ t(':browse_nothing') }}</div>
 
-      <div v-for="sec of sections" :key="sec.title" :class="[$style.section, { [$style.open]: isOpen(sec.title) }]">
+      <template v-for="group of groups" :key="group.id">
+      <div :class="$style.groupTitle">{{ group.title }}</div>
+      <div v-for="sec of group.sections" :key="sec.title" :class="[$style.section, { [$style.open]: isOpen(sec.title) }]">
         <!-- category header: icon, title, changes, RESET -->
         <div :class="$style.header" @click="toggle(sec.title)">
           <img v-if="sec.icon" :src="sec.icon" :class="$style.icon">
@@ -61,6 +63,7 @@
           </div>
         </div>
       </div>
+      </template>
     </div>
   </div>
 </template>
@@ -72,7 +75,8 @@ import { blockText, type FilterBlock, type ParsedFilter } from './filter-parser'
 import { moveTargets } from './filter-edit'
 import { findBlock, selectorOf, type BlockSelector, type TierPatch } from './edits'
 import { styleFromActions, styleCss } from './style'
-import { iconForBlocks, sampleName, shapeGlyph, effectColor } from './fb'
+import { iconForBlocks, iconForBase, sampleName, shapeGlyph, effectColor } from './fb'
+import { CATEGORIES, GROUPS, categoryOf } from './fb-categories'
 import { blockTierName, conditionHints } from './names'
 import TierEditor, { type TierChange } from './TierEditor.vue'
 
@@ -119,8 +123,8 @@ watch(() => props.focus, (focus) => {
   if (!block) return
   selectedSel.value = selectorOf(block)
   highlight.value = focus.item ?? null
-  const top = block.topSection ?? '—'
-  opened.value = new Set([...opened.value, top, `${top}/${block.section ?? top}`])
+  const cat = categoryOf(block).title
+  opened.value = new Set([...opened.value, cat, `${cat}/${block.section ?? block.topSection ?? cat}`])
 }, { immediate: true })
 
 function baseTypes (block: FilterBlock) {
@@ -129,11 +133,12 @@ function baseTypes (block: FilterBlock) {
 
 interface Entry { block: FilterBlock, count: number, matchedItems: string[], minimap: ReturnType<typeof styleFromActions>['minimap'] }
 interface Sub { title: string, blocks: Entry[], icon: string | null, changes: number }
-interface Section { title: string, subs: Sub[], blocks: FilterBlock[], icon: string | null, changes: number }
+interface Section { title: string, subs: Sub[], blocks: FilterBlock[], icon: string | null, changes: number, order: number }
 
-const sections = computed<Section[]>(() => {
+// FilterBlade-like tree: group -> category -> NeverSink subsection -> tiers
+const groups = computed(() => {
   const q = search.value.toLowerCase()
-  const out: Section[] = []
+  const byCategory = new Map<string, Section & { group: string }>()
   for (const block of props.parsed.blocks) {
     if (props.isAptRule(block)) continue
     const items = baseTypes(block)
@@ -143,31 +148,35 @@ const sections = computed<Section[]>(() => {
       const text = `${props.ruleTitle(block)} ${blockTierName(block, t)} ${block.headerComment} ${block.section ?? ''} ${block.topSection ?? ''}`.toLowerCase()
       if (!matchedItems.length && !text.includes(q)) continue
     }
-    const top = block.topSection ?? '—'
-    const subTitle = block.section ?? top
-    let sec = out[out.length - 1]
-    if (!sec || sec.title !== top) {
-      sec = { title: top, subs: [], blocks: [], icon: null, changes: 0 }
-      out.push(sec)
+    const cat = categoryOf(block)
+    let sec = byCategory.get(cat.id)
+    if (!sec) {
+      sec = { title: cat.title, group: cat.group, subs: [], blocks: [], icon: iconForBase(cat.icon), changes: 0, order: CATEGORIES.indexOf(cat) }
+      byCategory.set(cat.id, sec)
     }
-    let sub = sec.subs[sec.subs.length - 1]
-    if (!sub || sub.title !== subTitle) {
+    const subTitle = block.section ?? block.topSection ?? cat.title
+    let sub = sec.subs.find(x => x.title === subTitle)
+    if (!sub) {
       sub = { title: subTitle, blocks: [], icon: null, changes: 0 }
       sec.subs.push(sub)
     }
-    const entry = { block, count: items.length, matchedItems: matchedItems.slice(0, 5), minimap: styleFromActions(block.actions).minimap }
-    sub.blocks.push(entry)
+    sub.blocks.push({ block, count: items.length, matchedItems: matchedItems.slice(0, 5), minimap: styleFromActions(block.actions).minimap })
     sec.blocks.push(block)
     if (props.patchOf(block)) {
       sub.changes++
       sec.changes++
     }
   }
-  for (const sec of out) {
-    sec.icon = iconForBlocks(sec.blocks)
+  for (const sec of byCategory.values()) {
     for (const sub of sec.subs) sub.icon = iconForBlocks(sub.blocks.map(e => e.block)) ?? sec.icon
   }
-  return out
+  return GROUPS
+    .map(g => ({
+      id: g.id,
+      title: g.title,
+      sections: [...byCategory.values()].filter(sec => sec.group === g.id).sort((a, b) => a.order - b.order)
+    }))
+    .filter(g => g.sections.length)
 })
 
 function isOpen (key: string) {
@@ -194,6 +203,14 @@ function chipStyle (block: FilterBlock) {
   color: #fff;
   padding: 0.35rem 0.6rem;
   font-size: 0.9rem;
+}
+.groupTitle {
+  color: #fff;
+  text-align: center;
+  font-size: 1.35rem;
+  letter-spacing: 0.04em;
+  padding: 0.4rem 0 0.1rem;
+  font-family: 'Fontin', sans-serif;
 }
 .section {
   background: #0d1a5a;

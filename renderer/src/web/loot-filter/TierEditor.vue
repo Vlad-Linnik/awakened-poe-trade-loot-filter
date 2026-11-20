@@ -14,6 +14,26 @@
           :preview-name="itemName" :hidden="visibility === 'Hide'" />
       </div>
 
+      <!-- FilterBlade's common conditions: item level, area level, corrupted, identified -->
+      <div :class="$style.items" class="flex flex-col gap-1">
+        <div v-for="row of fbNum" :key="row.keyword" class="flex items-center gap-2">
+          <span class="w-24">• {{ row.keyword }}:</span>
+          <select v-model="row.op" :class="$style.input" class="w-28">
+            <option v-for="op of NUM_OPS" :key="op.op" :value="op.op">{{ op.label }}</option>
+          </select>
+          <input v-model.number="row.value" type="number" min="1" max="100" :disabled="row.op === 'any'"
+            :class="$style.input" class="w-14">
+          <input v-model.number="row.value" type="range" min="1" max="100" :disabled="row.op === 'any'"
+            class="flex-1 min-w-0" :class="{ 'opacity-40': row.op === 'any' }">
+        </div>
+        <div v-for="row of fbBool" :key="row.keyword" class="flex justify-center">
+          <button v-for="opt of (['yes', 'no', 'either'] as const)" :key="opt"
+            :class="[$style.seg, { [$style.segOn]: row.state === opt }]" @click="row.state = opt">
+            {{ opt === 'yes' ? row.keyword : opt === 'no' ? `NOT ${row.keyword}` : 'Either' }}
+          </button>
+        </div>
+      </div>
+
       <!-- items of the tier -->
       <div v-if="hasBaseTypes" :class="$style.items">
         <div class="flex items-center gap-2 mb-1">
@@ -161,8 +181,46 @@ const visibility = ref<Visibility>(props.block.visibility === 'Hide' ? 'Hide' : 
 
 // ---- conditions ----
 
+// ---- FilterBlade's common conditions ----
+
+const NUM_OPS = [
+  { op: 'any', label: 'any' },
+  { op: '>=', label: '>= at least' },
+  { op: '<=', label: '<= at most' },
+  { op: '=', label: '= exactly' },
+  { op: '>', label: '> more than' },
+  { op: '<', label: '< less than' }
+] as const
+const FB_NUM = ['ItemLevel', 'AreaLevel']
+const FB_BOOL = ['Corrupted', 'Identified']
+
+const fbNum = reactive(FB_NUM.map(keyword => {
+  const c = props.block.conditions.find(x => x.keyword === keyword)
+  const single = c && c.values.length === 1 && /^\d+$/.test(c.values[0])
+  return {
+    keyword,
+    op: (c && single ? (c.op === '==' ? '=' : (c.op || '=')) : 'any') as string,
+    value: single ? Number(c!.values[0]) : 1,
+    // conditions this editor can't show (several values...) stay as they are
+    editable: !c || single,
+    initialOp: (c && single ? (c.op === '==' ? '=' : (c.op || '=')) : 'any') as string,
+    initialValue: single ? Number(c!.values[0]) : 1
+  }
+}).filter(r => r.editable))
+
+const fbBool = reactive(FB_BOOL.map(keyword => {
+  const c = props.block.conditions.find(x => x.keyword === keyword)
+  return {
+    keyword,
+    state: (c ? (/^true$/i.test(c.values[0] ?? '') ? 'yes' : 'no') : 'either') as 'yes' | 'no' | 'either',
+    initial: (c ? (/^true$/i.test(c.values[0] ?? '') ? 'yes' : 'no') : 'either') as 'yes' | 'no' | 'either'
+  }
+}))
+
+const FB_KEYWORDS = new Set([...fbNum.map(r => r.keyword), ...FB_BOOL])
+
 const condRows = reactive(props.block.conditions
-  .filter(c => c.keyword !== 'BaseType')
+  .filter(c => c.keyword !== 'BaseType' && !FB_KEYWORDS.has(c.keyword))
   .map(c => {
     const kind = (c.values.length === 1 && NUMERIC.has(c.keyword))
       ? 'number' as const
@@ -286,6 +344,15 @@ function buildChange (): TierChange {
   for (const line of addedConditions.value) {
     conditions[parseLine(line)!.keyword] = line
   }
+  for (const row of fbNum) {
+    const same = row.op === row.initialOp && (row.op === 'any' || row.value === row.initialValue)
+    if (same) continue
+    conditions[row.keyword] = (row.op === 'any' || !Number.isFinite(row.value)) ? null : `${row.keyword} ${row.op} ${row.value}`
+  }
+  for (const row of fbBool) {
+    if (row.state === row.initial) continue
+    conditions[row.keyword] = row.state === 'either' ? null : `${row.keyword} ${row.state === 'yes' ? 'True' : 'False'}`
+  }
   if (Object.keys(conditions).length) change.conditions = conditions
 
   if (added.value.length) change.addBaseTypes = [...added.value]
@@ -374,6 +441,16 @@ function save () {
   text-decoration: line-through;
   color: #666;
   cursor: pointer;
+}
+.seg {
+  background: #13235e;
+  border: 1px solid #2a4fa8;
+  color: #fff;
+  font-size: 0.8rem;
+  padding: 0.15rem 0.5rem;
+}
+.segOn {
+  background: #1b8fc1;
 }
 .input {
   background: #13235e;

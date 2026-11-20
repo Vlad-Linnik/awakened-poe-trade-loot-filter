@@ -4,7 +4,7 @@
 import { ITEM_BY_REF } from '@/assets/data'
 import type { FilterBlock } from './filter-parser'
 
-const NAMESPACES = ['ITEM', 'DIVINATION_CARD', 'GEM'] as const
+const NAMESPACES = ['ITEM', 'DIVINATION_CARD', 'GEM', 'UNIQUE'] as const
 
 // item data has placeholders like "%NOT_FOUND%" for some items: never use them as <img src>
 export function safeIcon (icon: string | null | undefined): string | null {
