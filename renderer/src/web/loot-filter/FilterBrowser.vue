@@ -36,11 +36,11 @@
                   </button>
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-1">
-                      <span :class="$style.tierName">{{ tierLabel(e.block) }}</span>
+                      <span :class="$style.tierName">{{ blockTierName(e.block, t) }}</span>
                       <i v-if="patchOf(e.block)" class="fas fa-pen text-blue-400 text-xs" :title="t(':tier_changed')"></i>
                       <span v-if="e.count" class="text-xs text-gray-500">{{ e.count }}</span>
                     </div>
-                    <div class="text-xs text-gray-500 truncate">{{ ruleTitle(e.block) }}</div>
+                    <div class="text-xs text-gray-500 truncate" :title="e.block.headerComment">{{ conditionHints(e.block, t).join(' · ') }}</div>
                     <div v-if="e.matchedItems.length" class="text-xs text-yellow-400 truncate">{{ e.matchedItems.join(', ') }}</div>
                   </div>
                   <span class="px-1.5 font-poe text-xs whitespace-nowrap overflow-hidden max-w-48" :style="chipStyle(e.block)">
@@ -72,7 +72,8 @@ import { blockText, type FilterBlock, type ParsedFilter } from './filter-parser'
 import { moveTargets } from './filter-edit'
 import { findBlock, selectorOf, type BlockSelector, type TierPatch } from './edits'
 import { styleFromActions, styleCss } from './style'
-import { iconForBlocks, sampleName, shapeGlyph, effectColor, tierLabel } from './fb'
+import { iconForBlocks, sampleName, shapeGlyph, effectColor } from './fb'
+import { blockTierName, conditionHints } from './names'
 import TierEditor, { type TierChange } from './TierEditor.vue'
 
 const props = defineProps<{
@@ -139,7 +140,7 @@ const sections = computed<Section[]>(() => {
     let matchedItems: string[] = []
     if (q) {
       matchedItems = items.filter(n => n.toLowerCase().includes(q))
-      const text = `${props.ruleTitle(block)} ${block.headerComment} ${block.section ?? ''} ${block.topSection ?? ''}`.toLowerCase()
+      const text = `${props.ruleTitle(block)} ${blockTierName(block, t)} ${block.headerComment} ${block.section ?? ''} ${block.topSection ?? ''}`.toLowerCase()
       if (!matchedItems.length && !text.includes(q)) continue
     }
     const top = block.topSection ?? '—'

@@ -51,7 +51,7 @@
                     <span v-if="matchedRule" class="px-1 rounded text-xs bg-purple-800 align-middle">APT</span>
                     <i v-if="patchOf(finalBlock)" class="fas fa-pen text-blue-400 text-xs align-middle" :title="t(':tier_changed')"></i>
                   </div>
-                  <div class="text-xs text-gray-400 truncate">{{ [finalBlock.topSection, finalBlock.section].filter((v, i, a) => v && a.indexOf(v) === i).join(' › ') }} · {{ t(':line', [finalBlock.startLine + 1]) }}</div>
+                  <div class="text-xs text-gray-400 truncate">{{ [...conditionHints(finalBlock, t), t(':line', [finalBlock.startLine + 1])].join(' · ') }}</div>
                 </div>
                 <button v-if="!matchedRule" :class="$style.fbBtn" @click="findInCustomizer(finalBlock)">{{ t(':fb_find') }} <i class="fas fa-arrow-right"></i></button>
               </div>
@@ -116,7 +116,7 @@
                       <span class="truncate text-sm" :title="ev.block.headerComment">{{ ruleOf(ev.block)?.label ?? ruleTitle(ev.block) }}</span>
                     </div>
                     <div class="text-xs text-yellow-500 truncate" :title="ev.unknown.map(c => c.raw.trim()).join(' · ')">
-                      {{ ev.unknown.length ? ev.unknown.map(c => c.raw.trim()).join(' · ') : t(':always') }}
+                      {{ ev.unknown.length ? (conditionHints({ ...ev.block, conditions: ev.unknown }, t).join(' · ') || ev.unknown.map(c => c.raw.trim()).join(' · ')) : t(':always') }}
                     </div>
                   </div>
                   <span class="px-1.5 font-poe text-xs whitespace-nowrap" :style="chipStyle(ev.block)">{{ item!.info.name }}</span>
@@ -258,6 +258,7 @@ import {
   type EditsStore, type FilterEdits, type FilterSource, type TierPatch, type BlockSelector
 } from './edits'
 import { iconForBlock } from './fb'
+import { blockTitle, conditionHints } from './names'
 import { styleFromActions, styleCss } from './style'
 import * as api from './api'
 
@@ -456,12 +457,9 @@ function visibilityClass (v: Visibility) {
   return v === 'Hide' ? 'bg-gray-700 text-gray-300' : v === 'Minimal' ? 'bg-yellow-900 text-yellow-100' : 'bg-green-800 text-green-100'
 }
 
+// readable name: "Supplies: Wisdom Stacking — Tier 1"
 function ruleTitle (block: FilterBlock) {
-  const { type, tier } = block.tags
-  if (type || tier) return [type, tier].filter(Boolean).join(' → ')
-  if (block.headerComment) return block.headerComment
-  const bt = block.conditions.find(c => c.keyword === 'BaseType' || c.keyword === 'Class')
-  return bt ? bt.raw.trim().slice(0, 60) : `#${block.index + 1}`
+  return blockTitle(block, t)
 }
 
 const previewStyle = computed(() => {
