@@ -332,6 +332,30 @@ export function addLootFilterRoutes (
         res.statusCode = 404
         res.end()
       })
+    } else if (req.method === 'GET' && url.pathname === '/loot-filter/builtin-sound') {
+      // built-in alert sounds 1..16 are inside the game archives; the files hosted by FilterBlade
+      // are downloaded on first use and kept in the app data (not shipped with the app)
+      (async () => {
+        const id = Number(url.searchParams.get('id'))
+        if (!Number.isInteger(id) || id < 1 || id > 16) throw new Error('bad id')
+        const dir = path.join(aptData, 'alert-sounds')
+        const file = path.join(dir, `AlertSound${id}.mp3`)
+        let data: Buffer
+        try {
+          data = await fs.readFile(file)
+        } catch {
+          const resp = await fetch(`https://www.filterblade.xyz/assets/sounds/AlertSound${id}.mp3`)
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+          data = Buffer.from(await resp.arrayBuffer())
+          await fs.mkdir(dir, { recursive: true })
+          await fs.writeFile(file, data)
+        }
+        res.setHeader('content-type', 'audio/mpeg')
+        res.end(data)
+      })().catch(() => {
+        res.statusCode = 404
+        res.end()
+      })
     } else if (req.method === 'GET' && url.pathname === '/loot-filter/stat') {
       respond(res, async () => {
         const stat = await fs.stat(url.searchParams.get('path')!)

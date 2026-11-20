@@ -522,7 +522,7 @@
     "hint_mods": "with mods",
     "hint_items": "items: {0}",
     "fb_play": "Play",
-    "fb_builtin_sound": "Built-in game sounds are inside the game archives and can't be played here. Custom sounds can.",
+    "fb_builtin_sound": "This sound can't be played here",
     "fb_no_sounds": "No audio files in the filter folder"
   }
 }

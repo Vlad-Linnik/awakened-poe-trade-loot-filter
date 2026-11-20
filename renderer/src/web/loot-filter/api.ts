@@ -77,6 +77,11 @@ export function soundUrl (name: string) {
   return `/loot-filter/sound?name=${encodeURIComponent(name)}`
 }
 
+// built-in game alert sound 1..16
+export function builtinSoundUrl (id: string) {
+  return `/loot-filter/builtin-sound?id=${encodeURIComponent(id)}`
+}
+
 export function openBackupsFolder () {
   return call<unknown>('/loot-filter/open-backups', { method: 'POST' })
 }

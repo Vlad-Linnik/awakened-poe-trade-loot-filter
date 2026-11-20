@@ -136,7 +136,7 @@ import {
   type RGBA
 } from './style'
 import { shapeGlyph, effectColor, sizeLetter } from './fb'
-import { listSounds, soundUrl } from './api'
+import { listSounds, soundUrl, builtinSoundUrl } from './api'
 
 const props = defineProps<{
   modelValue: FilterStyle
@@ -212,21 +212,27 @@ function setSoundKind (kind: string) {
   else setSound({ custom: null, positional: kind === 'pos' })
 }
 
-// built-in game sounds (1..16) are inside the game archives: they can't be played here
-const canPlay = computed(() => Boolean(style.value.sound?.custom))
+// custom files from the filter folder, or built-in sounds 1..16
+const soundSrc = computed(() => {
+  const snd = style.value.sound
+  if (!snd) return null
+  if (snd.custom != null) return snd.custom ? soundUrl(snd.custom) : null
+  return /^(1[0-6]|[1-9])$/.test(snd.id) ? builtinSoundUrl(snd.id) : null
+})
+const canPlay = computed(() => soundSrc.value != null)
 let audio: HTMLAudioElement | null = null
 function play () {
   const snd = style.value.sound
-  if (!snd?.custom) return
+  if (!snd || !soundSrc.value) return
   audio?.pause()
-  audio = new Audio(soundUrl(snd.custom))
+  audio = new Audio(soundSrc.value)
   // filter volume is 0..300
   audio.volume = Math.max(0, Math.min(1, snd.volume / 300))
   audio.play().catch(() => {})
 }
 // hear the change: a new file or volume (debounced while dragging the slider)
 let playTimer: ReturnType<typeof setTimeout> | null = null
-watch(() => [style.value.sound?.custom, style.value.sound?.volume], (now, before) => {
+watch(() => [style.value.sound?.custom, style.value.sound?.id, style.value.sound?.volume], (now, before) => {
   if (!canPlay.value || before === undefined) return
   if (playTimer) clearTimeout(playTimer)
   playTimer = setTimeout(play, 250)
