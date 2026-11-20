@@ -176,14 +176,40 @@
             @reset-blocks="resetBlocks" />
 
           <!-- all my edits for this filter -->
-          <details v-if="editsTotal" class="text-sm">
+          <details v-if="editsTotal" class="text-sm" @toggle="editsOpen = ($event.target as HTMLDetailsElement).open">
             <summary class="cursor-pointer text-gray-400">{{ t(':my_edits', [editsTotal]) }}</summary>
-            <div class="flex flex-col gap-1 mt-1">
-              <div v-for="e of editsList" :key="e.id" class="flex items-center gap-2 bg-gray-900 rounded px-2 py-1">
-                <span class="px-1 rounded text-xs" :class="e.badgeClass">{{ e.badge }}</span>
-                <span class="flex-1 truncate" :title="e.title">{{ e.label }}</span>
-                <i v-if="orphans.includes(e.id)" class="fas fa-exclamation-triangle text-yellow-400" :title="t(':orphan')"></i>
-                <button class="text-xs text-gray-400 hover:text-red-400" :disabled="busy" @click="removeEdit(e.id)"><i class="fas fa-times"></i></button>
+            <div v-if="editsOpen" class="flex flex-col gap-1 mt-1">
+              <div class="flex gap-2 items-center">
+                <div class="flex-1 min-w-0 flex items-center gap-1 rounded bg-gray-900 px-2 py-0.5">
+                  <i class="fas fa-search text-xs text-gray-500"></i>
+                  <input v-model.trim="changesSearch" :placeholder="t(':changes_search')"
+                    class="bg-transparent flex-1 min-w-0 text-xs outline-none">
+                  <button v-if="changesSearch" class="text-xs text-gray-500 hover:text-gray-300" @click="changesSearch = ''"><i class="fas fa-times"></i></button>
+                </div>
+                <button class="btn text-xs" :disabled="busy || !info.source" :title="t(':export_changes_hint')" @click="exportChanges">
+                  <i class="fas fa-download"></i> {{ t(':export_changes') }}
+                </button>
+              </div>
+              <div class="text-xs text-gray-500">
+                {{ changesSearch ? t(':changes_found', [changesShown.length, changes.length]) : t(':changes_hint') }}
+              </div>
+              <div v-for="{ entry: e, inTier } of changesShown" :key="e.id" class="bg-gray-900 rounded px-2 py-1">
+                <div class="flex items-center gap-2 cursor-pointer" @click="toggleChange(e.id)">
+                  <i class="fas text-xs text-gray-500 w-2" :class="openChanges.has(e.id) ? 'fa-caret-down' : 'fa-caret-right'"></i>
+                  <span class="px-1 rounded text-xs" :class="badgeClass(e)">{{ badgeOf(e.kind) }}</span>
+                  <span class="flex-1 truncate" :title="e.where ?? e.label">{{ e.label }}</span>
+                  <span class="text-xs text-gray-500 whitespace-nowrap">{{ formatTime(e.time) }}</span>
+                  <i v-if="e.orphan" class="fas fa-exclamation-triangle text-yellow-400" :title="t(':orphan')"></i>
+                  <button class="text-xs text-gray-400 hover:text-red-400" :disabled="busy" :title="t(':remove_change')" @click.stop="removeEdit(e.id)"><i class="fas fa-times"></i></button>
+                </div>
+                <div v-if="inTier.length" class="pl-4 text-xs text-yellow-500 truncate" :title="inTier.join('\n')">
+                  <i class="fas fa-search"></i> {{ inTierHint(inTier) }}
+                </div>
+                <div v-if="openChanges.has(e.id)" class="pl-4 pt-1 text-xs flex flex-col gap-0.5">
+                  <div v-if="e.where" class="text-gray-500">{{ t(':rep_where', [e.where]) }}</div>
+                  <div v-if="e.orphan" class="text-yellow-400">{{ t(':rep_orphan') }}</div>
+                  <div v-for="(d, idx) of e.details" :key="idx" class="whitespace-pre-wrap" :class="detailClass(d)">{{ d }}</div>
+                </div>
               </div>
             </div>
           </details>
@@ -257,6 +283,7 @@ import {
   buildCopy, copyName, copySourceVersion,
   type EditsStore, type FilterEdits, type FilterSource, type TierPatch, type BlockSelector
 } from './edits'
+import { describeChanges, searchChanges, renderReport, reportFileName, formatTime, badge, type ChangeEntry } from './changes-report'
 import { iconForBlock, safeIcon } from './fb'
 import { blockTitle, conditionHints } from './names'
 import { styleFromActions, styleCss } from './style'
@@ -469,37 +496,68 @@ const previewStyle = computed(() => {
   return styleCss(styleFromActions(actions), m.final.block.visibility === 'Hide')
 })
 
-// ---- edits list ----
+// ---- list of changes: what differs from the source filter ----
 
-const editsList = computed(() => {
-  const e = edits.value
-  return [
-    ...e.rules.map(r => ({
-      id: r.id, badge: r.visibility, badgeClass: visibilityClass(r.visibility), label: r.label, title: r.conditions.join('\n')
-    })),
-    ...e.patches.map(p => ({
-      id: p.id,
-      badge: t(':badge_tier'),
-      badgeClass: 'bg-blue-800',
-      label: p.label,
-      title: describePatch(p)
-    })),
-    ...e.moves.map(m => ({
-      id: m.id, badge: t(':badge_move'), badgeClass: 'bg-teal-800', label: m.label, title: m.label
-    }))
-  ]
+const editsOpen = ref(false)
+const changesSearch = ref('')
+const openChanges = ref(new Set<string>())
+
+// the source filter is parsed only when the list is open
+const sourceParsed = computed(() => {
+  const text = info.value?.source?.contents
+  return (editsOpen.value && text != null) ? parseFilter(text) : null
 })
 
-function describePatch (p: TierPatch) {
-  if (p.disabled) return t(':tier_disabled')
-  if (p.raw != null) return p.raw
-  return [
-    p.visibility ?? '',
-    ...Object.entries(p.conditions ?? {}).map(([k, v]) => v ?? `- ${k}`),
-    ...Object.entries(p.actions ?? {}).map(([k, v]) => v ?? `- ${k}`),
-    ...(p.addBaseTypes ?? []).map(bt => `+ ${bt}`),
-    ...(p.removeBaseTypes ?? []).map(bt => `- ${bt}`)
-  ].filter(Boolean).join('\n')
+const changes = computed<ChangeEntry[]>(() => {
+  if (!sourceParsed.value || !editsTotal.value) return []
+  return describeChanges(sourceParsed.value, edits.value, t)
+})
+
+const changesShown = computed(() => searchChanges(changes.value, changesSearch.value, t))
+
+// "в тире есть: The Doctor, House of Mirrors +3"
+function inTierHint (items: string[]) {
+  const list = items.slice(0, 3).join(', ') + (items.length > 3 ? ` +${items.length - 3}` : '')
+  return t(':changes_in_tier', [list])
+}
+
+function toggleChange (id: string) {
+  const set = new Set(openChanges.value)
+  if (set.has(id)) set.delete(id)
+  else set.add(id)
+  openChanges.value = set
+}
+
+function badgeOf (kind: ChangeEntry['kind']) {
+  return badge(kind, t)
+}
+
+function badgeClass (e: ChangeEntry) {
+  if (e.kind === 'tier') return 'bg-blue-800'
+  if (e.kind === 'move') return 'bg-teal-800'
+  const rule = edits.value.rules.find(r => r.id === e.id)
+  return visibilityClass(rule?.visibility ?? 'Show')
+}
+
+function detailClass (line: string) {
+  if (line.startsWith('+')) return 'text-green-400'
+  if (line.startsWith('-')) return 'text-red-400'
+  return 'text-gray-300'
+}
+
+async function exportChanges () {
+  const i = info.value
+  if (!i?.source) return
+  error.value = null
+  try {
+    const src = source.value!
+    const entries = describeChanges(parseFilter(i.source.contents), edits.value, t)
+    const text = renderReport({ source: src, sourceText: i.source.contents, entries, t })
+    const res = await api.exportChanges(reportFileName(src), text)
+    status.value = t(':export_done', [res.path])
+  } catch (e) {
+    error.value = (e as Error).message
+  }
 }
 
 // ---- writing ----

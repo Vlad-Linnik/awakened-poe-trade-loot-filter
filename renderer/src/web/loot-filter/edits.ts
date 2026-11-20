@@ -176,7 +176,8 @@ export function applyEdits (sourceText: string, edits: FilterEdits): { text: str
   return { text: lines.join(filter.eol), orphans }
 }
 
-function applyPatch (lines: string[], patch: TierPatch): string[] | null {
+// block lines after the patch; null = the block is disabled
+export function applyPatch (lines: string[], patch: TierPatch): string[] | null {
   if (patch.disabled) return null
   if (patch.raw != null) {
     return patch.raw.split(/\r?\n/)

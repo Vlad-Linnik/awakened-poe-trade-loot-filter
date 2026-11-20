@@ -82,6 +82,15 @@ export function builtinSoundUrl (id: string) {
   return `/loot-filter/builtin-sound?id=${encodeURIComponent(id)}`
 }
 
+// saves the text file to Downloads and opens it
+export function exportChanges (fileName: string, text: string) {
+  return call<{ path: string }>('/loot-filter/export-changes', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fileName, text })
+  })
+}
+
 export function openBackupsFolder () {
   return call<unknown>('/loot-filter/open-backups', { method: 'POST' })
 }

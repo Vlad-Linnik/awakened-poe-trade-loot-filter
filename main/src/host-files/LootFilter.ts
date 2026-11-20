@@ -282,6 +282,24 @@ export function addLootFilterRoutes (
     return { path: target, mtime: stat.mtimeMs }
   }
 
+  async function exportChanges (body: { fileName: string, text: string }) {
+    if (typeof body.text !== 'string' || typeof body.fileName !== 'string') throw new Error('Bad request')
+    // only a plain file name, always .txt
+    let name = path.basename(body.fileName).replace(/[<>:"/\\|?*\x00-\x1f]/g, '').trim()
+    if (!name.toLowerCase().endsWith('.txt')) name += '.txt'
+    if (name === '.txt') name = 'APT changes.txt'
+    const dir = app.getPath('downloads')
+    await fs.mkdir(dir, { recursive: true })
+    const target = path.join(dir, name)
+    // BOM: Notepad and other editors detect UTF-8 (item names, Russian text)
+    await fs.writeFile(target, '﻿' + body.text, 'utf-8')
+    logger.write(`info [LootFilter] Saved the list of changes "${target}".`)
+    const { shell } = await import('electron')
+    shell.showItemInFolder(target)
+    await shell.openPath(target)
+    return { path: target }
+  }
+
   async function pruneBackups () {
     const files = (await fs.readdir(backupsPath)).sort()
     for (const file of files.slice(0, Math.max(0, files.length - MAX_BACKUPS))) {
@@ -366,6 +384,11 @@ export function addLootFilterRoutes (
     } else if (req.method === 'POST' && url.pathname === '/loot-filter/rules') {
       readJson(req)
         .then(body => respond(res, () => saveRules(body)))
+        .catch(e => respond(res, () => Promise.reject(e)))
+    } else if (req.method === 'POST' && url.pathname === '/loot-filter/export-changes') {
+      // list of the user's changes: saved to Downloads and opened in the default text editor
+      readJson(req)
+        .then(body => respond(res, () => exportChanges(body as { fileName: string, text: string })))
         .catch(e => respond(res, () => Promise.reject(e)))
     } else if (req.method === 'POST' && url.pathname === '/loot-filter/open-backups') {
       respond(res, async () => {
