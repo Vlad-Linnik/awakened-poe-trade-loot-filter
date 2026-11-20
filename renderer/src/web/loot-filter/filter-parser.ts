@@ -22,7 +22,8 @@ export interface FilterBlock {
   endLine: number // exclusive
   headerComment: string
   tags: Record<string, string> // NeverSink: `$type->divination $tier->t1`
-  section: string | null // nearest section title above the block
+  section: string | null // nearest section title above the block (subsection if any)
+  topSection: string | null // top level section: `[[4100]] Divination Cards` -> "Divination Cards"
   conditions: FilterLine[]
   actions: FilterLine[]
   continue: boolean
@@ -53,6 +54,7 @@ export function parseFilter (text: string): ParsedFilter {
 
   let current: FilterBlock | null = null
   let lastSection: string | null = null
+  let lastTop: string | null = null
   let lastContentLine = -1
 
   const finish = () => {
@@ -81,6 +83,7 @@ export function parseFilter (text: string): ParsedFilter {
         headerComment,
         tags: parseTags(headerComment),
         section: lastSection,
+        topSection: lastTop,
         conditions: [],
         actions: [],
         continue: false
@@ -93,7 +96,12 @@ export function parseFilter (text: string): ParsedFilter {
       const title = sectionTitle(trimmed)
       if (title) {
         finish()
-        lastSection = title
+        if (title.top) {
+          lastTop = title.text
+          lastSection = title.text
+        } else {
+          lastSection = title.text
+        }
       }
       continue
     }
@@ -190,13 +198,15 @@ function parseTags (comment: string): Record<string, string> {
   return tags
 }
 
-// NeverSink / FilterBlade style headers: `# [[4200]] Divination Cards` or `#   [4201] Divination Cards`
-function sectionTitle (comment: string): string | null {
-  const m = /^#\s*\[\[?(\d+)\]?\]\s*(.+?)\s*$/.exec(comment)
-  if (m) return `[${m[1]}] ${m[2]}`
-  // NeverSink: `# !! Waypoint c9.divination.t4 : "Tierlist - Cards - T4, T4c and lower" : "Divination Cards"`
+// NeverSink / FilterBlade style headers: `# [[4100]] Divination Cards` (top level),
+// `#   [4101] Divination Cards` or `# !! Waypoint c9.divination.t4 : "Tierlist - Cards - T4" : ...` (subsections)
+function sectionTitle (comment: string): { top: boolean, text: string } | null {
+  const top = /^#\s*\[\[(\d+)\]\]\s*(.+?)\s*$/.exec(comment)
+  if (top) return { top: true, text: top[2] }
+  const sub = /^#\s*\[(\d+)\]\s*(.+?)\s*$/.exec(comment)
+  if (sub) return { top: false, text: sub[2] }
   const wp = /^#\s*!!\s*Waypoint\s+\S+\s*:\s*"([^"]+)"/.exec(comment)
-  if (wp) return wp[1]
+  if (wp) return { top: false, text: wp[1] }
   return null
 }
 

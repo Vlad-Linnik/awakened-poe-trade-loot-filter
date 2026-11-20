@@ -1,11 +1,14 @@
 <template>
   <Widget :config="{ ...config, anchor }" move-handles="none" :removable="false" :inline-edit="false">
-    <div class="bg-gray-800 text-gray-200 rounded shadow-lg border border-gray-900 flex flex-col"
-      :style="mode === 'browse' ? 'width: 64rem; max-width: 96vw; height: 88vh;' : 'width: 31rem; max-height: 92vh;'">
+    <div :class="$style.window" class="text-gray-200 shadow-lg flex flex-col"
+      :style="mode === 'browse' ? 'width: 64rem; max-width: 96vw; height: 88vh;' : 'width: 36rem; max-width: 96vw; max-height: 92vh;'">
       <!-- header -->
-      <div class="px-3 py-2 bg-gray-900 rounded-t flex items-baseline gap-2">
+      <div :class="$style.titlebar" class="px-3 py-2 flex items-baseline gap-2">
         <span v-if="mode === 'browse'" class="font-bold truncate">{{ t(':browse_title') }}</span>
-        <span v-else class="font-bold truncate" :title="fItem?.baseType">{{ item?.info.name ?? '…' }}</span>
+        <template v-else>
+          <img v-if="item?.info.icon" :src="item.info.icon" class="w-6 h-6 object-contain self-center">
+          <span class="font-bold truncate font-poe" :title="fItem?.baseType">{{ item?.info.name ?? '…' }}</span>
+        </template>
         <span class="flex-1"></span>
         <span v-if="info" class="text-xs text-gray-500 truncate" :title="info.path">
           <i class="fas fa-filter"></i> {{ info.source?.name ?? info.name }}
@@ -35,45 +38,66 @@
           <div v-if="orphans.length" class="bg-yellow-900 text-yellow-100 rounded px-2 py-1 text-xs">{{ t(':orphans', [orphans.length]) }}</div>
 
           <template v-if="mode === 'item' && fItem && match">
-          <!-- rules affecting the item -->
           <div class="flex flex-col gap-2">
-            <div class="text-xs uppercase text-gray-500">{{ t(':matched_rule') }}</div>
             <div v-if="!finalBlock" class="text-gray-400">{{ t(':no_rule') }}</div>
 
-            <template v-for="entry of affecting" :key="entry.block.index">
-              <div class="rounded border p-2 flex flex-col gap-1"
-                :class="entry.role === 'final' ? 'border-gray-600' : 'border-gray-700 opacity-90'">
-                <div class="flex items-center gap-2">
-                  <span :class="visibilityClass(entry.block.visibility)" class="px-1.5 rounded text-xs font-bold">{{ entry.block.visibility }}</span>
-                  <span v-if="entry.rule" class="px-1 rounded text-xs bg-purple-800">APT</span>
-                  <span v-if="entry.patch" class="px-1 rounded text-xs bg-blue-800" :title="t(':tier_changed')"><i class="fas fa-pen"></i></span>
-                  <span class="text-sm truncate" :title="entry.block.headerComment">{{ entry.rule ? entry.rule.label : ruleTitle(entry.block) }}</span>
-                  <span class="flex-1"></span>
-                  <span v-if="entry.role === 'continue'" class="text-xs text-gray-500">Continue</span>
-                  <span class="text-xs text-gray-500 whitespace-nowrap">{{ t(':line', [entry.block.startLine + 1]) }}</span>
+            <!-- the rule that styles the item, like FilterBlade's Simulate -->
+            <div v-if="finalBlock" :class="$style.rule">
+              <div :class="$style.ruleHead">
+                <img v-if="finalIcon" :src="finalIcon" class="w-9 h-9 object-contain">
+                <div class="flex-1 min-w-0">
+                  <div class="font-poe text-lg text-white truncate" :title="finalBlock.headerComment">
+                    {{ matchedRule ? matchedRule.label : ruleTitle(finalBlock) }}
+                    <span v-if="matchedRule" class="px-1 rounded text-xs bg-purple-800 align-middle">APT</span>
+                    <i v-if="patchOf(finalBlock)" class="fas fa-pen text-blue-400 text-xs align-middle" :title="t(':tier_changed')"></i>
+                  </div>
+                  <div class="text-xs text-gray-400 truncate">{{ [finalBlock.topSection, finalBlock.section].filter((v, i, a) => v && a.indexOf(v) === i).join(' › ') }} · {{ t(':line', [finalBlock.startLine + 1]) }}</div>
                 </div>
-                <div v-if="entry.block.section && !entry.rule" class="text-xs text-gray-500 truncate">{{ entry.block.section }}</div>
-                <div v-if="entry.role === 'final'" class="self-start px-2 py-0.5 font-poe" :style="previewStyle">{{ item!.info.name }}</div>
-                <div v-if="entry.role === 'final' && match.final!.result === null" class="text-xs text-yellow-400">{{ t(':assumed') }}</div>
-                <div v-if="!entry.rule" class="flex gap-2">
-                  <button class="btn text-xs" :disabled="busy" @click="toggleEditor(`a${entry.block.index}`)">
-                    <i class="fas fa-sliders-h"></i> {{ t(':edit_tier') }}
-                  </button>
-                  <details class="flex-1 min-w-0">
-                    <summary class="text-xs text-gray-400 cursor-pointer">{{ t(':show_text') }}</summary>
-                    <pre class="text-xs bg-gray-900 rounded p-1 overflow-x-auto mt-1">{{ blockText(parsed, entry.block) }}</pre>
-                  </details>
-                </div>
+                <button v-if="!matchedRule" :class="$style.fbBtn" @click="findInCustomizer(finalBlock)">{{ t(':fb_find') }} <i class="fas fa-arrow-right"></i></button>
               </div>
-              <TierEditor v-if="editing === `a${entry.block.index}`"
-                :key="`editor-${entry.block.index}-${info.mtime}`"
-                :block="entry.block" :block-text="blockText(parsed, entry.block)"
-                :item-name="item!.info.name" :has-patch="Boolean(entry.patch)" :busy="busy"
-                :move-targets="moveTargets(parsed, entry.block)" :rule-title="ruleTitle" :highlight="fItem.baseType"
-                @move="(bt: string, to: FilterBlock) => moveBaseType(bt, entry.block, to)"
-                @save="saveTier(entry.block, $event)" @reset="resetTier(entry.block)"
-                @disable="disableTier(entry.block)" @close="editing = null" />
-            </template>
+              <div v-if="match.final!.result === null" class="text-xs text-yellow-400 px-2">{{ t(':assumed') }}</div>
+              <template v-if="matchedRule">
+                <div class="flex items-center gap-2 p-2">
+                  <span class="px-2 py-0.5 font-poe" :style="previewStyle">{{ item!.info.name }}</span>
+                  <span class="flex-1"></span>
+                  <button :class="$style.fbBtn" :disabled="busy" @click="removeRule(matchedRule.id)"><i class="fas fa-undo"></i> {{ t(':remove_override') }}</button>
+                </div>
+              </template>
+              <TierEditor v-else-if="!finalClosed"
+                :key="`editor-final-${finalBlock.index}-${info.mtime}`"
+                :block="finalBlock" :block-text="blockText(parsed, finalBlock)"
+                :item-name="item!.info.name" :has-patch="Boolean(patchOf(finalBlock))" :busy="busy"
+                :move-targets="moveTargets(parsed, finalBlock)" :rule-title="ruleTitle" :highlight="fItem.baseType"
+                @move="(bt: string, to: FilterBlock) => moveBaseType(bt, finalBlock!, to)"
+                @save="saveTier(finalBlock!, $event)" @reset="resetTier(finalBlock!)"
+                @disable="disableTier(finalBlock!)" @close="finalClosed = true" />
+              <div v-else class="flex items-center gap-2 p-2">
+                <span class="px-2 py-0.5 font-poe" :style="previewStyle">{{ item!.info.name }}</span>
+                <span class="flex-1"></span>
+                <button :class="$style.fbBtn" @click="finalClosed = false"><i class="fas fa-sliders-h"></i> {{ t(':edit_tier') }}</button>
+              </div>
+            </div>
+
+            <!-- Continue rules = FilterBlade's "Decorators" -->
+            <div v-if="match.continued.length" class="flex flex-col gap-1">
+              <div class="text-center font-poe text-base text-white">{{ t(':fb_decorators') }}</div>
+              <template v-for="ev of match.continued" :key="ev.block.index">
+                <div :class="$style.decorator">
+                  <span class="px-1.5 font-poe text-xs whitespace-nowrap" :style="chipStyle(ev.block)">{{ item!.info.name }}</span>
+                  <span class="flex-1 truncate text-sm" :title="ev.block.headerComment">{{ ruleTitle(ev.block) }}</span>
+                  <i v-if="patchOf(ev.block)" class="fas fa-pen text-blue-400 text-xs"></i>
+                  <button :class="$style.fbBtn" :title="t(':edit_tier')" @click="toggleEditor(`d${ev.block.index}`)"><i class="fas fa-sliders-h"></i></button>
+                </div>
+                <TierEditor v-if="editing === `d${ev.block.index}`"
+                  :key="`editor-d${ev.block.index}-${info.mtime}`"
+                  :block="ev.block" :block-text="blockText(parsed, ev.block)"
+                  :item-name="item!.info.name" :has-patch="Boolean(patchOf(ev.block))" :busy="busy"
+                  :move-targets="moveTargets(parsed, ev.block)" :rule-title="ruleTitle" :highlight="fItem.baseType"
+                  @move="(bt: string, to: FilterBlock) => moveBaseType(bt, ev.block, to)"
+                  @save="saveTier(ev.block, $event)" @reset="resetTier(ev.block)"
+                  @disable="disableTier(ev.block)" @close="editing = null" />
+              </template>
+            </div>
 
             <!-- other rules for this kind of item: other stack sizes, area levels -->
             <details v-if="related.length" class="flex flex-col gap-1 mt-1" :open="related.length <= 8">
@@ -145,10 +169,11 @@
           </template>
 
           <!-- the whole filter, like FilterBlade -->
-          <FilterBrowser v-if="mode === 'browse'" style="height: 66vh;"
-            :parsed="parsed" :mtime="info.mtime" :busy="busy"
+          <FilterBrowser v-if="mode === 'browse'" style="height: 70vh;"
+            :parsed="parsed" :mtime="info.mtime" :busy="busy" :focus="browseFocus"
             :patch-of="patchOf" :rule-title="ruleTitle" :is-apt-rule="(b) => Boolean(ruleOf(b))"
-            @save="saveTier" @reset="resetTier" @disable="disableTier" @move="moveBaseType" />
+            @save="saveTier" @reset="resetTier" @disable="disableTier" @move="moveBaseType"
+            @reset-blocks="resetBlocks" />
 
           <!-- all my edits for this filter -->
           <details v-if="editsTotal" class="text-sm">
@@ -228,10 +253,11 @@ import { matchItem, relatedBlocks } from './matcher'
 import { moveTargets } from './filter-edit'
 import { ruleForItem, itemConditions, ruleIdOfBlock, isRuleBlock, onlineVersion, type AptRule } from './apt-rules'
 import {
-  emptyEdits, editsCount, normalizeStore, storeKey as storeKeyOf, newId, selectorOf, patchForBlock,
+  emptyEdits, editsCount, normalizeStore, storeKey as storeKeyOf, newId, selectorOf, patchForBlock, findBlock,
   buildCopy, copyName, copySourceVersion,
-  type EditsStore, type FilterEdits, type FilterSource, type TierPatch
+  type EditsStore, type FilterEdits, type FilterSource, type TierPatch, type BlockSelector
 } from './edits'
+import { iconForBlock } from './fb'
 import { styleFromActions, styleCss } from './style'
 import * as api from './api'
 
@@ -261,6 +287,9 @@ const moveTarget = ref<number | null>(null)
 const pendingCommand = ref<string | null>(null)
 // 'item': rules of the item under cursor; 'browse': the whole filter
 const mode = ref<'item' | 'browse'>('item')
+// the editor of the rule that styles the item is open unless closed
+const finalClosed = ref(false)
+const browseFocus = shallowRef<{ selector: BlockSelector, item?: string } | null>(null)
 
 MainProcess.onEvent('MAIN->CLIENT::item-text', (e) => {
   if (e.target !== 'loot-filter') return
@@ -269,6 +298,8 @@ MainProcess.onEvent('MAIN->CLIENT::item-text', (e) => {
   if (!res.isOk()) return
   checkPosition.value = e.position
   mode.value = 'item'
+  finalClosed.value = false
+  browseFocus.value = null
   relatedSearch.value = ''
   relatedShowAll.value = false
   item.value = res.value
@@ -285,6 +316,7 @@ MainProcess.onEvent('MAIN->CLIENT::item-text', (e) => {
 MainProcess.onEvent('MAIN->CLIENT::widget-action', (e) => {
   if (e.target !== 'loot-filter-browse') return
   mode.value = 'browse'
+  browseFocus.value = null
   item.value = null
   assumed.value = new Set()
   history.value = []
@@ -394,6 +426,13 @@ const relatedShown = computed(() => relatedShowAll.value ? relatedFiltered.value
 
 function chipStyle (block: FilterBlock) {
   return { ...styleCss(styleFromActions(block.actions), block.visibility === 'Hide'), fontSize: '0.75rem', borderWidth: '1px' }
+}
+
+const finalIcon = computed(() => finalBlock.value ? (iconForBlock(finalBlock.value) ?? item.value?.info.icon ?? null) : null)
+
+function findInCustomizer (block: FilterBlock) {
+  browseFocus.value = { selector: selectorOf(block), item: fItem.value?.baseType }
+  mode.value = 'browse'
 }
 
 const matchedRule = computed(() => finalBlock.value ? ruleOf(finalBlock.value) : null)
@@ -595,6 +634,20 @@ function mergeItemLists (old: TierPatch | undefined, change: TierChange) {
   return { addBaseTypes: add.length ? add : undefined, removeBaseTypes: remove.length ? remove : undefined }
 }
 
+// FilterBlade's RESET of a category: drop my changes of these tiers
+function resetBlocks (blocks: FilterBlock[]) {
+  const indexes = new Set(blocks.map(b => b.index))
+  const inSet = (sel: BlockSelector) => {
+    const b = findBlock(parsed.value!, sel)
+    return b != null && indexes.has(b.index)
+  }
+  return withEdits(e => ({
+    ...e,
+    patches: e.patches.filter(p => !inSet(p.selector)),
+    moves: e.moves.filter(m => !inSet(m.to))
+  }), t(':done_tier_reset'))
+}
+
 function resetTier (block: FilterBlock) {
   const old = patchOf(block)
   if (!old) return
@@ -725,3 +778,51 @@ const anchor = computed(() => {
   }
 })
 </script>
+
+<style lang="postcss" module>
+.window {
+  background: #05081a;
+  border: 1px solid #2a3470;
+}
+.titlebar {
+  background: #0a0f3a;
+  border-bottom: 1px solid #2a3470;
+}
+.rule {
+  background: #000;
+  border: 1px solid #2a4fa8;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-bottom: 0.4rem;
+}
+.ruleHead {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.6rem;
+  background: #0d1a5a;
+  border-left: 3px solid #1b8fc1;
+}
+.fbBtn {
+  background: #0b2a6e;
+  border: 1px solid #2a4fa8;
+  color: #fff;
+  font-size: 0.8rem;
+  padding: 0.2rem 0.6rem;
+  white-space: nowrap;
+}
+.fbBtn:hover:not(:disabled) {
+  background: #1d3787;
+}
+.fbBtn:disabled {
+  opacity: 0.5;
+}
+.decorator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background: #0d1a5a;
+}
+</style>
