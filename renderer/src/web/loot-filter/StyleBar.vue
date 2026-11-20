@@ -22,7 +22,7 @@
           {{ previewName }}
         </div>
         <div class="flex items-center gap-1 w-full">
-          <input type="range" min="18" max="45" :value="style.fontSize ?? 32" class="flex-1 min-w-0"
+          <input type="range" min="18" max="45" :value="style.fontSize ?? 32" class="flex-1" style="min-width: 5rem;"
             @input="update({ fontSize: Number(($event.target as HTMLInputElement).value) })">
           <span :class="$style.num">{{ style.fontSize ?? '—' }}</span>
         </div>
@@ -85,9 +85,11 @@
           <option v-if="!/^\d+$/.test(style.sound.id)" :value="style.sound.id">{{ style.sound.id }}</option>
           <option v-for="n in 16" :key="n" :value="String(n)">{{ n }}</option>
         </select>
-        <span class="whitespace-nowrap">{{ t(':volume') }}: {{ style.sound.volume }}</span>
-        <input type="range" min="0" max="300" :value="style.sound.volume" class="flex-1 min-w-0"
-          @input="setSound({ volume: Number(($event.target as HTMLInputElement).value) })">
+        <div class="flex items-center gap-1" style="flex: 1 1 11rem; min-width: 11rem;">
+          <span class="whitespace-nowrap">{{ t(':volume') }}: {{ style.sound.volume }}</span>
+          <input type="range" min="0" max="300" :value="style.sound.volume" class="flex-1" style="min-width: 5rem;"
+            @input="setSound({ volume: Number(($event.target as HTMLInputElement).value) })">
+        </div>
       </template>
       <button :class="[$style.toggle, { [$style.on]: style.dropSound }]" @click="update({ dropSound: !style.dropSound })">
         <i class="far" :class="style.dropSound ? 'fa-check-square' : 'fa-square'"></i> {{ t(':fb_drop') }}

@@ -16,7 +16,7 @@
 
       <!-- FilterBlade's common conditions: item level, area level, corrupted, identified -->
       <div :class="$style.items" class="flex flex-col gap-1">
-        <div v-for="row of fbNum" :key="row.keyword" class="flex items-center gap-2">
+        <div v-for="row of fbNum" :key="row.keyword" class="flex flex-wrap items-center gap-2">
           <span class="w-24">• {{ row.keyword }}:</span>
           <select v-model="row.op" :class="$style.input" class="w-28">
             <option v-for="op of NUM_OPS" :key="op.op" :value="op.op">{{ op.label }}</option>
@@ -24,7 +24,7 @@
           <input v-model.number="row.value" type="number" min="1" max="100" :disabled="row.op === 'any'"
             :class="$style.input" class="w-14">
           <input v-model.number="row.value" type="range" min="1" max="100" :disabled="row.op === 'any'"
-            class="flex-1 min-w-0" :class="{ 'opacity-40': row.op === 'any' }">
+            class="flex-1" style="min-width: 5rem;" :class="{ 'opacity-40': row.op === 'any' }">
         </div>
         <div v-for="row of fbBool" :key="row.keyword" class="flex justify-center">
           <button v-for="opt of (['yes', 'no', 'either'] as const)" :key="opt"
