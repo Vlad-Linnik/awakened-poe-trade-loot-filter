@@ -9,7 +9,8 @@ export interface FilterStyle {
   text: RGBA | null
   border: RGBA | null
   background: RGBA | null
-  sound: { id: string, volume: number, positional: boolean } | null
+  // built-in sound (id 1..16 or a name) or a custom sound file from the filter folder
+  sound: { id: string, volume: number, positional: boolean, custom?: string | null, optional?: boolean } | null
   // the item drop sound (off = DisableDropSound)
   dropSound: boolean
   minimap: { size: number, color: string, shape: string } | null
@@ -18,7 +19,8 @@ export interface FilterStyle {
 
 export const STYLE_KEYWORDS = [
   'SetFontSize', 'SetTextColor', 'SetBorderColor', 'SetBackgroundColor',
-  'PlayAlertSound', 'PlayAlertSoundPositional', 'DisableDropSound', 'MinimapIcon', 'PlayEffect'
+  'PlayAlertSound', 'PlayAlertSoundPositional', 'CustomAlertSound', 'CustomAlertSoundOptional',
+  'DisableDropSound', 'MinimapIcon', 'PlayEffect'
 ] as const
 
 export const EFFECT_COLORS = ['Red', 'Green', 'Blue', 'Brown', 'White', 'Yellow', 'Cyan', 'Grey', 'Orange', 'Pink', 'Purple']
@@ -43,6 +45,16 @@ export function styleFromActions (actions: FilterLine[]): FilterStyle {
       case 'PlayAlertSoundPositional':
         style.sound = { id: v[0] ?? '1', volume: v[1] != null ? Number(v[1]) : 300, positional: a.keyword === 'PlayAlertSoundPositional' }
         break
+      case 'CustomAlertSound':
+      case 'CustomAlertSoundOptional':
+        style.sound = {
+          id: '1',
+          volume: v[1] != null ? Number(v[1]) : 300,
+          positional: false,
+          custom: v[0] ?? '',
+          optional: a.keyword === 'CustomAlertSoundOptional'
+        }
+        break
       case 'DisableDropSound': style.dropSound = false; break
       case 'MinimapIcon':
         if (v[0] !== '-1') style.minimap = { size: Number(v[0]), color: v[1] ?? 'White', shape: v[2] ?? 'Circle' }
@@ -62,8 +74,10 @@ export function styleToActions (style: FilterStyle): Record<string, string | nul
     SetTextColor: style.text ? `SetTextColor ${rgbaStr(style.text)}` : null,
     SetBorderColor: style.border ? `SetBorderColor ${rgbaStr(style.border)}` : null,
     SetBackgroundColor: style.background ? `SetBackgroundColor ${rgbaStr(style.background)}` : null,
-    PlayAlertSound: (style.sound && !style.sound.positional) ? `PlayAlertSound ${style.sound.id} ${clamp(Math.round(style.sound.volume), 0, 300)}` : null,
-    PlayAlertSoundPositional: (style.sound?.positional) ? `PlayAlertSoundPositional ${style.sound.id} ${clamp(Math.round(style.sound.volume), 0, 300)}` : null,
+    PlayAlertSound: (style.sound && !style.sound.custom && !style.sound.positional) ? `PlayAlertSound ${style.sound.id} ${clamp(Math.round(style.sound.volume), 0, 300)}` : null,
+    PlayAlertSoundPositional: (style.sound && !style.sound.custom && style.sound.positional) ? `PlayAlertSoundPositional ${style.sound.id} ${clamp(Math.round(style.sound.volume), 0, 300)}` : null,
+    CustomAlertSound: (style.sound?.custom && !style.sound.optional) ? `CustomAlertSound "${style.sound.custom}" ${clamp(Math.round(style.sound.volume), 0, 300)}` : null,
+    CustomAlertSoundOptional: (style.sound?.custom && style.sound.optional) ? `CustomAlertSoundOptional "${style.sound.custom}" ${clamp(Math.round(style.sound.volume), 0, 300)}` : null,
     DisableDropSound: style.dropSound ? null : 'DisableDropSound',
     MinimapIcon: style.minimap ? `MinimapIcon ${style.minimap.size} ${style.minimap.color} ${style.minimap.shape}` : null,
     PlayEffect: style.effect ? `PlayEffect ${style.effect.color}${style.effect.temp ? ' Temp' : ''}` : null

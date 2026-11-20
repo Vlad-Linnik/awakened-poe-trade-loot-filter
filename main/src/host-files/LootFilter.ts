@@ -310,6 +310,28 @@ export function addLootFilterRoutes (
       readJson(req)
         .then(body => respond(res, () => saveFilter(body as Parameters<typeof saveFilter>[0])))
         .catch(e => respond(res, () => Promise.reject(e)))
+    } else if (req.method === 'GET' && url.pathname === '/loot-filter/sounds') {
+      // custom alert sounds: audio files in the filter folder
+      respond(res, async () => {
+        const configFile = await findGameConfigFile()
+        if (!configFile) return []
+        const entries = await fs.readdir(path.dirname(configFile))
+        return entries.filter(name => SOUND_EXT.test(name)).sort((a, b) => a.localeCompare(b))
+      })
+    } else if (req.method === 'GET' && url.pathname === '/loot-filter/sound') {
+      (async () => {
+        const configFile = await findGameConfigFile()
+        const name = url.searchParams.get('name') ?? ''
+        // only a file name from the filter folder
+        if (!configFile || !name || name !== path.basename(name) || !SOUND_EXT.test(name)) throw new Error('bad name')
+        const filePath = path.join(path.dirname(configFile), name)
+        const data = await fs.readFile(filePath)
+        res.setHeader('content-type', soundType(name))
+        res.end(data)
+      })().catch(() => {
+        res.statusCode = 404
+        res.end()
+      })
     } else if (req.method === 'GET' && url.pathname === '/loot-filter/stat') {
       respond(res, async () => {
         const stat = await fs.stat(url.searchParams.get('path')!)
@@ -367,6 +389,13 @@ function readJson (req: IncomingMessage): Promise<unknown> {
 function headerValue (contents: string, key: string): string | null {
   const m = new RegExp(`^#${key}:(.*)$`, 'm').exec(contents.slice(0, 2000))
   return m ? m[1].trim() : null
+}
+
+const SOUND_EXT = /\.(mp3|wav|ogg|mpeg|flac|m4a)$/i
+
+function soundType (name: string) {
+  const ext = name.toLowerCase().split('.').pop()
+  return ext === 'wav' ? 'audio/wav' : ext === 'ogg' ? 'audio/ogg' : ext === 'flac' ? 'audio/flac' : ext === 'm4a' ? 'audio/mp4' : 'audio/mpeg'
 }
 
 function stripBom (text: string) {

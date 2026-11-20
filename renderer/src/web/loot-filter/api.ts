@@ -68,6 +68,15 @@ export function saveRules (rules: unknown) {
   })
 }
 
+// audio files in the filter folder (for CustomAlertSound)
+export function listSounds () {
+  return call<string[]>('/loot-filter/sounds')
+}
+
+export function soundUrl (name: string) {
+  return `/loot-filter/sound?name=${encodeURIComponent(name)}`
+}
+
 export function openBackupsFolder () {
   return call<unknown>('/loot-filter/open-backups', { method: 'POST' })
 }

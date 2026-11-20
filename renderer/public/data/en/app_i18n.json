@@ -520,6 +520,9 @@
     "hint_synthesised": "synthesised",
     "hint_influence": "influence: {0}",
     "hint_mods": "with mods",
-    "hint_items": "items: {0}"
+    "hint_items": "items: {0}",
+    "fb_play": "Play",
+    "fb_builtin_sound": "Built-in game sounds are inside the game archives and can't be played here. Custom sounds can.",
+    "fb_no_sounds": "No audio files in the filter folder"
   }
 }

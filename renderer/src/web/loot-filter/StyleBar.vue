@@ -38,7 +38,7 @@
         </button>
         <button :class="$style.btn" :disabled="!clipboard" @click="paste">{{ t(':fb_paste') }}</button>
         <button :class="[$style.btn, { [$style.on]: panel === 'sound', [$style.active]: style.sound }]" @click="togglePanel('sound')">
-          <template v-if="style.sound"><i class="fas fa-volume-up"></i> {{ style.sound.id }}</template>
+          <template v-if="style.sound"><i class="fas fa-volume-up"></i> {{ style.sound.custom != null ? '♪' : style.sound.id }}</template>
           <template v-else>{{ t(':fb_sound') }}</template>
         </button>
         <button :class="$style.btn" @click="emit('update:modelValue', clone(initial))">{{ t(':fb_reset') }}</button>
@@ -76,15 +76,23 @@
         <i class="far" :class="style.sound ? 'fa-check-square' : 'fa-square'"></i> {{ t(':sound') }}
       </button>
       <template v-if="style.sound">
-        <select :class="$style.select" :value="style.sound.positional ? 'pos' : 'normal'"
-          @change="setSound({ positional: ($event.target as HTMLSelectElement).value === 'pos' })">
+        <select :class="$style.select" :value="soundKind" @change="setSoundKind(($event.target as HTMLSelectElement).value)">
           <option value="normal">Normal</option>
           <option value="pos">Positional</option>
+          <option value="custom">Custom</option>
         </select>
-        <select :class="$style.select" :value="style.sound.id" @change="setSound({ id: ($event.target as HTMLSelectElement).value })">
+        <select v-if="style.sound.custom == null" :class="$style.select" :value="style.sound.id" @change="setSound({ id: ($event.target as HTMLSelectElement).value })">
           <option v-if="!/^\d+$/.test(style.sound.id)" :value="style.sound.id">{{ style.sound.id }}</option>
           <option v-for="n in 16" :key="n" :value="String(n)">{{ n }}</option>
         </select>
+        <select v-else :class="$style.select" class="max-w-48" :value="style.sound.custom" @change="setSound({ custom: ($event.target as HTMLSelectElement).value })">
+          <option v-if="style.sound.custom && !soundFiles.includes(style.sound.custom)" :value="style.sound.custom">{{ style.sound.custom }}</option>
+          <option v-if="!soundFiles.length && !style.sound.custom" value="" disabled>{{ t(':fb_no_sounds') }}</option>
+          <option v-for="f of soundFiles" :key="f" :value="f">{{ f }}</option>
+        </select>
+        <button :class="$style.btn" :disabled="!canPlay" :title="canPlay ? t(':fb_play') : t(':fb_builtin_sound')" @click="play">
+          <i class="fas fa-play"></i>
+        </button>
         <div class="flex items-center gap-1" style="flex: 1 1 11rem; min-width: 11rem;">
           <span class="whitespace-nowrap">{{ t(':volume') }}: {{ style.sound.volume }}</span>
           <input type="range" min="0" max="300" :value="style.sound.volume" class="flex-1" style="min-width: 5rem;"
@@ -121,13 +129,14 @@ let clipboardStyle: FilterStyle | null = null
 </script>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18nNs } from '@/web/i18n'
 import {
   styleCss, toHex, fromHex, EFFECT_COLORS, ICON_SHAPES, DEFAULT_TEXT, DEFAULT_BACKGROUND,
   type RGBA
 } from './style'
 import { shapeGlyph, effectColor, sizeLetter } from './fb'
+import { listSounds, soundUrl } from './api'
 
 const props = defineProps<{
   modelValue: FilterStyle
@@ -186,6 +195,43 @@ function setSound (patch: Partial<NonNullable<FilterStyle['sound']>>) {
 function setEffect (patch: Partial<NonNullable<FilterStyle['effect']>>) {
   update({ effect: { ...style.value.effect!, ...patch } })
 }
+
+// ---- sound preview: custom sounds are files in the filter folder ----
+
+const soundFiles = ref<string[]>([])
+listSounds().then(files => { soundFiles.value = files }).catch(() => {})
+
+const soundKind = computed(() => {
+  const snd = style.value.sound
+  if (!snd) return 'normal'
+  return snd.custom != null ? 'custom' : snd.positional ? 'pos' : 'normal'
+})
+function setSoundKind (kind: string) {
+  const snd = style.value.sound!
+  if (kind === 'custom') setSound({ custom: snd.custom ?? soundFiles.value[0] ?? '', positional: false })
+  else setSound({ custom: null, positional: kind === 'pos' })
+}
+
+// built-in game sounds (1..16) are inside the game archives: they can't be played here
+const canPlay = computed(() => Boolean(style.value.sound?.custom))
+let audio: HTMLAudioElement | null = null
+function play () {
+  const snd = style.value.sound
+  if (!snd?.custom) return
+  audio?.pause()
+  audio = new Audio(soundUrl(snd.custom))
+  // filter volume is 0..300
+  audio.volume = Math.max(0, Math.min(1, snd.volume / 300))
+  audio.play().catch(() => {})
+}
+// hear the change: a new file or volume (debounced while dragging the slider)
+let playTimer: ReturnType<typeof setTimeout> | null = null
+watch(() => [style.value.sound?.custom, style.value.sound?.volume], (now, before) => {
+  if (!canPlay.value || before === undefined) return
+  if (playTimer) clearTimeout(playTimer)
+  playTimer = setTimeout(play, 250)
+})
+onBeforeUnmount(() => audio?.pause())
 
 function togglePanel (p: 'icon' | 'sound' | 'beam') {
   panel.value = panel.value === p ? null : p
