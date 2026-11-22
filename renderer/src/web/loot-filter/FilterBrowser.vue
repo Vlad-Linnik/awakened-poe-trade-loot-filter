@@ -55,6 +55,9 @@
                   :block="e.block" :block-text="blockText(parsed, e.block)"
                   :item-name="highlight ?? sampleName(e.block)" :has-patch="Boolean(patchOf(e.block))" :busy="busy"
                   :move-targets="moveTargets(parsed, e.block)" :rule-title="ruleTitle" :highlight="highlight ?? undefined"
+                  :hidden-items="hiddenItems"
+                  @hide-item="emit('hide-item', $event, e.block)" @unhide-item="emit('unhide-item', $event)"
+                  @unsaved="emit('unsaved', e.block, $event)"
                   @move="(bt: string, to: FilterBlock) => emit('move', bt, e.block, to)"
                   @save="emit('save', e.block, $event)" @reset="emit('reset', e.block)"
                   @disable="emit('disable', e.block)" @close="selectedSel = null" />
@@ -89,13 +92,17 @@ const props = defineProps<{
   isAptRule: (block: FilterBlock) => boolean
   // open this tier (e.g. "Find in Customizer" from an item)
   focus?: { selector: BlockSelector, item?: string } | null
+  // base types hidden by APT rules
+  hiddenItems: string[]
 }>()
 
 const emit = defineEmits<{
-  (e: 'save', block: FilterBlock, change: TierChange): void
+  (e: 'save' | 'unsaved', block: FilterBlock, change: TierChange): void
   (e: 'reset' | 'disable', block: FilterBlock): void
   (e: 'reset-blocks', blocks: FilterBlock[]): void
   (e: 'move', baseType: string, from: FilterBlock, to: FilterBlock): void
+  (e: 'hide-item', baseType: string, block: FilterBlock): void
+  (e: 'unhide-item', baseType: string): void
 }>()
 
 const { t } = useI18nNs('loot_filter')

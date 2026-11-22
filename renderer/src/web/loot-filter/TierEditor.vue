@@ -8,7 +8,7 @@
             @click="visibility = visibility === 'Show' ? 'Hide' : 'Show'">
             {{ visibility === 'Show' ? t(':vis_show') : t(':vis_hide') }}
           </button>
-          <button :class="$style.btn" :disabled="busy" @click="emit('disable')">{{ t(':fb_disable') }}</button>
+          <button :class="$style.btn" :disabled="busy" @click="leave('disable')">{{ t(':fb_disable') }}</button>
         </div>
         <StyleBar class="flex-1 min-w-0" v-model="style" :initial="initial"
           :preview-name="itemName" :hidden="visibility === 'Hide'" />
@@ -45,13 +45,18 @@
           <span v-for="name of visibleItems" :key="name" :class="[$style.chip, {
             [$style.chipSel]: name === selectedItem,
             [$style.chipHl]: name === highlight,
-            [$style.chipNew]: added.includes(name)
+            [$style.chipNew]: added.includes(name),
+            [$style.chipGone]: isHidden(name)
           }]">
-            <button class="px-1" @click="selectedItem = selectedItem === name ? null : name">{{ name }}</button>
-            <button :class="$style.chipX" :title="t(':remove_from_tier')" @click="removeItem(name)">×</button>
+            <button class="px-1" @click="selectedItem = selectedItem === name ? null : name">
+              <i v-if="isHidden(name)" class="fas fa-eye-slash text-xs"></i> {{ name }}
+            </button>
+            <!-- like "Hide this item": an APT rule above the filter, applied at once -->
+            <button v-if="isHidden(name)" :class="$style.chipX" :disabled="busy" :title="t(':unhide_item')"
+              @click="emit('unhide-item', name)"><i class="fas fa-undo text-xs"></i></button>
+            <button v-else-if="added.includes(name)" :class="$style.chipX" :title="t(':remove_from_tier')" @click="removeAdded(name)">×</button>
+            <button v-else :class="$style.chipX" :disabled="busy" :title="t(':hide_item')" @click="emit('hide-item', name)">×</button>
           </span>
-          <span v-for="name of removed" :key="`rm-${name}`" :class="[$style.chip, $style.chipGone]"
-            :title="t(':pending_remove')" @click="undoRemove(name)"><span class="px-1">{{ name }}</span></span>
         </div>
         <div v-if="selectedItem && moveTargets.length" class="flex items-center gap-1 mt-1">
           <span class="text-xs text-gray-300">{{ selectedItem }} →</span>
@@ -120,7 +125,7 @@
         <i class="fas fa-check"></i> {{ t(':save') }}
       </button>
       <button :class="$style.btn" @click="rawMode = !rawMode">{{ rawMode ? t(':visual_mode') : t(':raw_mode') }}</button>
-      <button v-if="hasPatch" :class="$style.btn" :disabled="busy" @click="emit('reset')">{{ t(':reset_tier') }}</button>
+      <button v-if="hasPatch" :class="$style.btn" :disabled="busy" @click="leave('reset')">{{ t(':reset_tier') }}</button>
       <span class="flex-1"></span>
       <button class="text-gray-400 hover:text-white px-1" :title="t(':cancel')" @click="emit('close')"><i class="fas fa-times"></i></button>
     </div>
@@ -128,7 +133,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref } from 'vue'
 import { useI18nNs } from '@/web/i18n'
 import { ITEMS_ITERATOR } from '@/assets/data'
 import { parseLine, stripComment, type FilterBlock, type Visibility } from './filter-parser'
@@ -155,12 +160,16 @@ const props = defineProps<{
   ruleTitle: (block: FilterBlock) => string
   // the item the editor was opened for
   highlight?: string
+  // items of the tier hidden by APT rules ("Hide this item")
+  hiddenItems?: string[]
 }>()
 
 const emit = defineEmits<{
-  (e: 'save', change: TierChange): void
+  // 'unsaved': the editor is closing (or re-rendered after another edit) with changes not saved
+  (e: 'save' | 'unsaved', change: TierChange): void
   (e: 'reset' | 'disable' | 'close'): void
   (e: 'move', baseType: string, target: FilterBlock): void
+  (e: 'hide-item' | 'unhide-item', baseType: string): void
 }>()
 
 const { t } = useI18nNs('loot_filter')
@@ -254,8 +263,7 @@ const baseTypeCond = props.block.conditions.find(c => c.keyword === 'BaseType' &
 const hasBaseTypes = Boolean(baseTypeCond)
 const originalItems = baseTypeCond?.values ?? []
 const added = ref<string[]>([])
-const removed = ref<string[]>([])
-const items = computed(() => [...originalItems.filter(n => !removed.value.includes(n)), ...added.value])
+const items = computed(() => [...originalItems, ...added.value])
 const itemSearch = ref('')
 const visibleItems = computed(() => {
   const q = itemSearch.value.toLowerCase()
@@ -268,13 +276,13 @@ const visibleItems = computed(() => {
 const selectedItem = ref<string | null>(null)
 const itemMoveTarget = ref<number | null>(null)
 
-function removeItem (name: string) {
-  if (added.value.includes(name)) added.value = added.value.filter(n => n !== name)
-  else removed.value = [...removed.value, name]
-  if (selectedItem.value === name) selectedItem.value = null
+function isHidden (name: string) {
+  return props.hiddenItems?.includes(name) ?? false
 }
-function undoRemove (name: string) {
-  removed.value = removed.value.filter(n => n !== name)
+// an item added in this editor (not saved yet) is just dropped
+function removeAdded (name: string) {
+  added.value = added.value.filter(n => n !== name)
+  if (selectedItem.value === name) selectedItem.value = null
 }
 function moveSelected () {
   const target = props.moveTargets.find(b => b.index === itemMoveTarget.value)
@@ -286,8 +294,7 @@ const newItem = ref('')
 function addItem (name: string) {
   name = name.trim()
   if (!name || items.value.includes(name)) return
-  if (removed.value.includes(name)) undoRemove(name)
-  else added.value = [...added.value, name]
+  added.value = [...added.value, name]
   newItem.value = ''
 }
 const suggestions = computed(() => {
@@ -356,24 +363,43 @@ function buildChange (): TierChange {
   if (Object.keys(conditions).length) change.conditions = conditions
 
   if (added.value.length) change.addBaseTypes = [...added.value]
-  if (removed.value.length) change.removeBaseTypes = [...removed.value]
   return change
 }
 
-const dirty = computed(() => rawMode.value
-  ? rawText.value !== props.blockText
-  : Object.keys(buildChange()).length > 0)
+function currentChange (): TierChange | null {
+  if (rawMode.value) return rawText.value !== props.blockText ? { raw: rawText.value } : null
+  const change = buildChange()
+  return Object.keys(change).length ? change : null
+}
+
+const dirty = computed(() => currentChange() != null)
+
+// what was last handed to the parent: it is not "unsaved" when the editor closes
+let submitted: string | null = null
 
 function save () {
-  if (rawMode.value) {
-    if (rawText.value !== props.blockText) emit('save', { raw: rawText.value })
-    else emit('close')
+  const change = currentChange()
+  if (!change) {
+    emit('close')
     return
   }
-  const change = buildChange()
-  if (Object.keys(change).length) emit('save', change)
-  else emit('close')
+  submitted = JSON.stringify(change)
+  emit('save', change)
 }
+
+// Reset / Disable drop the edits on purpose
+function leave (action: 'reset' | 'disable') {
+  const change = currentChange()
+  submitted = change ? JSON.stringify(change) : null
+  emit(action)
+}
+
+// closing the editor in any way must not lose the edits silently:
+// the parent asks whether to save them
+onBeforeUnmount(() => {
+  const change = currentChange()
+  if (change && JSON.stringify(change) !== submitted) emit('unsaved', change)
+})
 </script>
 
 <style lang="postcss" module>
@@ -438,9 +464,7 @@ function save () {
   color: #6fff9a;
 }
 .chipGone {
-  text-decoration: line-through;
-  color: #666;
-  cursor: pointer;
+  color: #777;
 }
 .seg {
   background: #13235e;

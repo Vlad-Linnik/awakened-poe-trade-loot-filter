@@ -22,6 +22,14 @@
         <div v-if="error" class="bg-red-900 text-red-100 rounded px-2 py-1 whitespace-pre-wrap">{{ error }}</div>
 
         <template v-if="!loading && parsed && info">
+          <!-- a tier editor was closed with changes not saved -->
+          <div v-for="u of unsaved" :key="u.id" class="bg-orange-900 text-orange-100 rounded px-2 py-1 text-sm flex items-center gap-2">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span class="flex-1 min-w-0 truncate" :title="u.label">{{ t(':unsaved_changes', [u.label]) }}</span>
+            <button class="btn bg-green-800" :disabled="busy" @click="saveUnsaved(u.id)"><i class="fas fa-check"></i> {{ t(':save') }}</button>
+            <button class="btn" :disabled="busy" @click="dropUnsaved(u.id)">{{ t(':dont_save') }}</button>
+          </div>
+
           <!-- state banners -->
           <div v-if="!isCopy && editsTotal" class="bg-yellow-900 text-yellow-100 rounded px-2 py-1 text-sm">
             {{ t(':edits_inactive', [editsTotal]) }}
@@ -68,6 +76,9 @@
                 :block="finalBlock" :block-text="blockText(parsed, finalBlock)"
                 :item-name="item!.info.name" :has-patch="Boolean(patchOf(finalBlock))" :busy="busy"
                 :move-targets="moveTargets(parsed, finalBlock)" :rule-title="ruleTitle" :highlight="fItem.baseType"
+                :hidden-items="hiddenBases"
+                @hide-item="hideBase($event, finalBlock!)" @unhide-item="unhideBase"
+                @unsaved="addUnsaved(finalBlock!, $event)"
                 @move="(bt: string, to: FilterBlock) => moveBaseType(bt, finalBlock!, to)"
                 @save="saveTier(finalBlock!, $event)" @reset="resetTier(finalBlock!)"
                 @disable="disableTier(finalBlock!)" @close="finalClosed = true" />
@@ -93,6 +104,9 @@
                   :block="ev.block" :block-text="blockText(parsed, ev.block)"
                   :item-name="item!.info.name" :has-patch="Boolean(patchOf(ev.block))" :busy="busy"
                   :move-targets="moveTargets(parsed, ev.block)" :rule-title="ruleTitle" :highlight="fItem.baseType"
+                  :hidden-items="hiddenBases"
+                  @hide-item="hideBase($event, ev.block)" @unhide-item="unhideBase"
+                  @unsaved="addUnsaved(ev.block, $event)"
                   @move="(bt: string, to: FilterBlock) => moveBaseType(bt, ev.block, to)"
                   @save="saveTier(ev.block, $event)" @reset="resetTier(ev.block)"
                   @disable="disableTier(ev.block)" @close="editing = null" />
@@ -128,6 +142,9 @@
                   :block="ev.block" :block-text="blockText(parsed, ev.block)"
                   :item-name="item!.info.name" :has-patch="Boolean(patchOf(ev.block))" :busy="busy"
                   :move-targets="moveTargets(parsed, ev.block)" :rule-title="ruleTitle" :highlight="fItem.baseType"
+                  :hidden-items="hiddenBases"
+                  @hide-item="hideBase($event, ev.block)" @unhide-item="unhideBase"
+                  @unsaved="addUnsaved(ev.block, $event)"
                   @move="(bt: string, to: FilterBlock) => moveBaseType(bt, ev.block, to)"
                   @save="saveTier(ev.block, $event)" @reset="resetTier(ev.block)"
                   @disable="disableTier(ev.block)" @close="editing = null" />
@@ -173,6 +190,7 @@
             :parsed="parsed" :mtime="info.mtime" :busy="busy" :focus="browseFocus"
             :patch-of="patchOf" :rule-title="ruleTitle" :is-apt-rule="(b) => Boolean(ruleOf(b))"
             @save="saveTier" @reset="resetTier" @disable="disableTier" @move="moveBaseType"
+            :hidden-items="hiddenBases" @hide-item="hideBase" @unhide-item="unhideBase" @unsaved="addUnsaved"
             @reset-blocks="resetBlocks" />
 
           <!-- all my edits for this filter -->
@@ -277,7 +295,7 @@ import { parseFilter, blockText, type FilterBlock, type ParsedFilter, type Visib
 import { toFilterItem, type FilterItem } from './item-props'
 import { matchItem, relatedBlocks } from './matcher'
 import { moveTargets } from './filter-edit'
-import { ruleForItem, itemConditions, ruleIdOfBlock, isRuleBlock, onlineVersion, type AptRule } from './apt-rules'
+import { ruleForItem, ruleHidingBase, hiddenBaseOf, itemConditions, ruleIdOfBlock, isRuleBlock, onlineVersion, type AptRule } from './apt-rules'
 import {
   emptyEdits, editsCount, normalizeStore, storeKey as storeKeyOf, newId, selectorOf, patchForBlock, findBlock,
   buildCopy, copyName, copySourceVersion,
@@ -627,6 +645,50 @@ function addItemRule (visibility: Visibility) {
   const rule = ruleForItem(fItem.value!, visibility)
   return withEdits(e => ({ ...e, rules: [...e.rules, rule] }),
     visibility === 'Hide' ? t(':done_hidden') : t(':done_shown'))
+}
+
+// the × on an item of a tier: the same as "Hide this item", saved at once
+function hideBase (baseType: string, block: FilterBlock) {
+  if (busy.value) return
+  if (fItem.value && baseType === fItem.value.baseType) return addItemRule('Hide')
+  const rule = ruleHidingBase(baseType, block)
+  return withEdits(e => ({ ...e, rules: [...e.rules, rule] }), t(':done_hidden'))
+}
+
+function unhideBase (baseType: string) {
+  if (busy.value) return
+  return withEdits(e => ({ ...e, rules: e.rules.filter(r => hiddenBaseOf(r) !== baseType) }), t(':done_shown'))
+}
+
+// base types hidden by my rules: shown dimmed in the tier editors
+const hiddenBases = computed(() => edits.value.rules.map(hiddenBaseOf).filter((x): x is string => x != null))
+
+// ---- edits of a tier left without Save: ask what to do with them ----
+
+interface UnsavedTier { id: string, selector: BlockSelector, label: string, change: TierChange }
+const unsaved = shallowRef<UnsavedTier[]>([])
+
+function addUnsaved (block: FilterBlock, change: TierChange) {
+  const selector = selectorOf(block)
+  const same = (u: UnsavedTier) => JSON.stringify(u.selector) === JSON.stringify(selector)
+  unsaved.value = [...unsaved.value.filter(u => !same(u)), { id: newId(), selector, label: ruleTitle(block), change }]
+}
+
+function dropUnsaved (id: string) {
+  unsaved.value = unsaved.value.filter(u => u.id !== id)
+}
+
+async function saveUnsaved (id: string) {
+  const u = unsaved.value.find(x => x.id === id)
+  if (!u || !parsed.value) return
+  const block = findBlock(parsed.value, u.selector)
+  if (!block) {
+    error.value = t(':unsaved_lost', [u.label])
+    dropUnsaved(id)
+    return
+  }
+  await saveTier(block, u.change)
+  if (!error.value) dropUnsaved(id)
 }
 
 function removeRule (id: string) {

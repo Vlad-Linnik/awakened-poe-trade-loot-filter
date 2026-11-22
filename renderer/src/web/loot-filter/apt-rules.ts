@@ -2,7 +2,7 @@
 // .filter file), so they survive FilterBlade re-downloads and online filter updates,
 // and are written at the top of the filter as a separate section.
 
-import type { FilterBlock, ParsedFilter, Visibility } from './filter-parser'
+import { stripComment, type FilterBlock, type ParsedFilter, type Visibility } from './filter-parser'
 import type { FilterItem } from './item-props'
 
 export interface AptRule {
@@ -47,6 +47,35 @@ export function ruleForItem (item: FilterItem, visibility: Visibility, style?: F
     conditions: itemConditions(item),
     actions: style ? style.actions.map(a => a.raw.trim()) : []
   })
+}
+
+// "Hide this item" for any base type of a tier (the × in the tier editor):
+// the tier's Class / Rarity scope is kept, so e.g. uniques of the base stay visible
+export function ruleHidingBase (baseType: string, block: FilterBlock): AptRule {
+  const scope = (keyword: string) => block.conditions
+    .filter(c => c.keyword === keyword && c.op !== '!' && c.op !== '!=')
+    .map(c => stripComment(c.raw).trim())
+  const classes = scope('Class')
+  const rarity = scope('Rarity')
+  if (!rarity.length && classes.length && !STACKABLE_CLASSES.test(classes.join(' '))) {
+    rarity.push('Rarity <= Rare')
+  }
+  return newRule({
+    visibility: 'Hide',
+    label: baseType,
+    conditions: [...classes, `BaseType == ${q(baseType)}`, ...rarity],
+    actions: []
+  })
+}
+
+// the base type a "Hide this item" rule hides
+export function hiddenBaseOf (rule: AptRule): string | null {
+  if (rule.visibility !== 'Hide') return null
+  for (const c of rule.conditions) {
+    const m = /^BaseType\s*==\s*"([^"]+)"$/.exec(c.trim())
+    if (m) return m[1]
+  }
+  return null
 }
 
 // ---- rendering ----
