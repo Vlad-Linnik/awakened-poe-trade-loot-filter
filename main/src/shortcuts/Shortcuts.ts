@@ -63,6 +63,13 @@ export class Shortcuts {
       } else if (e.action === 'paste-in-chat') {
         this.overlay.assertGameActive()
         typeInChat(e.text, e.send, this.clipboard)
+        if (e.refocusOverlay) {
+          // let the game take the keystrokes first
+          setTimeout(() => {
+            this.areaTracker.removeListeners()
+            this.overlay.assertOverlayActive()
+          }, 350)
+        }
       }
     })
 

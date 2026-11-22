@@ -179,6 +179,8 @@ type IpcUserAction =
     action: 'paste-in-chat'
     text: string
     send: boolean
+    // give the focus back to the overlay after the command is sent
+    refocusOverlay?: boolean
   }>
 
 interface Event<TName extends string, TPayload = undefined> {

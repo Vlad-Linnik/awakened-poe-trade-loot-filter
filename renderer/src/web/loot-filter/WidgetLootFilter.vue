@@ -97,9 +97,9 @@
                   <span class="px-1.5 font-poe text-xs whitespace-nowrap" :style="chipStyle(ev.block)">{{ item!.info.name }}</span>
                   <span class="flex-1 truncate text-sm" :title="ev.block.headerComment">{{ ruleTitle(ev.block) }}</span>
                   <i v-if="patchOf(ev.block)" class="fas fa-pen text-blue-400 text-xs"></i>
-                  <button :class="$style.fbBtn" :title="t(':edit_tier')" @click="toggleEditor(`d${ev.block.index}`)"><i class="fas fa-sliders-h"></i></button>
+                  <button :class="$style.fbBtn" :title="t(':edit_tier')" @click="toggleEditor('d', ev.block)"><i class="fas fa-sliders-h"></i></button>
                 </div>
-                <TierEditor v-if="editing === `d${ev.block.index}`"
+                <TierEditor v-if="isEditing('d', ev.block)"
                   :key="`editor-d${ev.block.index}-${info.mtime}`"
                   :block="ev.block" :block-text="blockText(parsed, ev.block)"
                   :item-name="item!.info.name" :has-patch="Boolean(patchOf(ev.block))" :busy="busy"
@@ -134,10 +134,10 @@
                     </div>
                   </div>
                   <span class="px-1.5 font-poe text-xs whitespace-nowrap" :style="chipStyle(ev.block)">{{ item!.info.name }}</span>
-                  <button v-if="!ruleOf(ev.block)" class="btn text-xs" :title="t(':edit_tier')" @click="toggleEditor(`r${ev.block.index}`)"><i class="fas fa-sliders-h"></i></button>
+                  <button v-if="!ruleOf(ev.block)" class="btn text-xs" :title="t(':edit_tier')" @click="toggleEditor('r', ev.block)"><i class="fas fa-sliders-h"></i></button>
                   <button class="btn text-xs" :title="t(':this_one_hint')" @click="assume(ev.block.index)"><i class="fas fa-check"></i></button>
                 </div>
-                <TierEditor v-if="editing === `r${ev.block.index}`"
+                <TierEditor v-if="isEditing('r', ev.block)"
                   :key="`editor-r${ev.block.index}-${info.mtime}`"
                   :block="ev.block" :block-text="blockText(parsed, ev.block)"
                   :item-name="item!.info.name" :has-patch="Boolean(patchOf(ev.block))" :busy="busy"
@@ -328,7 +328,9 @@ const error = ref<string | null>(null)
 const status = ref<string | null>(null)
 const assumed = ref(new Set<number>())
 const history = shallowRef<FilterEdits[]>([])
-const editing = ref<string | null>(null)
+// open editor of a decorator ('d') or related ('r') tier; found by selector,
+// so it stays open after the filter is rewritten
+const editing = shallowRef<{ kind: 'd' | 'r', selector: BlockSelector } | null>(null)
 const moveTarget = ref<number | null>(null)
 const pendingCommand = ref<string | null>(null)
 // 'item': rules of the item under cursor; 'browse': the whole filter
@@ -374,6 +376,8 @@ MainProcess.onEvent('MAIN->CLIENT::widget-action', (e) => {
 })
 
 props.config.wmWants = 'hide'
+// restore the flag in case the app was closed while a chat command kept the window open
+props.config.wmFlags = ['hide-on-blur', 'menu::skip']
 
 async function load () {
   loading.value = true
@@ -492,8 +496,16 @@ function assume (index: number) {
   assumed.value = new Set([...assumed.value, index])
 }
 
-function toggleEditor (key: string) {
-  editing.value = editing.value === key ? null : key
+const editingIndex = computed(() => (editing.value && parsed.value)
+  ? findBlock(parsed.value, editing.value.selector)?.index ?? null
+  : null)
+
+function isEditing (kind: 'd' | 'r', block: FilterBlock) {
+  return editing.value?.kind === kind && editingIndex.value === block.index
+}
+
+function toggleEditor (kind: 'd' | 'r', block: FilterBlock) {
+  editing.value = isEditing(kind, block) ? null : { kind, selector: selectorOf(block) }
 }
 
 // ---- styling ----
@@ -580,9 +592,23 @@ async function exportChanges () {
 
 // ---- writing ----
 
+// A chat command needs the game focused, and this window hides when the overlay
+// loses focus: keep it open and take the focus back once the command is sent
+let keepOpenTimer: ReturnType<typeof setTimeout> | undefined
+function chat (command: string) {
+  const id = props.config.wmId
+  wm.setFlag(id, 'hide-on-blur', false)
+  api.sendChatCommand(command, true)
+  clearTimeout(keepOpenTimer)
+  keepOpenTimer = setTimeout(() => {
+    wm.setFlag(id, 'hide-on-blur', true)
+    // the overlay didn't get the focus back: behave as before
+    if (!wm.active.value) wm.hide(id)
+  }, 1500)
+}
+
 function afterWrite (message: string, command: string) {
   assumed.value = new Set()
-  editing.value = null
   moveTarget.value = null
   status.value = message
   if (!props.config.reloadAfterHide) {
@@ -593,10 +619,10 @@ function afterWrite (message: string, command: string) {
     // the game may not see a just created filter file yet: wait a bit,
     // and keep the button to switch again if it failed
     pendingCommand.value = command
-    setTimeout(() => api.sendChatCommand(command), 1500)
+    setTimeout(() => chat(command), 1500)
   } else {
     pendingCommand.value = null
-    api.sendChatCommand(command)
+    chat(command)
   }
 }
 
@@ -832,13 +858,13 @@ async function updateFilter () {
       let changed = false
       if (isCopy.value) {
         // the game downloads an online filter when it is selected
-        api.sendChatCommand(`/itemfilter ${i.source.name}`)
+        chat(`/itemfilter ${i.source.name}`)
         changed = await waitForChange(cachePath, before, 6000)
       }
       if (!changed) {
         // on the online filter `/reloaditemfilter` downloads it again
         await sleep(400)
-        api.sendChatCommand('/reloaditemfilter')
+        chat('/reloaditemfilter')
         changed = await waitForChange(cachePath, before, 10000)
       }
       if (!changed) {
@@ -864,12 +890,12 @@ async function updateFilter () {
 }
 
 function runPendingCommand () {
-  if (pendingCommand.value) api.sendChatCommand(pendingCommand.value)
+  if (pendingCommand.value) chat(pendingCommand.value)
   pendingCommand.value = null
 }
 
 function switchToSource () {
-  if (info.value?.source) api.sendChatCommand(`/itemfilter ${info.value.source.name}`)
+  if (info.value?.source) chat(`/itemfilter ${info.value.source.name}`)
 }
 
 function openBackupsFolder () {

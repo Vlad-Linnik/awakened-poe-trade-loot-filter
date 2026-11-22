@@ -95,10 +95,10 @@ export function openBackupsFolder () {
   return call<unknown>('/loot-filter/open-backups', { method: 'POST' })
 }
 
-export function sendChatCommand (text: string) {
+export function sendChatCommand (text: string, refocusOverlay = false) {
   Host.sendEvent({
     name: 'CLIENT->MAIN::user-action',
-    payload: { action: 'paste-in-chat', text, send: true }
+    payload: { action: 'paste-in-chat', text, send: true, refocusOverlay }
   })
 }
 

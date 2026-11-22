@@ -2,7 +2,7 @@
   <div class="flex flex-col gap-2 min-h-0">
     <input v-model.trim="search" :placeholder="t(':browse_search')" :class="$style.search">
 
-    <div class="flex-1 overflow-y-auto min-h-0 flex flex-col gap-2 pr-1">
+    <div ref="listEl" class="flex-1 overflow-y-auto min-h-0 flex flex-col gap-2 pr-1">
       <div v-if="!groups.length" class="text-gray-400 text-sm">{{ t(':browse_nothing') }}</div>
 
       <template v-for="group of groups" :key="group.id">
@@ -30,7 +30,8 @@
             <div v-if="isOpen(sec.title + '/' + sub.title)" class="flex flex-col gap-1 p-1">
               <template v-for="e of sub.blocks" :key="e.block.index">
                 <!-- tier row: show checkbox, name, style preview -->
-                <div :class="[$style.row, { [$style.rowSel]: selected?.index === e.block.index }]" @click="select(e.block, e.matchedItems[0])">
+                <div :class="[$style.row, { [$style.rowSel]: selected?.index === e.block.index }]" :data-block="e.block.index"
+                  @click="select(e.block, e.matchedItems[0])">
                   <button :class="[$style.check, { [$style.checkOn]: e.block.visibility !== 'Hide' }]" :disabled="busy"
                     :title="e.block.visibility === 'Hide' ? t(':vis_hide') : t(':vis_show')"
                     @click.stop="emit('save', e.block, { visibility: e.block.visibility === 'Hide' ? 'Show' : 'Hide' })">
@@ -72,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, shallowRef, watch } from 'vue'
+import { computed, nextTick, ref, shallowRef, watch } from 'vue'
 import { useI18nNs } from '@/web/i18n'
 import { blockText, type FilterBlock, type ParsedFilter } from './filter-parser'
 import { moveTargets } from './filter-edit'
@@ -132,7 +133,18 @@ watch(() => props.focus, (focus) => {
   highlight.value = focus.item ?? null
   const place = placeOf(block)
   opened.value = new Set([...opened.value, place.category.title, `${place.category.title}/${place.sub}`])
+  scrollToBlock(block.index)
 }, { immediate: true })
+
+const listEl = ref<HTMLElement | null>(null)
+
+// "Find in Customizer": bring the opened tier into view
+function scrollToBlock (index: number) {
+  nextTick(() => {
+    const row = listEl.value?.querySelector(`[data-block="${index}"]`)
+    row?.scrollIntoView({ block: 'start' })
+  })
+}
 
 function baseTypes (block: FilterBlock) {
   return block.conditions.find(c => c.keyword === 'BaseType' && c.op !== '!' && c.op !== '!=')?.values ?? []
