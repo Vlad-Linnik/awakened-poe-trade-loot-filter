@@ -1,6 +1,6 @@
 <template>
   <Widget :config="{ ...config, anchor }" move-handles="none" :removable="false" :inline-edit="false">
-    <div :class="$style.window" class="text-gray-200 shadow-lg flex flex-col"
+    <div :class="$style.window" class="relative text-gray-200 shadow-lg flex flex-col"
       :style="mode === 'browse' ? 'width: 64rem; max-width: 96vw; height: 88vh;' : 'width: 36rem; max-width: 96vw; max-height: 92vh;'">
       <!-- header -->
       <div :class="$style.titlebar" class="px-3 py-2 flex items-baseline gap-2">
@@ -240,6 +240,9 @@
             <button v-if="info.source" class="btn flex-1" :disabled="busy" @click="updateFilter" :title="t(':update_hint')">
               <i class="fas fa-sync" :class="{ 'fa-spin': updating }"></i> {{ t(':update') }}
             </button>
+            <button v-if="info.source && editsTotal" class="btn" :class="$style.danger" :disabled="busy" @click="confirmClear = true">
+              <i class="fas fa-trash-alt"></i> {{ t(':clear_all') }}
+            </button>
           </div>
           <div class="flex gap-3 text-xs text-gray-500">
             <span v-if="fItem && mode === 'item'">{{ t(':area_level') }}: {{ fItem.areaLevel ?? '?' }}<template v-if="fItem.itemLevel != null"> · iLvl {{ fItem.itemLevel }}</template><template v-if="fItem.class"> · {{ fItem.class }}<template v-if="fItem.classIsGuess">?</template></template></span>
@@ -250,6 +253,24 @@
             <button class="underline" @click="openFilterBlade">FilterBlade</button>
           </div>
         </template>
+      </div>
+
+      <!-- confirmation: remove all my edits of this filter -->
+      <div v-if="confirmClear && info?.source && editsTotal" :class="$style.confirmOverlay" @click.self="confirmClear = false">
+        <div :class="$style.confirm" class="p-3 flex flex-col gap-2 rounded">
+          <div class="font-bold text-red-200">
+            <i class="fas fa-exclamation-triangle"></i> {{ t(':clear_title', [info.source.name]) }}
+          </div>
+          <div class="text-lg text-white">{{ t(':clear_count', [editsTotal]) }}</div>
+          <div class="text-sm text-gray-400">{{ t(':clear_details', [edits.rules.length, edits.patches.length, edits.moves.length]) }}</div>
+          <div class="text-xs text-gray-400">{{ t(':clear_hint') }}</div>
+          <div class="flex gap-2 mt-1">
+            <button class="btn flex-1" @click="confirmClear = false">{{ t(':clear_cancel') }}</button>
+            <button class="btn flex-1" :class="$style.danger" :disabled="busy" @click="clearAll">
+              <i class="fas fa-trash-alt"></i> {{ t(':clear_confirm', [editsTotal]) }}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </Widget>
@@ -333,6 +354,8 @@ const history = shallowRef<FilterEdits[]>([])
 const editing = shallowRef<{ kind: 'd' | 'r', selector: BlockSelector } | null>(null)
 const moveTarget = ref<number | null>(null)
 const pendingCommand = ref<string | null>(null)
+// the "remove all my changes" question is shown
+const confirmClear = ref(false)
 // 'item': rules of the item under cursor; 'browse': the whole filter
 const mode = ref<'item' | 'browse'>('item')
 // the editor of the rule that styles the item is open unless closed
@@ -380,6 +403,7 @@ props.config.wmWants = 'hide'
 props.config.wmFlags = ['hide-on-blur', 'menu::skip']
 
 async function load () {
+  confirmClear.value = false
   loading.value = true
   error.value = null
   try {
@@ -626,8 +650,18 @@ function afterWrite (message: string, command: string) {
   }
 }
 
+async function fileExists (path: string) {
+  try {
+    await api.statFile(path)
+    return true
+  } catch {
+    return false
+  }
+}
+
 // Save edits and write the copy "<filter>_APT.filter" that the game uses
-async function commit (newEdits: FilterEdits, message: string, opts?: { noHistory?: boolean, forceSwitch?: boolean }) {
+// `keepFilter`: if the game uses the original filter, don't switch it to the copy
+async function commit (newEdits: FilterEdits, message: string, opts?: { noHistory?: boolean, forceSwitch?: boolean, keepFilter?: boolean }) {
   const i = info.value
   if (!i?.source || !key.value) {
     error.value = t(':source_missing')
@@ -649,6 +683,15 @@ async function commit (newEdits: FilterEdits, message: string, opts?: { noHistor
     const sep = i.filterDir.includes('\\') ? '\\' : '/'
     const name = isCopy.value ? i.name : copyName(src)
     const path = isCopy.value ? i.path : `${i.filterDir}${sep}${name}.filter`
+
+    if (opts?.keepFilter && !isCopy.value) {
+      // the copy isn't used now, but it must not keep the old edits
+      if (await fileExists(path)) await api.saveFilter(path, text)
+      if (!opts.noHistory) history.value = [...history.value, oldEdits]
+      status.value = message
+      return
+    }
+
     const res = await api.saveFilter(path, text, isCopy.value ? i.mtime : undefined)
     const command = (isCopy.value && !opts?.forceSwitch) ? '/reloaditemfilter' : `/itemfilter ${name}`
 
@@ -818,6 +861,14 @@ function removeEdit (id: string) {
   }), t(':done_override_removed'))
 }
 
+async function clearAll () {
+  if (busy.value) return
+  confirmClear.value = false
+  await commit(emptyEdits(), t(':done_cleared', [editsTotal.value]), { keepFilter: true })
+  changesSearch.value = ''
+  openChanges.value = new Set()
+}
+
 function rebuild (switchToCopy: boolean) {
   return commit(edits.value, t(':done_rebuilt'), { noHistory: true, forceSwitch: switchToCopy })
 }
@@ -826,7 +877,8 @@ async function undo () {
   const prev = history.value[history.value.length - 1]
   if (!prev) return
   history.value = history.value.slice(0, -1)
-  await commit(prev, t(':done_undo'), { noHistory: true })
+  // on the original filter there is only "remove all" to undo
+  await commit(prev, t(':done_undo'), { noHistory: true, keepFilter: true })
 }
 
 // ---- update: download the latest online filter and re-apply edits ----
@@ -931,6 +983,30 @@ const anchor = computed(() => {
 .titlebar {
   background: #0a0f3a;
   border-bottom: 1px solid #2a3470;
+}
+.confirmOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  padding: 1rem;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.7);
+}
+.confirm {
+  margin: auto;
+  width: 26rem;
+  max-width: 100%;
+  background: #05081a;
+  border: 1px solid #991b1b;
+}
+/* `.btn` sets its own background after the utilities */
+.window .danger {
+  background: #742a2a;
+  color: #fed7d7;
+}
+.window .danger:hover:not(:disabled) {
+  background: #9b2c2c;
 }
 .rule {
   background: #000;
