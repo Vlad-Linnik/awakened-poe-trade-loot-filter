@@ -81,8 +81,12 @@ export function tierLadder (filter: ParsedFilter, block: FilterBlock): FilterBlo
   const ladder = allBlocks(filter).filter(b =>
     isTierList(b) && !b.continue && !isRestTier(b) && !isHiddenLayer(b) &&
     sameGroup(b, block) && sameNaming(b, block) && fingerprint(b) === fp)
+  // a disabled rule for the same items (e.g. uniques that are worth their dust) is not one more tier
+  const listed = new Set(ladder.filter(b => !b.isDisabled).flatMap(basesOf))
+  const tiers = ladder.filter(b => !b.isDisabled || !basesOf(b).some(x => listed.has(x)))
+  if (block.isDisabled && !tiers.some(b => b.index === block.index)) return []
   // nowhere to move
-  return ladder.some(b => b.index !== block.index) ? ladder : []
+  return tiers.some(b => b.index !== block.index) ? tiers : []
 }
 
 // "Tier 3" -> "Tier 2"; null = there is nothing higher
@@ -181,6 +185,10 @@ export function raritiesOf (conditions: FilterLine[]): Set<string> {
     })
   }
   return new Set(out)
+}
+
+function basesOf (block: FilterBlock): string[] {
+  return block.conditions.filter(isPositiveBaseType).flatMap(c => c.values)
 }
 
 function isTierList (block: FilterBlock) {

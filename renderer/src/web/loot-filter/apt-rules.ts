@@ -140,7 +140,7 @@ export function hostOfRule (filter: ParsedFilter, rule: AptRule): FilterBlock | 
   if (!anchor || rule.custom) return anchor ?? null
   const ladder = tierLadder(filter, anchor)
   const hosts = ruleConditions(rule).filter(isPositiveBaseType).flatMap(c => c.values)
-    .map(base => ladder.find(b => listsBase(b, base)) ?? anchor)
+    .map(base => ladder.find(b => !b.isDisabled && listsBase(b, base)) ?? ladder.find(b => listsBase(b, base)) ?? anchor)
   return hosts.reduce((a, b) => b.startLine < a.startLine ? b : a, hosts[0] ?? anchor)
 }
 

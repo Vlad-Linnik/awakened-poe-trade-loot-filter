@@ -108,7 +108,9 @@ export function moveSources (filter: ParsedFilter, move: TierMove, target: Filte
   if (!move.from) return sameType
   // rules for special cases ("6 links", decorators…) keep the base type
   const fp = fingerprint(target)
-  return sameType.filter(b => b.index === from?.index || (!b.continue && fingerprint(b) === fp))
+  const tiers = new Set(tierLadder(filter, target).map(b => b.index))
+  return sameType.filter(b => b.index === from?.index ||
+    (!b.continue && fingerprint(b) === fp && (!b.isDisabled || tiers.has(b.index))))
 }
 
 // Move a base type to another tier. `current` is the filter the tiers belong to (the copy),
@@ -192,7 +194,9 @@ export function removedItems (current: ParsedFilter, edits: FilterEdits): Remove
     const ladder = tierLadder(current, block)
     for (const baseType of p.removeBaseTypes) {
       if (p.untiered?.includes(baseType)) continue
-      if (ladder.some(b => listsBase(b, baseType)) || rulesHiding(current, edits.rules, baseType, block).length) continue
+      // the tier left without items is commented out, older versions kept its list as it was
+      const isListed = ladder.some(b => !b.isDisabled && listsBase(b, baseType))
+      if (isListed || rulesHiding(current, edits.rules, baseType, block).length) continue
       out.push({ patchId: p.id, baseType, block })
     }
   }
