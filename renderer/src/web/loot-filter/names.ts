@@ -4,6 +4,7 @@
 // the tags, the section titles and the rule's key conditions.
 
 import type { FilterBlock, FilterLine } from './filter-parser'
+import { rareTitle } from './fb-categories'
 
 type T = (key: string, args?: unknown[]) => string
 
@@ -407,9 +408,17 @@ export function conditionHints (block: FilterBlock, t: T): string[] {
 }
 
 export function blockTierName (block: FilterBlock, t: T): string {
+  const title = rareTitle(block)
+  if (title) return title
   if (block.tags.tier) return tierName(block.tags.tier, t)
   if (block.tags.type) return typeName(block.tags.type)
   return block.headerComment || `#${block.index + 1}`
+}
+
+// "Tier 1, Tier 2 +3"
+export function blockTierNames (blocks: FilterBlock[], t: T): string {
+  const names = [...new Set(blocks.map(b => blockTierName(b, t)))]
+  return names.slice(0, 2).join(', ') + (names.length > 2 ? ` +${names.length - 2}` : '')
 }
 
 // "Supplies: Wisdom Stacking — Tier 1"

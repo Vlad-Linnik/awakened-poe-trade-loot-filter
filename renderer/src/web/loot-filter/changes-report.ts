@@ -2,8 +2,8 @@
 // compared to the source filter (FilterBlade / online). Used by the list of changes
 // in the widget and by the downloadable report, so the changes can be repeated in FilterBlade.
 
-import { parseLine, type FilterBlock, type ParsedFilter } from './filter-parser'
-import { applyPatch, findBlock, moveSources, type FilterEdits, type FilterSource } from './edits'
+import { enabledLines, parseLine, type FilterBlock, type ParsedFilter } from './filter-parser'
+import { applyPatch, findBlock, isEmptyPatch, moveSources, type FilterEdits, type FilterSource, type TierPatch } from './edits'
 import { hostOfRule, onlineVersion, type AptRule } from './apt-rules'
 import { listsBase } from './filter-edit'
 import { placeOf } from './fb-categories'
@@ -84,7 +84,7 @@ export function describeChanges (source: ParsedFilter, edits: FilterEdits, t: T)
       })
       continue
     }
-    const before = source.lines.slice(block.startLine, block.endLine)
+    const before = enabledLines(source, block)
     const after = applyPatch(before, patch)
     out.push({
       id: patch.id,
@@ -94,7 +94,12 @@ export function describeChanges (source: ParsedFilter, edits: FilterEdits, t: T)
       group: placeOf(block).category.title,
       time: patch.updatedAt,
       orphan: false,
-      details: after == null ? [t(':tier_disabled')] : diffBlock(before, after, t),
+      details: after == null
+        ? [t(':tier_disabled')]
+        : [
+            ...(patch.enabled && block.isDisabled ? [t(':tier_enabled')] : []),
+            ...(patch.enabled && isOnlyEnabled(patch) ? [] : diffBlock(before, after, t))
+          ],
       text: after?.join('\n') ?? null,
       items: [...new Set([...(readBlock(before).baseTypes ?? []), ...(after ? readBlock(after).baseTypes ?? [] : [])])]
     })
@@ -125,6 +130,10 @@ export function describeChanges (source: ParsedFilter, edits: FilterEdits, t: T)
   }
 
   return out.sort((a, b) => b.time - a.time)
+}
+
+function isOnlyEnabled (patch: TierPatch) {
+  return isEmptyPatch({ ...patch, enabled: undefined })
 }
 
 function whereOfRule (rule: AptRule, source: ParsedFilter, t: T) {

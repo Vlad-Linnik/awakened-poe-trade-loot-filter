@@ -3,8 +3,6 @@
     <input v-model.trim="search" :placeholder="t(':browse_search')" :class="$style.search">
 
     <div ref="listEl" class="flex-1 overflow-y-auto min-h-0 flex flex-col gap-2 pr-1">
-      <div v-if="!groups.length" class="text-gray-400 text-sm">{{ t(':browse_nothing') }}</div>
-
       <template v-for="group of groups" :key="group.id">
       <div :class="$style.groupTitle">{{ group.title }}</div>
       <div v-for="sec of group.sections" :key="sec.title" :class="[$style.section, { [$style.open]: isOpen(sec.title) }]">
@@ -19,12 +17,30 @@
         </div>
 
         <div v-if="sec.isCustom && isOpen(sec.title)" class="p-2">
-          <CustomRules :parsed="parsed" :rules="customRules" :shown="customShown" :busy="busy" :can-add="canAdd"
+          <CustomRules :parsed="parsed" :rules="customRules" :all-rules="rules" :shown="customShown" :busy="busy" :can-add="canAdd"
             :focus="customFocus" :highlight="highlight ?? undefined"
-            @add="emit('custom-add')" @action="(...args) => emit('custom-action', ...args)"
+            @add="emit('custom-add', $event)" @action="(...args) => emit('custom-action', ...args)"
             @save="(b: FilterBlock, c: TierChange) => emit('save', b, c)" @unsaved="(b: FilterBlock, c: TierChange) => emit('unsaved', b, c)" />
         </div>
         <div v-else-if="isOpen(sec.title)" class="flex flex-col gap-2 p-2">
+          <!-- rules made from scratch for rares -->
+          <div v-if="sec.id === 'rares' && !search" :class="[$style.sub, { [$style.open]: isOpen(RARES_TITLE) }]">
+            <div :class="$style.subHeader" @click="toggle(RARES_TITLE)">
+              <img v-if="iconForBase('Opal Ring')" :src="iconForBase('Opal Ring')!" :class="$style.subIcon">
+              <span :class="$style.headerTitle">{{ RARES_TITLE }}</span>
+              <span v-if="rareRules.length" :class="$style.changes">{{ t(':fb_changes', [rareRules.length]) }}</span>
+            </div>
+            <div v-if="isOpen(RARES_TITLE)" class="flex flex-col gap-2 p-2">
+              <div class="text-xs text-gray-400">{{ t(':rares_hint') }}</div>
+              <div :class="$style.presets">
+                <button v-for="p of RARE_PRESETS" :key="p.id" :class="$style.reset" :disabled="busy || !canAdd"
+                  @click="emit('custom-rule', rareRule(parsed, p))"><i class="fas fa-plus text-xs"></i> {{ p.title }}</button>
+              </div>
+              <CustomRules :parsed="parsed" :rules="rareRules" :shown="rareRules" :all-rules="rules" :scope="RARES_SCOPE"
+                :busy="busy" :can-add="canAdd" @action="(...args) => emit('custom-action', ...args)"
+                @save="(b: FilterBlock, c: TierChange) => emit('save', b, c)" @unsaved="(b: FilterBlock, c: TierChange) => emit('unsaved', b, c)" />
+            </div>
+          </div>
           <div v-for="sub of sec.subs" :key="sub.title" :class="[$style.sub, { [$style.open]: isOpen(sec.title + '/' + sub.title) }]">
             <div :class="$style.subHeader" @click="toggle(sec.title + '/' + sub.title)">
               <img v-if="sub.icon" :src="sub.icon" :class="$style.subIcon">
@@ -37,12 +53,12 @@
             <div v-if="isOpen(sec.title + '/' + sub.title)" class="flex flex-col gap-1 p-1">
               <template v-for="e of sub.blocks" :key="e.block.index">
                 <!-- tier row: show checkbox, name, style preview -->
-                <div :class="[$style.row, { [$style.rowSel]: selected?.index === e.block.index }]" :data-block="e.block.index"
+                <div :class="[$style.row, { [$style.rowSel]: selected?.index === e.block.index, [$style.rowOff]: e.block.isDisabled }]" :data-block="e.block.index"
                   @click="select(e.block, e.matchedItems[0])">
-                  <button :class="[$style.check, { [$style.checkOn]: e.block.visibility !== 'Hide' }]" :disabled="busy"
-                    :title="e.block.visibility === 'Hide' ? t(':vis_hide') : t(':vis_show')"
-                    @click.stop="emit('save', e.block, { visibility: e.block.visibility === 'Hide' ? 'Show' : 'Hide' })">
-                    <i v-if="e.block.visibility !== 'Hide'" class="fas fa-check"></i>
+                  <button :class="[$style.check, { [$style.checkOn]: isOn(e.block) }]" :disabled="busy"
+                    :title="e.block.isDisabled ? t(':tier_is_off') : e.block.visibility === 'Hide' ? t(':vis_hide') : t(':vis_show')"
+                    @click.stop="toggleBlock(e.block)">
+                    <i class="far" :class="isOn(e.block) ? 'fa-check-square' : 'fa-square'"></i>
                   </button>
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-1">
@@ -50,10 +66,11 @@
                       <i v-if="patchOf(e.block)" class="fas fa-pen text-blue-400 text-xs" :title="t(':tier_changed')"></i>
                       <span v-if="e.count" class="text-xs text-gray-500">{{ e.count }}</span>
                     </div>
-                    <div class="text-xs text-gray-500 truncate" :title="e.block.headerComment">{{ conditionHints(e.block, t).join(' · ') }}</div>
+                    <div v-if="!rareTitle(e.block)" class="text-xs text-gray-500 truncate" :title="e.block.headerComment">{{ conditionHints(e.block, t).join(' · ') }}</div>
                     <div v-if="e.matchedItems.length" class="text-xs text-yellow-400 truncate">{{ e.matchedItems.join(', ') }}</div>
                   </div>
-                  <span class="px-1.5 font-poe text-xs whitespace-nowrap overflow-hidden max-w-48" :style="chipStyle(e.block)">
+                  <i class="fas fa-paint-brush text-gray-400"></i>
+                  <span :class="[$style.preview, { 'line-through': !isOn(e.block) }]" :title="conditionHints(e.block, t).join(' · ')" :style="chipStyle(e.block)">
                     <span v-if="e.minimap" :style="{ color: effectColor(e.minimap.color) }">{{ shapeGlyph(e.minimap.shape) }}</span>
                     {{ e.matchedItems[0] ?? sampleName(e.block) }}
                   </span>
@@ -68,14 +85,19 @@
                   @own-rule="emit('own-rule', $event, e.block)"
                   @unsaved="emit('unsaved', e.block, $event)"
                   @move="(bt: string, to: FilterBlock) => emit('move', bt, e.block, to)"
+                  @look="(bt: string, to: FilterBlock) => emit('look', bt, e.block, to)"
                   @save="emit('save', e.block, $event)" @reset="emit('reset', e.block)"
                   @disable="emit('disable', e.block)" @close="selectedSel = null" />
               </template>
+              <!-- ranks of the bases -->
+              <RankGrid v-if="sec.id === 'rares' && RANKS_OF_SUB[sub.title] && !search" class="mt-1"
+                :parsed="parsed" :group="RANKS_OF_SUB[sub.title]" :busy="busy || !canAdd" @apply="emit('ranks', $event)" />
             </div>
           </div>
         </div>
       </div>
       </template>
+      <div v-if="groups.length === 1 && search" class="text-gray-400 text-sm">{{ t(':browse_nothing') }}</div>
     </div>
   </div>
 </template>
@@ -83,12 +105,14 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, shallowRef, watch } from 'vue'
 import { useI18nNs } from '@/web/i18n'
-import { blockText, type FilterBlock, type ParsedFilter } from './filter-parser'
-import type { AptRule } from './apt-rules'
+import { allBlocks, blockText, type FilterBlock, type ParsedFilter } from './filter-parser'
+import type { AptRule, NewBase } from './apt-rules'
 import { findBlock, selectorOf, type BlockSelector, type TierPatch } from './edits'
 import { styleFromActions, styleCss } from './style'
 import { iconForBlocks, iconForBase, sampleName, shapeGlyph, effectColor } from './fb'
-import { CATEGORIES, GROUPS, placeOf } from './fb-categories'
+import { CATEGORIES, GROUPS, isHideRule, placeOf, rareTitle } from './fb-categories'
+import { RANKS_OF_SUB, RARE_PRESETS, RARES_SCOPE, rareRule, type RankChange } from './ranks'
+import RankGrid from './RankGrid.vue'
 import { blockTierName, conditionHints } from './names'
 import TierEditor, { type TierChange } from './TierEditor.vue'
 import CustomRules, { type CustomAction } from './CustomRules.vue'
@@ -110,16 +134,20 @@ const emit = defineEmits<{
   (e: 'save' | 'unsaved', block: FilterBlock, change: TierChange): void
   (e: 'reset' | 'disable', block: FilterBlock): void
   (e: 'reset-blocks', blocks: FilterBlock[]): void
-  (e: 'custom-add' | 'custom-reset'): void
+  (e: 'custom-add', base?: NewBase): void
+  (e: 'custom-reset'): void
+  (e: 'custom-rule', rule: AptRule): void
+  (e: 'ranks', changes: RankChange[]): void
   (e: 'custom-action', id: string, action: CustomAction, label?: string): void
-  (e: 'move', baseType: string, from: FilterBlock, to: FilterBlock): void
+  (e: 'move' | 'look', baseType: string, from: FilterBlock, to: FilterBlock): void
   (e: 'hide-item' | 'unhide-item' | 'own-rule', baseType: string, block: FilterBlock): void
 }>()
 
 const { t } = useI18nNs('loot_filter')
 
 const search = ref('')
-const opened = ref(new Set<string>())
+const CUSTOM_TITLE = t(':custom_title')
+const opened = ref(new Set<string>([CUSTOM_TITLE]))
 // selection survives re-parsing after a save (block indexes may shift)
 const selectedSel = shallowRef<BlockSelector | null>(null)
 const highlight = ref<string | null>(null)
@@ -155,11 +183,10 @@ function baseTypes (block: FilterBlock) {
 
 interface Entry { block: FilterBlock, count: number, matchedItems: string[], minimap: ReturnType<typeof styleFromActions>['minimap'] }
 interface Sub { title: string, blocks: Entry[], icon: string | null, changes: number }
-interface Section { title: string, subs: Sub[], blocks: FilterBlock[], icon: string | null, changes: number, order: number, isCustom?: boolean }
+interface Section { id?: string, title: string, subs: Sub[], blocks: FilterBlock[], icon: string | null, changes: number, order: number, isCustom?: boolean }
 
-// ---- rules made from scratch: they are a category of their own, like on FilterBlade ----
+// ---- rules made from scratch, like FilterBlade's "Highlight specific bases": always the first ----
 
-const CUSTOM_TITLE = 'Endgame - Highlight specific bases'
 const customRules = computed(() => props.rules.filter(r => r.custom))
 const customShown = computed(() => {
   const q = search.value.toLowerCase()
@@ -168,18 +195,35 @@ const customShown = computed(() => {
 })
 const customFocus = ref<string | undefined>()
 
-const customSection = computed<Section[]>(() => {
-  if (search.value && !customShown.value.length) return []
-  return [{
-    title: CUSTOM_TITLE,
-    subs: [],
-    blocks: [],
-    icon: iconForBase('Two-Toned Boots') ?? iconForBase('Opal Ring'),
-    changes: customRules.value.length,
-    order: CATEGORIES.length,
-    isCustom: true
-  }]
-})
+const customSection = computed<Section>(() => ({
+  title: CUSTOM_TITLE,
+  subs: [],
+  blocks: [],
+  icon: iconForBase('Two-Toned Boots') ?? iconForBase('Opal Ring'),
+  changes: customRules.value.length,
+  order: 0,
+  isCustom: true
+}))
+
+const RARES_TITLE = 'Add custom Show/Hide rule (EG rares)'
+const rareRules = computed(() => customRules.value.filter(r => r.scope === RARES_SCOPE))
+
+// ---- the check of a tier ----
+
+function isOn (block: FilterBlock) {
+  return !block.isDisabled && (isHideRule(block) || block.visibility !== 'Hide')
+}
+
+function toggleBlock (block: FilterBlock) {
+  if (block.isDisabled) emit('save', block, { enabled: true, ...(block.visibility === 'Hide' && !isHideRule(block) ? { visibility: 'Show' } : {}) })
+  else if (isHideRule(block)) emit('disable', block)
+  else emit('save', block, { visibility: block.visibility === 'Hide' ? 'Show' : 'Hide' })
+}
+
+// copies of the ranks for fated items, there are none of them now
+function isHiddenTier (block: FilterBlock) {
+  return block.isDisabled && /^rr\b/.test(block.tags.type ?? '') && /f$/.test(block.tags.tier ?? '')
+}
 
 // asks once more: all the rules are removed
 const resetArmed = ref(false)
@@ -197,10 +241,10 @@ function resetCustom () {
 const groups = computed(() => {
   const q = search.value.toLowerCase()
   const byCategory = new Map<string, Section & { group: string }>()
-  const mine: Section = { title: t(':my_rules'), subs: [], blocks: [], icon: null, changes: 0, order: 0 }
-  for (const block of props.parsed.blocks) {
+  const mine: Section = { title: t(':my_rules_items'), subs: [], blocks: [], icon: null, changes: 0, order: 0 }
+  for (const block of allBlocks(props.parsed)) {
     const rule = props.ruleFor(block)
-    if (rule?.custom) continue
+    if (rule?.custom || isHiddenTier(block)) continue
     const items = baseTypes(block)
     let matchedItems: string[] = []
     if (q) {
@@ -218,7 +262,7 @@ const groups = computed(() => {
     const { category: cat, sub: subTitle } = placeOf(block)
     let sec = byCategory.get(cat.id)
     if (!sec) {
-      sec = { title: cat.title, group: cat.group, subs: [], blocks: [], icon: iconForBase(cat.icon), changes: 0, order: CATEGORIES.indexOf(cat) }
+      sec = { id: cat.id, title: cat.title, group: cat.group, subs: [], blocks: [], icon: iconForBase(cat.icon), changes: 0, order: CATEGORIES.indexOf(cat) }
       byCategory.set(cat.id, sec)
     }
     let sub = sec.subs.find(x => x.title === subTitle)
@@ -236,19 +280,19 @@ const groups = computed(() => {
   for (const [id, sec] of byCategory) {
     const order = CATEGORIES.find(c => c.id === id)!.subs
     sec.subs.sort((a, b) => order.indexOf(a.title) - order.indexOf(b.title))
+    // Rank A - Rings/Amulets, Rank A - Belts, Rank B…
+    const ranked = sec.subs.find(sub => sub.title === 'Jewellery')
+    ranked?.blocks.sort((a, b) => (rareTitle(a.block) ?? '').slice(0, 6).localeCompare((rareTitle(b.block) ?? '').slice(0, 6)))
     for (const sub of sec.subs) sub.icon = iconForBlocks(sub.blocks.map(e => e.block)) ?? sec.icon
   }
   for (const sub of mine.subs) sub.icon = iconForBlocks(sub.blocks.map(e => e.block))
   mine.icon = mine.subs[0]?.icon ?? null
-  const rulesGroup = mine.subs.length ? [{ id: 'rules', title: t(':my_rules'), sections: [mine] }] : []
-  return [...rulesGroup, ...GROUPS
+  const rulesGroup = { id: 'rules', title: t(':my_rules'), sections: [customSection.value, ...(mine.subs.length ? [mine] : [])] }
+  return [rulesGroup, ...GROUPS
     .map(g => ({
       id: g.id,
       title: g.title,
-      sections: [
-        ...[...byCategory.values()].filter(sec => sec.group === g.id).sort((a, b) => a.order - b.order),
-        ...(g.id === 'endgame' ? customSection.value : [])
-      ] as Section[]
+      sections: [...byCategory.values()].filter(sec => sec.group === g.id).sort((a, b) => a.order - b.order) as Section[]
     }))
     .filter(g => g.sections.length)]
 })
@@ -272,12 +316,14 @@ watch(() => props.focus, (focus) => {
   highlight.value = focus.item ?? null
   const rule = props.ruleFor(block)
   const place = rule ? null : placeOf(block)
-  const [title, sub] = place ? [place.category.title, place.sub] : [t(':my_rules'), rulesSub(rule!)]
+  const [title, sub] = place ? [place.category.title, place.sub] : [t(':my_rules_items'), rulesSub(rule!)]
   opened.value = new Set([...opened.value, title, `${title}/${sub}`])
   scrollToBlock(block.index)
 }, { immediate: true })
 
 function isOpen (key: string) {
+  // it isn't hidden by the search, but doesn't take the place of what is found
+  if (key === CUSTOM_TITLE) return opened.value.has(key) && (!search.value || customShown.value.length > 0)
   return Boolean(search.value) || opened.value.has(key)
 }
 
@@ -289,7 +335,7 @@ function toggle (key: string) {
 }
 
 function chipStyle (block: FilterBlock) {
-  return { ...styleCss(styleFromActions(block.actions), block.visibility === 'Hide'), fontSize: '0.8rem', borderWidth: '1px' }
+  return { ...styleCss(styleFromActions(block.actions), !isOn(block)), fontSize: '0.85rem', borderWidth: '1px' }
 }
 
 </script>
@@ -398,21 +444,42 @@ function chipStyle (block: FilterBlock) {
   background: #050817;
   border: 1px solid #2a4fa8;
 }
-.check {
-  width: 1.1rem;
-  height: 1.1rem;
+.rowOff {
+  background: #050d2b;
+}
+.rowOff .tierName {
+  color: #8f9bc4;
+}
+.preview {
+  width: 13rem;
+  max-width: 40%;
   flex-shrink: 0;
-  border: 1px solid #9fb3ff;
-  background: transparent;
+  padding: 0.2rem 0.4rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: 'FontinSmallcaps', 'Fontin', sans-serif;
+}
+.presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.35rem;
+}
+.check {
+  width: 1.7rem;
+  height: 1.7rem;
+  flex-shrink: 0;
+  border: 1px solid #2a4fa8;
+  background: #0b2a6e;
   color: #fff;
-  font-size: 0.65rem;
+  font-size: 0.9rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .checkOn {
   background: #1b8fc1;
-  border-color: #fff;
 }
 .tierName {
   color: #fff;

@@ -102,6 +102,47 @@ export const CATEGORIES: Category[] = [
   }
 ]
 
+// FilterBlade's own names of the tiers of endgame rares
+const RANKS = ['A', 'B', 'C', 'D', 'E', 'F']
+const RARE_TITLES: Record<string, string> = {
+  'decorators->rareeg;tinyrares': 'Tiny',
+  'decorators->rareeg;mediumrares1': 'Medium (1x3)',
+  'decorators->rareeg;mediumrares2': 'Medium (2x2)',
+  'decorators->rareeg;largerares': 'Large',
+  'decorators->rareeg;corruptedraresimplicit': 'Corrupted implicit',
+  'decorators->rareeg;corruptedrares': 'Corrupted - no implicit',
+  'decorators->rareeg;fatedgear': 'Fated items',
+  'decorators->rareeg;fourlinkedrares': '4 links',
+  'hidelayer;corruptedrares': 'Unid corrupted rares: no implicit',
+  'hidelayer;mirroredrares': 'Unid mirrored rares: no implicit',
+  'hidelayer;raresendgame': 'Hide all other rares',
+  'rareoptional;idhider': 'Hide all identified rares',
+  'rr;identifieditemhandling': 'Show identified rares'
+}
+
+// null - it has no name of its own
+export function rareTitle (block: FilterBlock): string | null {
+  const { type, tier } = block.tags
+  if (!type || !tier) return null
+  const rank = /^rr(->amuring|->belts)?$/.exec(type) && /^t(\d)(f?)$/.exec(tier)
+  if (rank) {
+    const suffix = type === 'rr->amuring' ? ' - Rings/Amulets' : type === 'rr->belts' ? ' - Belts' : ''
+    return `Rank ${RANKS[Number(rank[1]) - 1] ?? rank[1]}${suffix}${rank[2] ? ' (Fated)' : ''}`
+  }
+  const ilvl = type === 'decorators->rareeg' && /^(?:top)?ilvl(\d+)$/.exec(tier)
+  if (ilvl) return `ItemLevel ${ilvl[1]}`
+  if (type === 'hidelayer' && tier.startsWith('rrihide')) {
+    const value = (keyword: string) => block.conditions.find(c => c.keyword === keyword)?.values[0] ?? '?'
+    return `Hide <${value('DropLevel')} in ${value('AreaLevel')}+ zones`
+  }
+  return RARE_TITLES[`${type};${tier}`] ?? null
+}
+
+// these rules only hide: they are either enabled or disabled
+export function isHideRule (block: FilterBlock): boolean {
+  return /^(hidelayer|rareoptional)/.test(block.tags.type ?? '')
+}
+
 // [pattern, category id, subcategory] tested against "type=..;tier=..;top=..;sec=.." — the first match wins
 const RULES: Array<[RegExp, string, string]> = [
   // campaign
@@ -152,9 +193,9 @@ const RULES: Array<[RegExp, string, string]> = [
   [/type=miscmapitemsextra/, 'maps', 'Reliquary Keys'],
   [/type=expedition->logbook/, 'maps', 'Expedition Logbooks'],
   [/type=decorators->rareeg/, 'rares', 'Decorators'],
+  [/type=(hidelayer;tier=(rrihide|corruptedrares|mirroredrares|raresendgame)|rareoptional|rr;tier=identified)/, 'rares', 'Hide Corrupted, Outleveled, [...] Rares'],
   [/type=rr->(amuring|belts)/, 'rares', 'Jewellery'],
   [/type=rr/, 'rares', 'Weapons and Armours'],
-  [/type=hidelayer/, 'rares', 'Hide Corrupted, Outleveled, [...] Rares'],
   [/type=exoticbases/, 'crafting', 'Exotic Basetypes'],
   [/type=gear->memorystrand/, 'crafting', 'Memory-Stranded Items'],
   [/type=crafting->generalgear/, 'crafting', 'High Level Crafting Bases'],

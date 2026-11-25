@@ -1,6 +1,6 @@
 <template>
   <div class="flex items-center gap-2" :class="{ [$style.removed]: row.removed }">
-    <div :class="$style.label" :title="`${row.keyword} — ${hint}`">
+    <div v-if="!noLabel" :class="$style.label" :title="`${row.keyword} — ${hint}`">
       <div class="truncate">• {{ row.keyword }}</div>
       <div v-if="hint" class="truncate text-xs text-gray-500 pl-2">{{ hint }}</div>
     </div>
@@ -90,7 +90,7 @@
     <input v-else :value="row.text" :class="$style.input" class="flex-1 min-w-0" :disabled="row.removed"
       @input="emit('change', { text: ($event.target as HTMLInputElement).value })">
 
-    <button class="text-gray-500 hover:text-red-400 px-1 w-5 flex-shrink-0" :class="{ invisible: row.pinned }" :title="row.removed ? t(':undo') : t(':remove_condition')" @click="emit('remove')">
+    <button v-if="!noLabel" class="text-gray-500 hover:text-red-400 px-1 w-5 flex-shrink-0" :class="{ invisible: row.pinned }" :title="row.removed ? t(':undo') : t(':remove_condition')" @click="emit('remove')">
       <i class="fas" :class="row.removed ? 'fa-undo' : 'fa-times'"></i>
     </button>
   </div>
@@ -108,6 +108,8 @@ import RangeSlider from './RangeSlider.vue'
 const props = defineProps<{
   row: ConditionRow
   parsed: ParsedFilter
+  // the buttons speak for themselves
+  noLabel?: boolean
 }>()
 
 const emit = defineEmits<{

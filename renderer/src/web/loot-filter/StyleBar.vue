@@ -1,6 +1,5 @@
 <template>
   <div :class="$style.bar">
-    <div :class="$style.title">{{ t(':fb_visuals') }}</div>
     <div :class="$style.grid">
       <!-- text / border / background -->
       <div class="flex flex-col gap-1">
@@ -16,17 +15,14 @@
       </div>
 
       <!-- preview + font size -->
-      <div class="flex flex-col items-center justify-center gap-2 min-w-0">
+      <div class="flex flex-col items-center justify-center gap-2 min-w-0" style="container-type: inline-size;">
         <div v-if="notice" class="text-center text-sm px-2" style="color: #e0762b;">{{ notice }}</div>
-        <div v-else class="px-2 py-0.5 font-poe whitespace-nowrap max-w-full overflow-hidden" :style="previewCss">
+        <div v-else class="px-2 py-0.5 font-poe-sc whitespace-nowrap max-w-full overflow-hidden" :style="previewCss">
           <span v-if="style.minimap" :style="{ color: effectColor(style.minimap.color) }">{{ shapeGlyph(style.minimap.shape) }}</span>
           {{ previewName }}
         </div>
-        <div class="flex items-center gap-1 w-full">
-          <input type="range" min="18" max="45" :value="style.fontSize ?? 32" class="flex-1" style="min-width: 5rem;"
-            @input="update({ fontSize: Number(($event.target as HTMLInputElement).value) })">
-          <span :class="$style.num">{{ style.fontSize ?? '—' }}</span>
-        </div>
+        <RangeSlider class="self-stretch mx-4" :title="t(':font_size')" :min="18" :max="45" op="=" :value="style.fontSize ?? 32" :value2="45"
+          @update:value="update({ fontSize: $event })" />
       </div>
 
       <!-- actions -->
@@ -138,6 +134,7 @@ import {
 } from './style'
 import { shapeGlyph, effectColor, sizeLetter } from './fb'
 import { listSounds, soundUrl, builtinSoundUrl } from './api'
+import RangeSlider from './RangeSlider.vue'
 
 const props = defineProps<{
   modelValue: FilterStyle
@@ -258,33 +255,33 @@ function cssColor (c: RGBA) {
   return `rgba(${c.r}, ${c.g}, ${c.b}, ${c.a / 255})`
 }
 
-const previewCss = computed(() => styleCss(style.value, props.hidden))
+// about the size it has in the game
+const previewCss = computed(() => ({
+  ...styleCss(style.value, props.hidden),
+  // a long name fits into a narrow window
+  fontSize: `clamp(11px, ${140 / (props.previewName.length + (style.value.minimap ? 3 : 1))}cqi, ${(style.value.fontSize ?? 32) * 0.7}px)`,
+  lineHeight: 1.25
+}))
 </script>
 
 <style lang="postcss" module>
+/* dark ground, to see the item as in the game */
 .bar {
-  background: #0b1235;
-  border: 1px solid #1d2c6b;
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(92, 104, 112, 0.35), transparent 45%),
+    radial-gradient(ellipse at 75% 70%, rgba(60, 72, 80, 0.45), transparent 50%),
+    linear-gradient(#2a333a, #1d252b);
+  border: 1px solid #4a5560;
   border-radius: 2px;
   display: flex;
   flex-direction: column;
 }
-.title {
-  background: #13235e;
-  color: #fff;
-  text-align: center;
-  font-size: 0.8rem;
-  padding: 0.15rem;
-}
 .grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(7.4rem, 10.6rem) minmax(8rem, 1fr) minmax(7rem, 10.6rem);
   gap: 0.5rem;
   padding: 0.4rem;
   align-items: center;
-}
-.grid > :nth-child(2) {
-  flex: 1 1 9rem;
 }
 .toggle {
   background: #13235e;
@@ -292,7 +289,7 @@ const previewCss = computed(() => styleCss(style.value, props.hidden))
   padding: 0.1rem 0.4rem;
   font-size: 0.8rem;
   text-align: left;
-  min-width: 5.2rem;
+  flex: 0 0 5.4rem;
   white-space: nowrap;
 }
 .toggle.on {
@@ -300,8 +297,10 @@ const previewCss = computed(() => styleCss(style.value, props.hidden))
   color: #fff;
 }
 .swatch {
-  width: 2rem;
-  border: 2px solid #fff;
+  flex: 1;
+  min-width: 1.8rem;
+  border: 3px solid #fff;
+  box-shadow: inset 0 0 0 1px #000;
   cursor: pointer;
   background-image: linear-gradient(45deg, #333 25%, transparent 25%), linear-gradient(-45deg, #333 25%, transparent 25%);
   background-size: 8px 8px;
@@ -311,8 +310,7 @@ const previewCss = computed(() => styleCss(style.value, props.hidden))
   border: 1px solid #2a4fa8;
   color: #fff;
   font-size: 0.8rem;
-  padding: 0.15rem 0.5rem;
-  min-width: 3.5rem;
+  padding: 0.15rem 0.35rem;
   white-space: nowrap;
 }
 .btn:hover:not(:disabled) {
@@ -326,14 +324,6 @@ const previewCss = computed(() => styleCss(style.value, props.hidden))
 }
 .btn.on {
   outline: 1px solid #fff;
-}
-.num {
-  background: #13235e;
-  color: #fff;
-  font-size: 0.75rem;
-  padding: 0 0.3rem;
-  min-width: 1.6rem;
-  text-align: center;
 }
 .panel {
   display: flex;

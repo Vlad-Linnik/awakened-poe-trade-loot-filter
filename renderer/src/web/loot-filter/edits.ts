@@ -5,7 +5,7 @@
 // Tiers are found by their FilterBlade/NeverSink tags (`$type->currency $tier->t1`),
 // so edits survive economy updates of the filter.
 
-import { ACTION_KEYWORDS, parseFilter, parseLine, tokenize, stripComment, type FilterBlock, type ParsedFilter, type Visibility } from './filter-parser'
+import { ACTION_KEYWORDS, allBlocks, disabledLines, enabledLines, parseFilter, parseLine, tokenize, stripComment, type FilterBlock, type ParsedFilter, type Visibility } from './filter-parser'
 import { renderSection, renderRules, hostOfRule, onlineVersion, rulesHiding, withoutHiding, isActive, MANAGED_HEADER, type AptRule } from './apt-rules'
 import { findBlock, fingerprint, isPositiveBaseType, listsBase, selectorOf, tierLadder, type BlockSelector } from './filter-edit'
 
@@ -17,6 +17,8 @@ export interface TierPatch {
   label: string
   visibility?: Visibility
   disabled?: boolean
+  // the tier is disabled in the filter (by its strictness), but the user needs it
+  enabled?: boolean
   // keyword -> full line (without indent), null = remove the line
   actions?: Record<string, string | null>
   // an array replaces all lines of the keyword ("from..to" is two lines);
@@ -25,6 +27,8 @@ export interface TierPatch {
   // items added to / removed from the tier's BaseType list
   addBaseTypes?: string[]
   removeBaseTypes?: string[]
+  // those of removeBaseTypes that are to be in no tier at all
+  untiered?: string[]
   // replaces the whole block text
   raw?: string
   updatedAt: number
@@ -100,7 +104,7 @@ export function patchForBlock (filter: ParsedFilter, edits: FilterEdits, block: 
 export function moveSources (filter: ParsedFilter, move: TierMove, target: FilterBlock): FilterBlock[] {
   const from = move.from ? findBlock(filter, move.from) : null
   if (!move.typeTag) return from && from.index !== target.index ? [from] : []
-  const sameType = filter.blocks.filter(b => b.tags.type === move.typeTag && b.index !== target.index)
+  const sameType = allBlocks(filter).filter(b => b.tags.type === move.typeTag && b.index !== target.index)
   if (!move.from) return sameType
   // rules for special cases ("6 links", decorators…) keep the base type
   const fp = fingerprint(target)
@@ -164,12 +168,13 @@ function withoutBase (patch: TierPatch, baseType: string, dropAdded: boolean): T
   return {
     ...patch,
     removeBaseTypes: without(patch.removeBaseTypes),
+    untiered: without(patch.untiered),
     addBaseTypes: dropAdded ? without(patch.addBaseTypes) : patch.addBaseTypes
   }
 }
 
 export function isEmptyPatch (p: TierPatch) {
-  return p.raw == null && !p.disabled && p.visibility == null &&
+  return p.raw == null && !p.disabled && !p.enabled && p.visibility == null &&
     !Object.keys(p.actions ?? {}).length && !Object.keys(p.conditions ?? {}).length &&
     !p.addBaseTypes?.length && !p.removeBaseTypes?.length
 }
@@ -186,6 +191,7 @@ export function removedItems (current: ParsedFilter, edits: FilterEdits): Remove
     if (!block) continue
     const ladder = tierLadder(current, block)
     for (const baseType of p.removeBaseTypes) {
+      if (p.untiered?.includes(baseType)) continue
       if (ladder.some(b => listsBase(b, baseType)) || rulesHiding(current, edits.rules, baseType, block).length) continue
       out.push({ patchId: p.id, baseType, block })
     }
@@ -246,19 +252,24 @@ export function applyEdits (sourceText: string, edits: FilterEdits): { text: str
   removals.forEach(fn => fn())
 
   for (const { patch, block } of patches) {
-    if (!replaced.has(block.index)) addOp(block, lines => applyPatch(lines, patch))
+    if (!replaced.has(block.index)) addOp(block, lines => applyPatch(lines, { ...patch, disabled: undefined }))
   }
 
   const lines = [...filter.lines]
-  const touched = filter.blocks.filter(b => ops.has(b.index)).sort((a, b) => b.startLine - a.startLine)
+  const touched = allBlocks(filter).filter(b => ops.has(b.index)).sort((a, b) => b.startLine - a.startLine)
   for (const block of touched) {
-    let blockLines: string[] | null = lines.slice(block.startLine, block.endLine)
+    const original = enabledLines(filter, block)
+    let blockLines: string[] | null = original
     for (const op of ops.get(block.index)!) {
       if (blockLines == null) break
       blockLines = op(blockLines)
     }
-    const original = lines.slice(block.startLine, block.endLine)
-    const result = blockLines ?? original.map(l => `#APT-disabled# ${l}`)
+    const own = patches.filter(p => p.block.index === block.index).map(p => p.patch)
+    const result = blockLines == null
+      ? original.map(l => `#APT-empty# ${l}`)
+      : own.some(p => p.disabled)
+        ? blockLines.map(l => `#APT-disabled# ${l}`)
+        : (block.isDisabled && !own.some(p => p.enabled)) ? disabledLines(blockLines) : blockLines
     lines.splice(block.startLine, block.endLine - block.startLine, ...result)
   }
   return { text: lines.join(filter.eol), orphans }

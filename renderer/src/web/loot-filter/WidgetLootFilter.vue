@@ -47,7 +47,10 @@
 
           <template v-if="mode === 'item' && fItem && match">
           <div class="flex flex-col gap-2">
-            <div v-if="!finalBlock" class="text-gray-400">{{ t(':no_rule') }}</div>
+            <div v-if="!finalBlock" class="flex items-center gap-2 text-gray-400">
+              <span class="flex-1">{{ t(':no_rule') }}</span>
+              <button :class="$style.fbBtn" :disabled="busy || !info.source" :title="t(':own_rule_hint')" @click="ownItemRule"><i class="fas fa-star text-xs"></i> {{ t(':own_rule') }}</button>
+            </div>
 
             <!-- the rule that styles the item, like FilterBlade's Simulate -->
             <div v-if="finalBlock" :class="$style.rule">
@@ -61,9 +64,17 @@
                   </div>
                   <div class="text-xs text-gray-400 truncate">{{ [...conditionHints(finalBlock, t), t(':line', [finalBlock.startLine + 1])].join(' · ') }}</div>
                 </div>
+                <!-- for any item, whatever the rule it is caught by -->
+                <button v-if="itemRule?.visibility !== 'Show'" :class="$style.fbBtn" :disabled="busy || !info.source"
+                  :title="t(':own_rule_hint')" @click="ownItemRule"><i class="fas fa-star text-xs"></i> {{ t(':own_rule') }}</button>
                 <button v-if="!itemRule" :class="$style.fbBtn" @click="findInCustomizer(finalBlock)">{{ t(':fb_find') }} <i class="fas fa-arrow-right"></i></button>
               </div>
               <div v-if="match.final!.result === null" class="text-xs text-yellow-400 px-2">{{ t(':assumed') }}</div>
+              <!-- the tier editor has the same for the items of its list -->
+              <MoveBar v-if="!matchedRule && (finalClosed || !listsBase(finalBlock, fItem.baseType))" class="px-2" no-own-rule
+                :parsed="parsed" :block="finalBlock" :base-type="fItem.baseType" :has-own-rule="false"
+                :busy="busy || !info.source" :rule-title="ruleTitle"
+                @move="moveBaseType(fItem!.baseType, finalBlock!, $event)" @look="lookLike(fItem!.baseType, finalBlock!, $event)" />
               <template v-if="matchedRule">
                 <div v-if="itemRule" class="flex items-center gap-2 p-2">
                   <span class="px-2 py-0.5 font-poe" :style="previewStyle">{{ item!.info.name }}</span>
@@ -87,7 +98,7 @@
                 :rule-title="ruleTitle" :highlight="fItem.baseType" :rules="edits.rules"
                 @hide-item="hideBase($event, finalBlock!)" @unhide-item="unhideBase($event, finalBlock!)" @own-rule="ownRule($event, finalBlock!)"
                 @unsaved="addUnsaved(finalBlock!, $event)"
-                @move="(bt: string, to: FilterBlock) => moveBaseType(bt, finalBlock!, to)"
+                @move="(bt: string, to: FilterBlock) => moveBaseType(bt, finalBlock!, to)" @look="(bt: string, to: FilterBlock) => lookLike(bt, finalBlock!, to)"
                 @save="saveTier(finalBlock!, $event)" @reset="resetTier(finalBlock!)"
                 @disable="disableTier(finalBlock!)" @close="finalClosed = true" />
               <div v-else class="flex items-center gap-2 p-2">
@@ -114,7 +125,7 @@
                   :rule-title="ruleTitle" :highlight="fItem.baseType" :rules="edits.rules"
                   @hide-item="hideBase($event, ev.block)" @unhide-item="unhideBase($event, ev.block)" @own-rule="ownRule($event, ev.block)"
                   @unsaved="addUnsaved(ev.block, $event)"
-                  @move="(bt: string, to: FilterBlock) => moveBaseType(bt, ev.block, to)"
+                  @move="(bt: string, to: FilterBlock) => moveBaseType(bt, ev.block, to)" @look="(bt: string, to: FilterBlock) => lookLike(bt, ev.block, to)"
                   @save="saveTier(ev.block, $event)" @reset="resetTier(ev.block)"
                   @disable="disableTier(ev.block)" @close="editing = null" />
               </template>
@@ -151,7 +162,7 @@
                   :rule-title="ruleTitle" :highlight="fItem.baseType" :rules="edits.rules"
                   @hide-item="hideBase($event, ev.block)" @unhide-item="unhideBase($event, ev.block)" @own-rule="ownRule($event, ev.block)"
                   @unsaved="addUnsaved(ev.block, $event)"
-                  @move="(bt: string, to: FilterBlock) => moveBaseType(bt, ev.block, to)"
+                  @move="(bt: string, to: FilterBlock) => moveBaseType(bt, ev.block, to)" @look="(bt: string, to: FilterBlock) => lookLike(bt, ev.block, to)"
                   @save="saveTier(ev.block, $event)" @reset="resetTier(ev.block)"
                   @disable="disableTier(ev.block)" @close="editing = null" />
               </template>
@@ -177,12 +188,6 @@
               </button>
               <div class="text-xs text-gray-500 -mt-1">{{ t(':rule_hint', [itemCondText]) }}</div>
             </template>
-
-            <!-- the tier editor has the same for the items of its list -->
-            <MoveBar v-if="!matchedRule && finalBlock && (finalClosed || !listsBase(finalBlock, fItem.baseType))"
-              :parsed="parsed" :block="finalBlock" :base-type="fItem.baseType" :has-own-rule="false"
-              :busy="busy || !info.source" :rule-title="ruleTitle"
-              @move="moveBaseType(fItem!.baseType, finalBlock!, $event)" @own-rule="ownItemRule" />
           </div>
 
           </template>
@@ -191,9 +196,9 @@
           <FilterBrowser v-if="mode === 'browse'" style="height: 70vh;"
             :parsed="parsed" :mtime="info.mtime" :busy="busy" :focus="browseFocus"
             :patch-of="patchOf" :rule-title="ruleTitle" :rule-for="ruleOf" :can-add="info.source != null"
-            @save="saveTier" @reset="resetTier" @disable="disableTier" @move="moveBaseType"
+            @save="saveTier" @reset="resetTier" @disable="disableTier" @move="moveBaseType" @look="lookLike"
             :rules="edits.rules" @hide-item="hideBase" @unhide-item="unhideBase" @own-rule="ownRule" @unsaved="addUnsaved"
-            @reset-blocks="resetBlocks" @custom-add="addCustomRule" @custom-action="customAction" @custom-reset="resetCustom" />
+            @reset-blocks="resetBlocks" @custom-add="addCustomRule" @custom-rule="addRule($event, t(':done_custom'))" @ranks="applyRanks" @custom-action="customAction" @custom-reset="resetCustom" />
 
           <!-- all my edits for this filter -->
           <details v-if="editsTotal" class="text-sm" @toggle="editsOpen = ($event.target as HTMLDetailsElement).open">
@@ -315,6 +320,7 @@ import Widget from '../overlay/Widget.vue'
 import TierEditor, { type TierChange } from './TierEditor.vue'
 import MoveBar from './MoveBar.vue'
 import type { CustomAction } from './CustomRules.vue'
+import type { RankChange } from './ranks'
 import FilterBrowser from './FilterBrowser.vue'
 import { parseFilter, parseLine, blockText, type FilterBlock, type ParsedFilter, type Visibility } from './filter-parser'
 import { toFilterItem, type FilterItem } from './item-props'
@@ -322,7 +328,7 @@ import { matchItem, relatedBlocks } from './matcher'
 import { isPositiveBaseType, listsBase } from './filter-edit'
 import {
   ruleForItem, ruleForBase, ruleLines, ruleFromLines, ownRuleOf, withoutHiding,
-  itemConditions, ruleIdOfBlock, onlineVersion, newCustomRule, newRule, isActive, ruleBlock, ruleConditions, type AptRule
+  itemConditions, ruleIdOfBlock, onlineVersion, newCustomRule, newRule, withLook, isActive, ruleBlock, ruleConditions, type AptRule, type NewBase
 } from './apt-rules'
 import {
   emptyEdits, editsCount, normalizeStore, storeKey as storeKeyOf, newId, selectorOf, patchForBlock, findBlock,
@@ -761,10 +767,37 @@ async function ownRule (baseType: string, block: FilterBlock) {
   openRule(rule.id, baseType)
 }
 
+// the tiers have different conditions: the item stays in its own, but looks like another one
+function lookLike (baseType: string, block: FilterBlock, look: FilterBlock) {
+  if (busy.value || !info.value?.source) return
+  const own = ownRuleOf(parsed.value!, edits.value.rules, baseType, block)
+  // a rule of several items is not for this one only
+  const existing = own?.anchor && itemsOf(own).length === 1 && findBlock(parsed.value!, own.anchor)?.index === block.index ? own : null
+  const rule = withLook(existing ?? tierItemRule(baseType, block, 'Show'), look)
+  return withEdits(e => ({
+    ...e,
+    rules: [...withoutHiding(parsed.value!, e.rules, baseType, block).filter(r => r.id !== rule.id), rule]
+  }), t(':done_look', [baseType, blockTierName(look, t)]))
+}
+
 async function ownItemRule () {
   if (busy.value) return
-  const rule = tierItemRule(fItem.value!.baseType, finalBlock.value!, 'Show')
-  await withEdits(e => ({ ...e, rules: [...e.rules, rule] }), t(':done_own_rule', [rule.label]))
+  const hiding = itemRule.value
+  const rule = newItemRule(fItem.value!, hiding)
+  await withEdits(e => ({ ...e, rules: [...e.rules.filter(r => r.id !== hiding?.id || itemsOf(r).length > 1), rule] }), t(':done_own_rule', [rule.label]))
+}
+
+// `hiding`: the rule that hides the item now, the own one replaces it
+function newItemRule (it: FilterItem, hiding: AptRule | null): AptRule {
+  let block = finalBlock.value
+  if (hiding) {
+    // the tier it would be in
+    const blocks = parsed.value!.blocks.filter(b => ruleIdOfBlock(b) !== hiding.id)
+    block = matchItem({ ...parsed.value!, blocks }, it, { assumeMatch: assumed.value }).final?.block ?? null
+  }
+  // a rule for many items stays, the own one must be above it
+  const isTier = block && !ruleOf(block) && !(hiding && itemsOf(hiding).length > 1)
+  return block && isTier ? tierItemRule(it.baseType, block, 'Show') : ruleForItem(it, 'Show', block ?? undefined)
 }
 
 // open the editor of my rule (the rule of the item under cursor is already open)
@@ -784,10 +817,7 @@ function saveRule (rule: AptRule, change: TierChange) {
     // the last item is removed: the rule stays, it just has no items
     const left = itemsOf(rule).filter(x => !rest.removeBaseTypes?.includes(x))
     if (rest.removeBaseTypes && !left.length) {
-      base.conditions = rule.conditions.filter(raw => {
-        const c = parseLine(raw)
-        return !c || !isPositiveBaseType(c)
-      })
+      base.conditions = rule.conditions.filter(raw => !isItemList(raw))
       rest.removeBaseTypes = undefined
     }
   }
@@ -797,16 +827,29 @@ function saveRule (rule: AptRule, change: TierChange) {
   return withEdits(e => ({ ...e, rules: e.rules.map(r => r.id === rule.id ? changed : r) }), t(':done_rule'))
 }
 
+function isItemList (condition: string) {
+  const c = parseLine(condition)
+  return c != null && isPositiveBaseType(c)
+}
+
 function itemsOf (rule: AptRule) {
   return ruleConditions(rule).filter(isPositiveBaseType).flatMap(c => c.values)
 }
 
 // ---- custom rules: "Highlight specific bases" ----
 
-function addCustomRule () {
+// the new rule is the first one: the most recent decision wins
+function addCustomRule (base?: NewBase) {
   if (busy.value) return
-  const rule = newCustomRule(t(':custom_unnamed'))
-  return withEdits(e => ({ ...e, rules: [...e.rules, rule] }), t(':done_custom'))
+  return addRule(newCustomRule(base?.ref ?? t(':custom_unnamed'), base), base ? t(':done_own_rule', [base.ref]) : t(':done_custom'))
+}
+
+function addRule (rule: AptRule, message: string) {
+  if (busy.value) return
+  return withEdits(e => ({
+    ...e,
+    rules: [...e.rules.filter(r => !r.custom), rule, ...e.rules.filter(r => r.custom)]
+  }), message)
 }
 
 function customAction (id: string, action: CustomAction, label?: string) {
@@ -822,8 +865,8 @@ function customAction (id: string, action: CustomAction, label?: string) {
     } else if (action === 'copy') {
       rules.splice(at + 1, 0, newRule({ ...rule }))
     } else {
-      // the order of the custom rules only
-      const custom = rules.map((r, i) => r.custom ? i : -1).filter(i => i >= 0)
+      // the order of the custom rules of the same category only
+      const custom = rules.map((r, i) => r.custom && r.scope === rule.scope ? i : -1).filter(i => i >= 0)
       const other = custom[custom.indexOf(at) + (action === 'up' ? -1 : 1)]
       if (other != null) [rules[at], rules[other]] = [rules[other], rules[at]]
     }
@@ -903,12 +946,12 @@ function saveTier (block: FilterBlock, change: TierChange) {
   const old = patchOf(block)
   let patch: TierPatch
   if (change.raw != null) {
-    patch = { id: old?.id ?? newId(), selector: old?.selector ?? selectorOf(block), label: ruleTitle(block), raw: change.raw, updatedAt: Date.now() }
+    patch = { id: old?.id ?? newId(), selector: old?.selector ?? selectorOf(block), label: ruleTitle(block), raw: change.raw, ...enabledState(block, change, old), updatedAt: Date.now() }
   } else {
     patch = {
       ...(old ?? { id: newId(), selector: selectorOf(block), label: ruleTitle(block) }),
       raw: undefined,
-      disabled: undefined,
+      ...enabledState(block, change, old),
       visibility: change.visibility ?? old?.visibility,
       actions: { ...old?.actions, ...change.actions },
       conditions: { ...old?.conditions, ...change.conditions },
@@ -921,6 +964,13 @@ function saveTier (block: FilterBlock, change: TierChange) {
     const out = { ...e, patches: isEmptyPatch(patch) ? patches : [...patches, patch] }
     return info.value?.source ? moved.reduce((acc, m) => movedIn(acc, m.baseType, m.from, block), out) : out
   }, t(':done_tier'))
+}
+
+// a tier is disabled by the user or by the filter itself
+function enabledState (block: FilterBlock, change: TierChange, old: TierPatch | undefined): Pick<TierPatch, 'disabled' | 'enabled'> {
+  if (!change.enabled) return { disabled: old?.disabled, enabled: old?.enabled }
+  const source = info.value?.source && findBlock(parseFilter(info.value.source.contents), old?.selector ?? selectorOf(block))
+  return { disabled: undefined, enabled: source?.isDisabled || undefined }
 }
 
 // adding an item that was removed earlier cancels the removal, and vice versa
@@ -936,6 +986,30 @@ function mergeItemLists (old: TierPatch | undefined, change: TierChange) {
     else if (!add.includes(bt)) add.push(bt)
   }
   return { addBaseTypes: add.length ? add : undefined, removeBaseTypes: remove.length ? remove : undefined }
+}
+
+// ---- ranks of rares: the bases painted in the table ----
+
+function applyRanks (changes: RankChange[]) {
+  if (busy.value || !info.value?.source) return
+  return withEdits(e => changes.reduce((acc, c) => {
+    if (c.from && c.to) return movedIn(acc, c.base, c.from, c.to)
+    return c.to ? withTierItem(acc, c.to, c.base, true) : c.from ? withTierItem(acc, c.from, c.base, false) : acc
+  }, e), t(':done_ranks', [changes.length]))
+}
+
+function withTierItem (e: FilterEdits, block: FilterBlock, baseType: string, add: boolean): FilterEdits {
+  const old = patchForBlock(parsed.value!, e, block)
+  const patch: TierPatch = {
+    ...(old ?? { id: newId(), selector: selectorOf(block), label: ruleTitle(block) }),
+    ...mergeItemLists(old, add ? { addBaseTypes: [baseType] } : { removeBaseTypes: [baseType] }),
+    updatedAt: Date.now()
+  }
+  // it is not an item lost by the × of the older versions
+  const untiered = (old?.untiered ?? []).filter(x => x !== baseType)
+  if (!add) untiered.push(baseType)
+  patch.untiered = untiered.length ? untiered : undefined
+  return { ...e, patches: [...e.patches.filter(p => p.id !== patch.id), ...(isEmptyPatch(patch) ? [] : [patch])] }
 }
 
 // FilterBlade's RESET of a category: drop my changes of these tiers
@@ -963,13 +1037,16 @@ function disableTier (block: FilterBlock) {
   if (rule) return removeRule(rule.id)
   const old = patchOf(block)
   const patch: TierPatch = {
-    id: old?.id ?? newId(),
-    selector: old?.selector ?? selectorOf(block),
-    label: ruleTitle(block),
-    disabled: true,
+    ...(old ?? { id: newId(), selector: selectorOf(block), label: ruleTitle(block) }),
+    // enabled by the user: just as it was in the filter
+    disabled: old?.enabled ? undefined : true,
+    enabled: undefined,
     updatedAt: Date.now()
   }
-  return withEdits(e => ({ ...e, patches: [...e.patches.filter(p => p.id !== patch.id), patch] }), t(':done_tier_disabled'))
+  return withEdits(e => ({
+    ...e,
+    patches: [...e.patches.filter(p => p.id !== patch.id), ...(isEmptyPatch(patch) ? [] : [patch])]
+  }), t(':done_tier_disabled'))
 }
 
 function removeEdit (id: string) {

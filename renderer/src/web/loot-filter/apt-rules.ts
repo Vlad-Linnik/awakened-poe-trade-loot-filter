@@ -24,6 +24,8 @@ export interface AptRule {
   custom?: boolean
   // kept by the app, but not written to the filter
   disabled?: boolean
+  // the category a custom rule belongs to
+  scope?: string
 }
 
 export const SECTION_START = '#===APT-RULES-START==='
@@ -52,16 +54,34 @@ export function isActive (rule: AptRule): boolean {
   return !rule.disabled && rule.conditions.length > 0
 }
 
-// starts disabled, as the user has to choose the items first
-export function newCustomRule (label: string): AptRule {
+export interface NewBase {
+  ref: string
+  // rarities of the items to highlight; empty - it has none (currency, cards…)
+  rarities: string[]
+}
+
+// without a base starts disabled, as the user has to choose the items first
+export function newCustomRule (label: string, base?: NewBase): AptRule {
   return newRule({
     visibility: 'Show',
     label,
-    conditions: ['Rarity Normal Magic Rare', 'Corrupted False', 'ItemLevel >= 68'],
+    conditions: base
+      ? [`BaseType == ${q(base.ref)}`, ...(base.rarities.length ? [`Rarity ${base.rarities.join(' ')}`] : [])]
+      : ['Rarity Normal Magic Rare'],
     actions: ['SetFontSize 40', 'SetBorderColor 220 40 40 255', 'SetBackgroundColor 90 35 40 255'],
     custom: true,
-    disabled: true
+    disabled: !base
   })
+}
+
+// base types of a custom rule that it can't show: they are hidden by rules standing above
+export function hiddenAbove (rules: AptRule[], rule: AptRule): string[] {
+  if (rule.disabled || rule.visibility === 'Hide') return []
+  const rarities = raritiesOf(ruleConditions(rule))
+  const hiding = rules.filter(r => !r.custom && !r.anchor && r.visibility === 'Hide' &&
+    [...raritiesOf(ruleConditions(r))].some(x => rarities.has(x)))
+  const hidden = new Set(hiding.flatMap(basesOf))
+  return basesOf(rule).filter(x => hidden.has(x))
 }
 
 // my rule as a block of a filter: a disabled one is not in the filter itself
@@ -108,14 +128,20 @@ export function ruleForBase (baseType: string, block: FilterBlock, opts: {
   })
 }
 
+// the item keeps the conditions of its tier, but looks like another one
+export function withLook (rule: AptRule, look: FilterBlock): AptRule {
+  const isHidden = look.visibility === 'Hide'
+  return { ...rule, visibility: look.visibility, actions: isHidden ? [] : look.actions.map(conditionText) }
+}
+
 // the tier my rule stands before: its item could have been moved to another tier
 export function hostOfRule (filter: ParsedFilter, rule: AptRule): FilterBlock | null {
   const anchor = rule.anchor && findBlock(filter, rule.anchor)
-  if (!anchor) return null
+  if (!anchor || rule.custom) return anchor ?? null
   const ladder = tierLadder(filter, anchor)
   const hosts = ruleConditions(rule).filter(isPositiveBaseType).flatMap(c => c.values)
     .map(base => ladder.find(b => listsBase(b, base)) ?? anchor)
-  return hosts.reduce((a, b) => b.index < a.index ? b : a, hosts[0] ?? anchor)
+  return hosts.reduce((a, b) => b.startLine < a.startLine ? b : a, hosts[0] ?? anchor)
 }
 
 function conditionText (c: FilterLine) {

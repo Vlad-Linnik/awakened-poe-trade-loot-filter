@@ -19,6 +19,7 @@ export interface BaseEntry {
   // equipment, maps…: rarities the item can have. Empty for currency, cards, gems…
   rarities: string[]
   isGem: boolean
+  armour?: BaseType['armour']
   // unique items of this base
   uniques: Array<{ ref: string, name: string }>
 }
@@ -108,6 +109,7 @@ export function allBases (): Map<string, BaseEntry> {
         ? []
         : item.craftable.uniqueOnly ? ['Unique'] : RARITIES_BY_CATEGORY[item.craftable.category] ?? ALL_RARITIES,
       isGem: item.namespace === 'GEM',
+      armour: item.armour,
       uniques: []
     })
   }

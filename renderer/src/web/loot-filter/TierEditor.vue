@@ -1,32 +1,72 @@
 <template>
-  <div :class="$style.tier" class="flex flex-col gap-2 text-sm min-w-0">
+  <div :class="[$style.tier, { [$style.tierCustom]: custom }]" class="flex flex-col gap-2 text-sm min-w-0">
     <template v-if="!rawMode">
-      <div class="flex flex-wrap gap-2 items-stretch min-w-0">
+      <div class="flex gap-2 items-stretch min-w-0">
         <!-- like FilterBlade's Simulate: Show / Disable -->
-        <div class="flex flex-col gap-1 justify-center" style="width: 5.5rem;">
+        <div class="flex flex-col justify-center" :class="custom ? 'gap-4' : 'gap-1'" :style="{ width: custom ? 'clamp(5.5rem, 15%, 8.5rem)' : '5.5rem' }">
           <template v-if="custom">
-            <button v-for="state of (['Show', 'Hide', 'disabled'] as const)" :key="state"
-              :class="[$style.btn, { [$style.show]: ruleState === state }]" @click="setRuleState(state)">
-              {{ state === 'Show' ? t(':vis_show') : state === 'Hide' ? t(':vis_hide') : t(':fb_disable') }}
-            </button>
-          </template>
-          <template v-else>
-            <button :class="[$style.btn, visibility === 'Show' ? $style.show : $style.hide]"
-              @click="visibility = visibility === 'Show' ? 'Hide' : 'Show'">
+            <button :class="[$style.btn, $style.big, disabled ? '' : visibility === 'Show' ? $style.show : $style.hide]" :title="t(':custom_show_hint')" @click="toggleShow">
               {{ visibility === 'Show' ? t(':vis_show') : t(':vis_hide') }}
             </button>
-            <button v-if="!isRule" :class="$style.btn" :disabled="busy" @click="leave('disable')">{{ t(':fb_disable') }}</button>
+            <button :class="[$style.btn, $style.big, { [$style.show]: disabled }]" @click="disabled = true">{{ t(':fb_disable') }}</button>
+          </template>
+          <template v-else>
+            <button :class="[$style.btn, disabled ? '' : visibility === 'Show' ? $style.show : $style.hide]" @click="toggleShow">
+              {{ visibility === 'Show' ? t(':vis_show') : t(':vis_hide') }}
+            </button>
+            <button v-if="!isRule && block.isDisabled" :class="[$style.btn, { [$style.show]: disabled }]" @click="disabled = true">{{ t(':fb_disable') }}</button>
+            <button v-else-if="!isRule" :class="$style.btn" :disabled="busy" @click="leave('disable')">{{ t(':fb_disable') }}</button>
             <button v-else :class="$style.btn" :disabled="busy" :title="t(':remove_override')" @click="leave('disable')"><i class="fas fa-trash-alt text-xs"></i> {{ t(':delete_rule') }}</button>
           </template>
         </div>
         <StyleBar class="flex-1 min-w-0" v-model="style" :initial="initial"
-          :preview-name="itemName" :hidden="visibility === 'Hide'" :notice="disabled ? t(':custom_disabled') : undefined" />
+          :preview-name="previewName" :hidden="visibility === 'Hide'" :notice="disabled ? t(custom ? ':custom_disabled' : ':tier_off_notice') : undefined" />
       </div>
 
+      <!-- my rule made from a tier: the looks of its tier list -->
+      <div v-if="ruleLooks.length" :class="$style.items" class="flex flex-wrap items-center gap-1">
+        <span class="text-xs text-gray-400">{{ t(':look_as') }}</span>
+        <button v-for="l of ruleLooks" :key="l.look" class="px-2 whitespace-nowrap" :class="{ [$style.lookOn]: l.look === currentLook }"
+          :style="{ ...styleCss(styleFromActions(l.block.actions), l.look === 'Hide'), fontSize: '0.75rem', borderWidth: '1px' }"
+          :title="l.blocks.map(ruleTitle).join('\n')" @click="applyLook(l.block)">
+          <i v-if="l.look === 'Hide'" class="fas fa-eye-slash text-xs"></i> {{ blockTierNames(l.blocks, t) }}
+        </button>
+      </div>
+
+      <!-- items of a rule made from scratch -->
+      <template v-if="custom">
+        <div :class="$style.strip">
+          <span v-for="name of items" :key="name" :class="[$style.itemChip, { [$style.chipHl]: name === highlight, [$style.chipNew]: added.includes(name) }]">
+            <img v-if="iconForBase(name)" :src="iconForBase(name)!" class="w-6 h-6 object-contain">
+            {{ name }}
+            <button :class="$style.itemX" :title="t(':remove_from_rule')" @click="removeItem(name)">×</button>
+          </span>
+          <span v-if="!items.length && !namesClass" class="text-xs text-yellow-300">
+            <i class="fas fa-exclamation-triangle"></i> {{ t(':custom_wide') }}
+          </span>
+        </div>
+        <div class="relative flex gap-3">
+          <input v-model="newItem" :placeholder="t(':fb_enter_basetype')" :class="$style.baseInput" @keydown.enter.prevent="submitItem">
+          <button :class="[$style.btn, $style.big]" :disabled="!newItem.trim()" @click="submitItem">{{ t(':fb_add') }}</button>
+          <div v-if="suggestions.length || notice" class="absolute z-10 left-0 top-full bg-gray-900 border border-gray-600 max-h-56 overflow-y-auto" style="width: 24rem; max-width: 100%;">
+            <button v-for="sg of suggestions" :key="sg.ref" class="flex items-center gap-1 w-full text-left px-1 hover:bg-gray-700" @click="pick(sg)">
+              <img v-if="sg.icon" :src="sg.icon" class="w-6 h-6 object-contain">
+              <span :class="{ 'text-gray-500': sg.inTier }">{{ sg.ref }}</span>
+              <span v-if="sg.name !== sg.ref" class="text-gray-500"> · {{ sg.name }}</span>
+              <span v-if="sg.unique" class="text-orange-400"> · {{ sg.unique }}</span>
+            </button>
+            <div v-if="notice" class="flex items-center gap-2 px-1 py-0.5 text-xs text-yellow-200">
+              <span class="flex-1">{{ notice.text }}</span>
+              <button :class="$style.btn" @click="addItem(notice!.name)">{{ t(':add_anyway') }}</button>
+            </div>
+          </div>
+        </div>
+      </template>
+
       <!-- items of the tier -->
-      <div v-if="hasBaseTypes || custom" :class="$style.items">
+      <div v-else-if="hasBaseTypes" :class="$style.items">
         <div class="flex items-center gap-2 mb-1">
-          <span class="text-xs uppercase text-gray-400">{{ custom ? t(':custom_items', [items.length]) : t(':tier_items', [items.length]) }}</span>
+          <span class="text-xs uppercase text-gray-400">{{ t(':tier_items', [items.length]) }}</span>
           <span class="flex-1"></span>
           <input v-if="items.length > 12" v-model.trim="itemSearch" :placeholder="t(':search')" :class="$style.input" class="w-32">
         </div>
@@ -52,9 +92,9 @@
           </span>
         </div>
         <MoveBar v-if="!isRule && selectedItem && !added.includes(selectedItem)" class="mt-1"
-          :parsed="parsed" :block="block" :base-type="selectedItem" :has-own-rule="hasOwnRule(selectedItem)"
+          :parsed="parsed" :block="block" :base-type="selectedItem" :has-own-rule="hasOwnRule(selectedItem)" :own-look="ownLook(selectedItem)"
           :busy="busy" :rule-title="ruleTitle"
-          @move="emit('move', selectedItem!, $event)" @own-rule="emit('own-rule', selectedItem!)" />
+          @move="emit('move', selectedItem!, $event)" @look="emit('look', selectedItem!, $event)" @own-rule="emit('own-rule', selectedItem!)" />
         <div class="relative flex gap-1 mt-1">
           <input v-model="newItem" :placeholder="t(':fb_enter_basetype')" :class="$style.input" class="flex-1 min-w-0"
             @keydown.enter.prevent="submitItem">
@@ -79,15 +119,15 @@
       </div>
 
       <!-- rarity, corrupted, item level… and what is added from the list of all conditions -->
-      <div :class="$style.items" class="flex flex-col gap-1.5">
-        <ConditionRowEditor v-for="row of rows" :key="row.id" :row="row" :parsed="parsed"
+      <div :class="custom ? '' : $style.items" class="flex flex-col gap-1.5">
+        <ConditionRowEditor v-for="row of shownRows" :key="row.id" :row="row" :parsed="parsed" :no-label="custom != null && row.pinned && row.kind !== 'number'"
           @change="changeRow(row, $event)" @remove="removeRow(row)" />
-        <button :class="$style.btn" class="self-center px-8 mt-1" :disabled="!pickerHost" @click="pickerOpen = true">
+        <button v-if="showAll" :class="$style.btn" class="self-center px-8 mt-1" :disabled="!pickerHost" @click="pickerOpen = true">
           <i class="fas fa-plus text-xs"></i> {{ t(':cond_add') }}
         </button>
-        <div v-if="custom && !items.length && !namesClass" class="text-xs text-yellow-300">
-          <i class="fas fa-exclamation-triangle"></i> {{ t(':custom_wide') }}
-        </div>
+        <button v-else :class="[$style.btn, $style.big]" class="self-center" @click="moreOpen = true">
+          {{ t(':custom_more') }} <i class="fas fa-chevron-down text-xs"></i>
+        </button>
       </div>
       <ConditionPicker v-if="pickerOpen && pickerHost" :host="pickerHost" :used="usedKeywords"
         @pick="addRow" @close="pickerOpen = false" />
@@ -115,13 +155,14 @@
 import { computed, inject, onBeforeUnmount, reactive, ref, type Ref } from 'vue'
 import { useI18nNs } from '@/web/i18n'
 import { type FilterBlock, type ParsedFilter, type Visibility } from './filter-parser'
-import { styleFromActions, styleToActions, STYLE_KEYWORDS, type FilterStyle } from './style'
+import { styleCss, styleFromActions, styleToActions, STYLE_KEYWORDS, type FilterStyle } from './style'
 import StyleBar from './StyleBar.vue'
 import MoveBar from './MoveBar.vue'
-import { higherTier, listsBase, moveTargets, raritiesOf, tierLadder } from './filter-edit'
-import { ruleItems, type AptRule } from './apt-rules'
+import { higherTier, listsBase, lookOf, moveTargets, raritiesOf, ruleIdOfBlock, tierLadder, tierLooks } from './filter-edit'
+import { hostOfRule, ownRuleOf, ruleBlock, ruleItems, type AptRule } from './apt-rules'
 import { type BaseEntry, baseScope, findBase, listedBases, searchBases } from './base-search'
-import { blockTierName } from './names'
+import { iconForBase } from './fb'
+import { blockTierName, blockTierNames } from './names'
 import { changesOf, newRow, rowLines, rowsOf, type ConditionDef, type ConditionRow } from './conditions'
 import ConditionRowEditor from './ConditionRow.vue'
 import ConditionPicker from './ConditionPicker.vue'
@@ -136,6 +177,8 @@ export interface TierChange {
   raw?: string
   // only for custom rules
   disabled?: boolean
+  // only for the tiers that are disabled in the filter
+  enabled?: boolean
 }
 
 const props = defineProps<{
@@ -160,7 +203,7 @@ const emit = defineEmits<{
   // 'unsaved': the editor is closing (or re-rendered after another edit) with changes not saved
   (e: 'save' | 'unsaved', change: TierChange): void
   (e: 'reset' | 'disable' | 'close'): void
-  (e: 'move', baseType: string, target: FilterBlock): void
+  (e: 'move' | 'look', baseType: string, target: FilterBlock): void
   (e: 'hide-item' | 'unhide-item' | 'own-rule', baseType: string): void
 }>()
 
@@ -171,12 +214,26 @@ const { t } = useI18nNs('loot_filter')
 const initial: FilterStyle = styleFromActions(props.block.actions)
 const style = ref<FilterStyle>(JSON.parse(JSON.stringify(initial)) as FilterStyle)
 const visibility = ref<Visibility>(props.block.visibility === 'Hide' ? 'Hide' : 'Show')
-const disabled = ref(props.custom?.disabled === true)
-const ruleState = computed(() => disabled.value ? 'disabled' : visibility.value)
+const disabled = ref(props.custom?.disabled === true || props.block.isDisabled)
 
-function setRuleState (state: 'Show' | 'Hide' | 'disabled') {
-  disabled.value = state === 'disabled'
-  if (state !== 'disabled') visibility.value = state
+// FilterBlade's Show: enables the rule, then switches Show / Hide
+function toggleShow () {
+  if (disabled.value) disabled.value = false
+  else visibility.value = visibility.value === 'Show' ? 'Hide' : 'Show'
+}
+
+// the tiers my rule can look like
+const myRule = props.isRule && !props.custom ? props.rules.find(r => r.id === ruleIdOfBlock(props.block)) : undefined
+const ruleHost = myRule ? hostOfRule(props.parsed, myRule) : null
+const ruleLooks = ruleHost ? tierLooks(props.parsed, ruleHost).slice(0, 24) : []
+const pickedLook = ref<string | null>(null)
+const currentLook = computed(() => pickedLook.value ?? lookOf(props.block))
+
+// applied with Save, as the rest of the changes
+function applyLook (b: FilterBlock) {
+  pickedLook.value = lookOf(b)
+  visibility.value = b.visibility === 'Hide' ? 'Hide' : 'Show'
+  if (b.visibility !== 'Hide') style.value = styleFromActions(b.actions)
 }
 
 // ---- conditions ----
@@ -186,6 +243,11 @@ const hasRarity = props.block.conditions.some(c => c.keyword === 'Rarity')
 const rows = reactive(rowsOf(props.block.conditions, props.custom
   ? ['Rarity', 'Corrupted', 'ItemLevel']
   : [...(hasRarity ? ['Rarity'] : []), 'Corrupted', 'Identified', 'ItemLevel', 'AreaLevel']))
+
+// FilterBlade's More: the conditions that are not set are not shown at first
+const moreOpen = ref(rows.some(r => r.kind !== 'rarity' && r.lines.length > 0))
+const showAll = computed(() => !props.custom || moreOpen.value)
+const shownRows = computed(() => showAll.value ? rows : rows.filter(r => r.kind === 'rarity'))
 
 const pickerHost = inject<Ref<HTMLElement | null>>('loot-filter-window', ref(null))
 const pickerOpen = ref(false)
@@ -240,6 +302,19 @@ function isHidden (name: string) {
 }
 function hasOwnRule (name: string) {
   return itemRules.value.get(name) === 'own'
+}
+function ownLook (name: string) {
+  if (isHidden(name)) return 'Hide'
+  const rule = hasOwnRule(name) ? ownRuleOf(props.parsed, props.rules, name, props.block) : null
+  return rule ? lookOf(ruleBlock(rule)) : undefined
+}
+const previewName = computed(() => {
+  if (!props.custom) return props.itemName
+  return items.value.find(n => n === props.highlight) ?? items.value[0] ?? props.itemName
+})
+function removeItem (name: string) {
+  if (added.value.includes(name)) removeAdded(name)
+  else removed.value = [...removed.value, name]
 }
 // an item added in this editor (not saved yet) is just dropped
 function removeAdded (name: string) {
@@ -320,12 +395,17 @@ function buildChange (): TierChange {
 
   if (added.value.length) change.addBaseTypes = [...added.value]
   if (removed.value.length) change.removeBaseTypes = [...removed.value]
+  if (props.block.isDisabled && !disabled.value) change.enabled = true
   if (props.custom && disabled.value !== Boolean(props.custom.disabled)) change.disabled = disabled.value
   return change
 }
 
 function currentChange (): TierChange | null {
-  if (rawMode.value) return rawText.value !== props.blockText ? { raw: rawText.value } : null
+  if (rawMode.value) {
+    return rawText.value !== props.blockText
+      ? { raw: rawText.value, ...(props.block.isDisabled && !disabled.value ? { enabled: true } : {}) }
+      : null
+  }
   const change = buildChange()
   return Object.keys(change).length ? change : null
 }
@@ -419,6 +499,62 @@ onBeforeUnmount(() => {
 .chipUp:hover:not(:disabled) {
   background: #1b8fc1;
   color: #fff;
+}
+.lookOn {
+  box-shadow: 0 0 0 2px #1b8fc1;
+}
+.tierCustom {
+  background: #111;
+  border: none;
+}
+.big {
+  font-size: 0.95rem;
+  padding: 0.3rem 0.8rem;
+}
+.strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 0.6rem;
+  min-height: 3.4rem;
+  max-height: 14rem;
+  overflow-y: auto;
+  padding: 0.6rem;
+  background: #333;
+  border: 1px solid #555;
+}
+.itemChip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.1rem 1.1rem 0.1rem 0.25rem;
+  background: #000;
+  border: 1px solid #2f7fd0;
+  color: #fff;
+  font-size: 0.95rem;
+}
+.itemX {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.4rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  line-height: 1;
+  background: #13235e;
+  border: 1px solid #2f7fd0;
+  color: #fff;
+}
+.itemX:hover {
+  background: #a3263a;
+}
+.baseInput {
+  width: 13rem;
+  background: #333;
+  border: 1px solid #666;
+  color: #fff;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.95rem;
 }
 .chipX:hover {
   background: #a3263a;

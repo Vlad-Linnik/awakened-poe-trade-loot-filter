@@ -1,4 +1,4 @@
-import type { FilterBlock, FilterLine, ParsedFilter } from './filter-parser'
+import { allBlocks, type FilterBlock, type FilterLine, type ParsedFilter } from './filter-parser'
 
 export function isPositiveBaseType (c: Pick<FilterLine, 'keyword' | 'op'>) {
   return c.keyword === 'BaseType' && c.op !== '!' && c.op !== '!='
@@ -45,11 +45,14 @@ export function selectorOf (block: FilterBlock): BlockSelector {
 }
 
 export function findBlock (filter: ParsedFilter, sel: BlockSelector): FilterBlock | null {
-  const blocks = filter.blocks
+  // disabled ones - if there is no such enabled
+  const blocks = [...filter.blocks, ...filter.disabled]
   const exact = blocks.find(b => b.headerComment === sel.header && fingerprint(b) === sel.fingerprint)
   if (exact) return exact
   if (sel.type && sel.tier) {
-    const sameTier = blocks.filter(b => b.tags.type === sel.type && b.tags.tier === sel.tier)
+    const all = blocks.filter(b => b.tags.type === sel.type && b.tags.tier === sel.tier)
+    const enabled = all.filter(b => !b.isDisabled)
+    const sameTier = enabled.length ? enabled : all
     if (sameTier.length === 1) return sameTier[0]
     if (sameTier.length > 1) return sameTier.find(b => fingerprint(b) === sel.fingerprint) ?? sameTier[0]
   }
@@ -57,7 +60,7 @@ export function findBlock (filter: ParsedFilter, sel: BlockSelector): FilterBloc
     const sameHeader = blocks.find(b => b.headerComment === sel.header)
     if (sameHeader) return sameHeader
   }
-  const sameFp = blocks.filter(b => fingerprint(b) === sel.fingerprint && ruleIdOfBlock(b) == null)
+  const sameFp = filter.blocks.filter(b => fingerprint(b) === sel.fingerprint && ruleIdOfBlock(b) == null)
   return sameFp.length === 1 ? sameFp[0] : null
 }
 
@@ -75,7 +78,7 @@ export function moveTargets (filter: ParsedFilter, from: FilterBlock): FilterBlo
 export function tierLadder (filter: ParsedFilter, block: FilterBlock): FilterBlock[] {
   if (block.continue || isHiddenLayer(block) || ruleIdOfBlock(block) != null) return []
   const fp = fingerprint(block)
-  const ladder = filter.blocks.filter(b =>
+  const ladder = allBlocks(filter).filter(b =>
     isTierList(b) && !b.continue && !isRestTier(b) && !isHiddenLayer(b) &&
     sameGroup(b, block) && sameNaming(b, block) && fingerprint(b) === fp)
   // nowhere to move
@@ -88,7 +91,7 @@ export function higherTier (ladder: FilterBlock[], block: FilterBlock): FilterBl
   // lists of parts of names are not ordered by value: "Medium" flasks, "Grand" flasks
   if (isRestTier(block) || block.conditions.some(c => isPositiveBaseType(c) && !isExactBaseType(c))) return null
   // an item raised must not disappear
-  const shown = ladder.filter(b => b.index !== block.index && b.visibility !== 'Hide')
+  const shown = ladder.filter(b => b.index !== block.index && b.visibility !== 'Hide' && !b.isDisabled)
 
   // the same name with one number less: "t5r3" -> "t5r2", "weapont2q1" -> "weapont1q1"
   const tag = block.tags.tier ?? ''
@@ -103,7 +106,7 @@ export function higherTier (ladder: FilterBlock[], block: FilterBlock): FilterBl
   const own = tierNumber(block)
   const above = own != null
     ? numbered.filter(b => tierNumber(b)! < own)
-    : numbered.filter(b => b.index < block.index)
+    : numbered.filter(b => b.startLine < block.startLine)
   if (!above.length) return null
   const best = Math.max(...above.map(b => tierNumber(b)!))
   const candidates = above.filter(b => tierNumber(b) === best)
@@ -112,6 +115,35 @@ export function higherTier (ladder: FilterBlock[], block: FilterBlock): FilterBl
   // a special tier that looks like this one is not lower
   const style = (b: FilterBlock) => b.actions.map(a => a.raw.trim()).join('|')
   return own == null && style(block) === style(target) ? null : target
+}
+
+export interface TierLook {
+  look: string
+  block: FilterBlock
+  // all the tiers that look so
+  blocks: FilterBlock[]
+}
+
+// Looks of the tiers of the same `$type`, `block` itself is among them.
+// Their conditions differ (stacks, item levels…), so an item can't be just moved there,
+// but it can look the same.
+export function tierLooks (filter: ParsedFilter, block: FilterBlock): TierLook[] {
+  if (block.continue || ruleIdOfBlock(block) != null) return []
+  const looks = new Map<string, TierLook>()
+  for (const b of filter.blocks) {
+    if (b.index !== block.index && (b.continue || ruleIdOfBlock(b) != null || !sameGroup(b, block))) continue
+    const look = lookOf(b)
+    const same = looks.get(look)
+    if (same) same.blocks.push(b)
+    else looks.set(look, { look, block: b, blocks: [b] })
+  }
+  return looks.size > 1 ? [...looks.values()] : []
+}
+
+// what the player sees and hears
+export function lookOf (block: Pick<FilterBlock, 'visibility' | 'actions'>): string {
+  if (block.visibility === 'Hide') return 'Hide'
+  return [block.visibility, ...block.actions.map(a => [a.keyword, ...a.values].join(' ')).sort()].join('|')
 }
 
 // the number that is less in `other` while the rest of the tags is equal

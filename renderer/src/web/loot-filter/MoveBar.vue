@@ -1,24 +1,37 @@
 <template>
   <!-- what can be done with one item of a tier: another tier in one click, or a rule of its own -->
-  <div class="flex flex-wrap items-center gap-1">
+  <div v-if="ladder.length || looks.length || others.length || ownRuleShown" class="flex flex-wrap items-center gap-1">
     <span class="text-xs text-gray-300">{{ baseType }} →</span>
     <template v-if="ladder.length">
       <button v-for="b of ladder" :key="b.index" :class="[$style.tier, { [$style.current]: b.index === block.index }]"
         :disabled="busy || b.index === block.index" :style="tierStyle(b)"
-        :title="b.index === block.index ? t(':this_tier') : ruleTitle(b)" @click="emit('move', b)">
+        :title="b.index === block.index ? t(':this_tier') : b.isDisabled ? `${ruleTitle(b)} — ${t(':tier_is_off')}` : ruleTitle(b)" @click="emit('move', b)">
         <i v-if="b.index === up?.index" class="fas fa-arrow-up text-xs"></i>
-        <i v-if="b.visibility === 'Hide'" class="fas fa-eye-slash text-xs"></i>
+        <i v-if="b.isDisabled" class="fas fa-ban text-xs"></i>
+        <i v-else-if="b.visibility === 'Hide'" class="fas fa-eye-slash text-xs"></i>
         {{ blockTierName(b, t) }}
       </button>
     </template>
-    <template v-else-if="others.length">
+    <!-- tiers with conditions of their own: the item gets the look of the tier -->
+    <template v-else>
+      <template v-if="looks.length">
+        <span class="text-xs text-gray-400" :title="t(':look_hint')">{{ t(':look_as') }}</span>
+        <button v-for="l of looks" :key="l.look" :class="[$style.tier, { [$style.current]: l.look === currentLook }]"
+          :disabled="busy || l.look === currentLook" :style="tierStyle(l.block)"
+          :title="l.look === currentLook ? t(':look_current') : [...l.blocks.map(ruleTitle), '', t(':look_hint')].join('\n')" @click="emit('look', l.block)">
+          <i v-if="l.look === 'Hide'" class="fas fa-eye-slash text-xs"></i>
+          {{ blockTierNames(l.blocks, t) }}
+        </button>
+      </template>
+    </template>
+    <template v-if="!ladder.length && others.length">
       <select v-model="target" :class="$style.input" class="flex-1 min-w-0">
         <option :value="null" disabled>{{ t(':move_to') }}</option>
         <option v-for="b of others" :key="b.index" :value="b.index">{{ b.visibility }} · {{ ruleTitle(b) }}</option>
       </select>
       <button :class="$style.btn" :disabled="target == null || busy" @click="moveToSelected">{{ t(':move') }}</button>
     </template>
-    <button v-if="!block.continue" :class="$style.btn" :disabled="busy" :title="t(':own_rule_hint')" @click="emit('own-rule')">
+    <button v-if="ownRuleShown" :class="$style.btn" :disabled="busy" :title="t(':own_rule_hint')" @click="emit('own-rule')">
       <i class="fas fa-star text-xs"></i> {{ hasOwnRule ? t(':own_rule_open') : t(':own_rule') }}
     </button>
   </div>
@@ -28,9 +41,9 @@
 import { computed, ref } from 'vue'
 import { useI18nNs } from '@/web/i18n'
 import type { FilterBlock, ParsedFilter } from './filter-parser'
-import { higherTier, moveTargets, tierLadder } from './filter-edit'
+import { higherTier, listsBase, lookOf, moveTargets, tierLadder, tierLooks } from './filter-edit'
 import { styleCss, styleFromActions } from './style'
-import { blockTierName } from './names'
+import { blockTierName, blockTierNames } from './names'
 
 const props = defineProps<{
   parsed: ParsedFilter
@@ -39,10 +52,14 @@ const props = defineProps<{
   hasOwnRule: boolean
   busy: boolean
   ruleTitle: (block: FilterBlock) => string
+  // the button of the own rule is somewhere else
+  noOwnRule?: boolean
+  // the item has a rule of its own that looks so
+  ownLook?: string
 }>()
 
 const emit = defineEmits<{
-  (e: 'move', target: FilterBlock): void
+  (e: 'move' | 'look', target: FilterBlock): void
   (e: 'own-rule'): void
 }>()
 
@@ -50,7 +67,11 @@ const { t } = useI18nNs('loot_filter')
 
 const ladder = computed(() => tierLadder(props.parsed, props.block))
 const up = computed(() => higherTier(ladder.value, props.block))
-const others = computed(() => moveTargets(props.parsed, props.block))
+// moved to a tier that already has it, the item would be just lost by this one
+const others = computed(() => moveTargets(props.parsed, props.block).filter(b => !listsBase(b, props.baseType)))
+const looks = computed(() => ladder.value.length ? [] : tierLooks(props.parsed, props.block).slice(0, 24))
+const currentLook = computed(() => props.ownLook ?? lookOf(props.block))
+const ownRuleShown = computed(() => !props.block.continue && !props.noOwnRule)
 const target = ref<number | null>(null)
 
 function moveToSelected () {
@@ -59,7 +80,7 @@ function moveToSelected () {
 }
 
 function tierStyle (b: FilterBlock) {
-  return { ...styleCss(styleFromActions(b.actions), b.visibility === 'Hide'), fontSize: '0.75rem', borderWidth: '1px' }
+  return { ...styleCss(styleFromActions(b.actions), b.visibility === 'Hide' || b.isDisabled), fontSize: '0.75rem', borderWidth: '1px' }
 }
 </script>
 
