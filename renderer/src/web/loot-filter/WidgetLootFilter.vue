@@ -1,6 +1,6 @@
 <template>
   <Widget :config="{ ...config, anchor }" move-handles="none" :removable="false" :inline-edit="false">
-    <div :class="$style.window" class="relative text-gray-200 shadow-lg flex flex-col"
+    <div ref="windowEl" :class="$style.window" class="relative text-gray-200 shadow-lg flex flex-col"
       :style="mode === 'browse' ? 'width: 64rem; max-width: 96vw; height: 88vh;' : 'width: 36rem; max-width: 96vw; max-height: 92vh;'">
       <!-- header -->
       <div :class="$style.titlebar" class="px-3 py-2 flex items-baseline gap-2">
@@ -31,8 +31,8 @@
           </div>
 
           <!-- state banners -->
-          <div v-if="!isCopy && editsTotal" class="bg-yellow-900 text-yellow-100 rounded px-2 py-1 text-sm">
-            {{ t(':edits_inactive', [editsTotal]) }}
+          <div v-if="!isCopy && editsActive" class="bg-yellow-900 text-yellow-100 rounded px-2 py-1 text-sm">
+            {{ t(':edits_inactive', [editsActive]) }}
             <button class="btn mt-1 w-full" :disabled="busy" @click="rebuild(true)">{{ t(':enable_copy') }}</button>
           </div>
           <div v-else-if="!isCopy" class="bg-blue-900 text-blue-100 rounded px-2 py-1 text-xs">
@@ -42,15 +42,6 @@
           <div v-if="isCopy && sourceUpdated" class="bg-yellow-900 text-yellow-100 rounded px-2 py-1 text-sm">
             {{ t(':source_updated') }}
             <button class="btn mt-1 w-full" :disabled="busy" @click="rebuild(false)">{{ t(':rebuild_copy') }}</button>
-          </div>
-          <!-- items dropped from their tiers by the × of the older versions -->
-          <div v-if="removedByX.length" class="bg-yellow-900 text-yellow-100 rounded px-2 py-1 text-sm">
-            {{ t(':removed_items', [removedByX.length]) }}
-            <div class="text-xs truncate" :title="removedByX.map(x => x.baseType).join(', ')">{{ removedByX.map(x => x.baseType).join(', ') }}</div>
-            <div class="flex gap-2 mt-1">
-              <button class="btn flex-1" :disabled="busy || !info.source" @click="fixRemoved(true)"><i class="fas fa-eye-slash"></i> {{ t(':removed_hide') }}</button>
-              <button class="btn flex-1" :disabled="busy || !info.source" @click="fixRemoved(false)"><i class="fas fa-undo"></i> {{ t(':removed_return') }}</button>
-            </div>
           </div>
           <div v-if="orphans.length" class="bg-yellow-900 text-yellow-100 rounded px-2 py-1 text-xs">{{ t(':orphans', [orphans.length]) }}</div>
 
@@ -70,20 +61,21 @@
                   </div>
                   <div class="text-xs text-gray-400 truncate">{{ [...conditionHints(finalBlock, t), t(':line', [finalBlock.startLine + 1])].join(' · ') }}</div>
                 </div>
-                <button v-if="!matchedRule" :class="$style.fbBtn" @click="findInCustomizer(finalBlock)">{{ t(':fb_find') }} <i class="fas fa-arrow-right"></i></button>
+                <button v-if="!itemRule" :class="$style.fbBtn" @click="findInCustomizer(finalBlock)">{{ t(':fb_find') }} <i class="fas fa-arrow-right"></i></button>
               </div>
               <div v-if="match.final!.result === null" class="text-xs text-yellow-400 px-2">{{ t(':assumed') }}</div>
               <template v-if="matchedRule">
-                <div class="flex items-center gap-2 p-2">
+                <div v-if="itemRule" class="flex items-center gap-2 p-2">
                   <span class="px-2 py-0.5 font-poe" :style="previewStyle">{{ item!.info.name }}</span>
                   <span class="flex-1"></span>
-                  <button :class="$style.fbBtn" :disabled="busy" @click="removeRule(matchedRule.id)"><i class="fas fa-undo"></i> {{ t(':remove_override') }}</button>
+                  <button :class="$style.fbBtn" :disabled="busy" @click="removeRule(itemRule.id)"><i class="fas fa-undo"></i> {{ t(':remove_override') }}</button>
                 </div>
                 <!-- an own rule of the item is edited like a tier -->
-                <TierEditor v-if="matchedRule.visibility !== 'Hide'"
+                <TierEditor v-if="matchedRule.visibility !== 'Hide' || matchedRule.custom"
                   :key="`editor-rule-${finalBlock.index}-${info.mtime}`"
                   :parsed="parsed" :block="finalBlock" :block-text="blockText(parsed, finalBlock)"
                   :item-name="item!.info.name" :has-patch="false" :busy="busy" is-rule
+                  :custom="matchedRule.custom ? matchedRule : undefined"
                   :rule-title="ruleTitle" :highlight="fItem.baseType" :rules="edits.rules"
                   @unsaved="addUnsaved(finalBlock!, $event)"
                   @save="saveTier(finalBlock!, $event)" @disable="removeRule(matchedRule.id)" />
@@ -173,7 +165,7 @@
           <!-- item actions -->
           <div class="flex flex-col gap-2 border-t border-gray-700 pt-3">
             <div class="text-xs uppercase text-gray-500">{{ t(':this_item') }}</div>
-            <button v-if="matchedRule" class="btn" :disabled="busy" @click="removeRule(matchedRule.id)">
+            <button v-if="itemRule" class="btn" :disabled="busy" @click="removeRule(itemRule.id)">
               <i class="fas fa-undo"></i> {{ t(':remove_override') }}
             </button>
             <template v-else>
@@ -198,10 +190,10 @@
           <!-- the whole filter, like FilterBlade -->
           <FilterBrowser v-if="mode === 'browse'" style="height: 70vh;"
             :parsed="parsed" :mtime="info.mtime" :busy="busy" :focus="browseFocus"
-            :patch-of="patchOf" :rule-title="ruleTitle" :rule-for="ruleOf"
+            :patch-of="patchOf" :rule-title="ruleTitle" :rule-for="ruleOf" :can-add="info.source != null"
             @save="saveTier" @reset="resetTier" @disable="disableTier" @move="moveBaseType"
             :rules="edits.rules" @hide-item="hideBase" @unhide-item="unhideBase" @own-rule="ownRule" @unsaved="addUnsaved"
-            @reset-blocks="resetBlocks" />
+            @reset-blocks="resetBlocks" @custom-add="addCustomRule" @custom-action="customAction" @custom-reset="resetCustom" />
 
           <!-- all my edits for this filter -->
           <details v-if="editsTotal" class="text-sm" @toggle="editsOpen = ($event.target as HTMLDetailsElement).open">
@@ -313,7 +305,7 @@ export default {
 </script>
 
 <script setup lang="ts">
-import { computed, inject, ref, shallowRef } from 'vue'
+import { computed, inject, provide, ref, shallowRef } from 'vue'
 import { useI18nNs } from '@/web/i18n'
 import { MainProcess } from '@/web/background/IPC'
 import { AppConfig } from '@/web/Config'
@@ -322,14 +314,15 @@ import type { WidgetManager } from '../overlay/interfaces'
 import Widget from '../overlay/Widget.vue'
 import TierEditor, { type TierChange } from './TierEditor.vue'
 import MoveBar from './MoveBar.vue'
+import type { CustomAction } from './CustomRules.vue'
 import FilterBrowser from './FilterBrowser.vue'
-import { parseFilter, blockText, type FilterBlock, type ParsedFilter, type Visibility } from './filter-parser'
+import { parseFilter, parseLine, blockText, type FilterBlock, type ParsedFilter, type Visibility } from './filter-parser'
 import { toFilterItem, type FilterItem } from './item-props'
 import { matchItem, relatedBlocks } from './matcher'
-import { listsBase } from './filter-edit'
+import { isPositiveBaseType, listsBase } from './filter-edit'
 import {
   ruleForItem, ruleForBase, ruleLines, ruleFromLines, ownRuleOf, withoutHiding,
-  itemConditions, ruleIdOfBlock, onlineVersion, type AptRule
+  itemConditions, ruleIdOfBlock, onlineVersion, newCustomRule, newRule, isActive, ruleBlock, ruleConditions, type AptRule
 } from './apt-rules'
 import {
   emptyEdits, editsCount, normalizeStore, storeKey as storeKeyOf, newId, selectorOf, patchForBlock, findBlock,
@@ -351,6 +344,10 @@ const wm = inject<WidgetManager>('wm')!
 const { t } = useI18nNs('loot_filter')
 
 api.trackAreaLevel()
+
+// the list of conditions covers the whole window
+const windowEl = ref<HTMLElement | null>(null)
+provide('loot-filter-window', windowEl)
 
 const checkPosition = ref({ x: 1, y: 1 })
 const item = shallowRef<ParsedItem | null>(null)
@@ -434,6 +431,7 @@ async function load () {
   } finally {
     loading.value = false
   }
+  await hideRemoved()
 }
 
 // ---- filter state ----
@@ -446,6 +444,8 @@ const source = computed<FilterSource | null>(() => {
 const key = computed(() => source.value ? storeKeyOf(source.value) : null)
 const edits = computed<FilterEdits>(() => (key.value && store.value[key.value]) || emptyEdits())
 const editsTotal = computed(() => editsCount(edits.value))
+// without the rules that are disabled by the user
+const editsActive = computed(() => editsTotal.value - edits.value.rules.filter(r => !isActive(r)).length)
 const sourceUpdated = computed(() => {
   const i = info.value
   if (!i?.source || i.kind !== 'managed') return false
@@ -523,6 +523,8 @@ function findInCustomizer (block: FilterBlock) {
 }
 
 const matchedRule = computed(() => finalBlock.value ? ruleOf(finalBlock.value) : null)
+// my rule of this item, not a rule for many of them
+const itemRule = computed(() => matchedRule.value?.custom ? null : matchedRule.value)
 const itemCondText = computed(() => fItem.value ? itemConditions(fItem.value).join(', ') : '')
 
 function assume (index: number) {
@@ -688,6 +690,13 @@ async function commit (newEdits: FilterEdits, message: string, opts?: { noHistor
 
     const src = source.value!
     const { text } = buildCopy(src, i.source.contents, newEdits)
+    // e.g. a rule that is still disabled: there is nothing new for the game
+    const isSame = text === (isCopy.value ? i.contents : buildCopy(src, i.source.contents, oldEdits).text)
+    if (isSame && !opts?.forceSwitch) {
+      if (!opts?.noHistory) history.value = [...history.value, oldEdits]
+      status.value = message
+      return
+    }
     const sep = i.filterDir.includes('\\') ? '\\' : '/'
     const name = isCopy.value ? i.name : copyName(src)
     const path = isCopy.value ? i.path : `${i.filterDir}${sep}${name}.filter`
@@ -768,33 +777,86 @@ function openRule (id: string, baseType: string) {
 }
 
 function saveRule (rule: AptRule, change: TierChange) {
-  const patch: TierPatch = { id: rule.id, selector: { header: '', fingerprint: '' }, label: rule.label, updatedAt: 0, ...change }
-  const changed = ruleFromLines(rule, applyPatch(ruleLines(rule), patch))
+  const { disabled, ...rest } = change
+  let base = rule
+  if (rule.custom) {
+    base = { ...rule, disabled: disabled ?? rule.disabled }
+    // the last item is removed: the rule stays, it just has no items
+    const left = itemsOf(rule).filter(x => !rest.removeBaseTypes?.includes(x))
+    if (rest.removeBaseTypes && !left.length) {
+      base.conditions = rule.conditions.filter(raw => {
+        const c = parseLine(raw)
+        return !c || !isPositiveBaseType(c)
+      })
+      rest.removeBaseTypes = undefined
+    }
+  }
+  const patch: TierPatch = { id: rule.id, selector: { header: '', fingerprint: '' }, label: rule.label, updatedAt: 0, ...rest }
+  const changed = ruleFromLines(base, applyPatch(ruleLines(base), patch))
   if (!changed) return removeRule(rule.id)
   return withEdits(e => ({ ...e, rules: e.rules.map(r => r.id === rule.id ? changed : r) }), t(':done_rule'))
 }
 
+function itemsOf (rule: AptRule) {
+  return ruleConditions(rule).filter(isPositiveBaseType).flatMap(c => c.values)
+}
+
+// ---- custom rules: "Highlight specific bases" ----
+
+function addCustomRule () {
+  if (busy.value) return
+  const rule = newCustomRule(t(':custom_unnamed'))
+  return withEdits(e => ({ ...e, rules: [...e.rules, rule] }), t(':done_custom'))
+}
+
+function customAction (id: string, action: CustomAction, label?: string) {
+  if (busy.value) return
+  const rule = edits.value.rules.find(r => r.id === id)
+  if (!rule) return
+  if (action === 'delete') return removeRule(id)
+  return withEdits(e => {
+    const rules = [...e.rules]
+    const at = rules.findIndex(r => r.id === id)
+    if (action === 'rename') {
+      rules[at] = { ...rule, label: label! }
+    } else if (action === 'copy') {
+      rules.splice(at + 1, 0, newRule({ ...rule }))
+    } else {
+      // the order of the custom rules only
+      const custom = rules.map((r, i) => r.custom ? i : -1).filter(i => i >= 0)
+      const other = custom[custom.indexOf(at) + (action === 'up' ? -1 : 1)]
+      if (other != null) [rules[at], rules[other]] = [rules[other], rules[at]]
+    }
+    return { ...e, rules }
+  }, t(':done_rule'))
+}
+
+function resetCustom () {
+  return withEdits(e => ({ ...e, rules: e.rules.filter(r => !r.custom) }), t(':done_override_removed'))
+}
+
 // ---- items dropped from their tiers by the × of the older versions ----
 
-const removedByX = computed(() => parsed.value ? removedItems(parsed.value, edits.value) : [])
-
-function fixRemoved (hide: boolean) {
-  const items = removedByX.value
-  return withEdits(e => {
-    const out = withoutRemoved(e, items)
-    return hide ? { ...out, rules: [...out.rules, ...items.map(x => tierItemRule(x.baseType, x.block, 'Hide'))] } : out
-  }, hide ? t(':done_hidden') : t(':done_returned'))
+// They got the style of new and unknown items instead of being hidden: hide them
+function hideRemoved () {
+  if (!parsed.value || !info.value?.source) return
+  const items = removedItems(parsed.value, edits.value)
+  if (!items.length) return
+  const clean = withoutRemoved(edits.value, items)
+  const rules = items.map(x => tierItemRule(x.baseType, x.block, 'Hide'))
+  return commit({ ...clean, rules: [...clean.rules, ...rules] }, t(':done_hidden'), { noHistory: true, keepFilter: true })
 }
 
 // ---- edits of a tier left without Save: ask what to do with them ----
 
-interface UnsavedTier { id: string, selector: BlockSelector, label: string, change: TierChange }
+interface UnsavedTier { id: string, selector: BlockSelector, label: string, ruleId?: string, change: TierChange }
 const unsaved = shallowRef<UnsavedTier[]>([])
 
 function addUnsaved (block: FilterBlock, change: TierChange) {
   const selector = selectorOf(block)
+  const rule = ruleOf(block)
   const same = (u: UnsavedTier) => JSON.stringify(u.selector) === JSON.stringify(selector)
-  unsaved.value = [...unsaved.value.filter(u => !same(u)), { id: newId(), selector, label: ruleTitle(block), change }]
+  unsaved.value = [...unsaved.value.filter(u => !same(u)), { id: newId(), selector, label: rule?.label ?? ruleTitle(block), ruleId: rule?.id, change }]
 }
 
 function dropUnsaved (id: string) {
@@ -804,7 +866,9 @@ function dropUnsaved (id: string) {
 async function saveUnsaved (id: string) {
   const u = unsaved.value.find(x => x.id === id)
   if (!u || !parsed.value) return
-  const block = findBlock(parsed.value, u.selector)
+  // a disabled rule is not in the filter
+  const rule = edits.value.rules.find(r => r.id === u.ruleId)
+  const block = rule ? ruleBlock(rule) : findBlock(parsed.value, u.selector)
   if (!block) {
     error.value = t(':unsaved_lost', [u.label])
     dropUnsaved(id)

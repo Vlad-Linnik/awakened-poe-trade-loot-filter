@@ -57,6 +57,7 @@ export function describeChanges (source: ParsedFilter, edits: FilterEdits, t: T)
       time: rule.createdAt,
       orphan: false,
       details: [
+        ...(rule.disabled ? [t(':rep_rule_disabled')] : []),
         t(':rep_rule_vis', [visName(rule.visibility, t)]),
         ...rule.conditions.map(c => `  ${c}`),
         ...(rule.actions.length ? [t(':rep_rule_style'), ...rule.actions.map(a => `  ${a}`)] : [])

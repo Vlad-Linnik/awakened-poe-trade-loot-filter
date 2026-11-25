@@ -14,10 +14,17 @@
           <span v-else :class="$style.icon"></span>
           <span :class="$style.headerTitle">{{ sec.title }}</span>
           <span v-if="sec.changes" :class="$style.changes">{{ t(':fb_changes', [sec.changes]) }}</span>
-          <button v-if="group.id !== 'rules'" :class="$style.reset" :disabled="!sec.changes || busy" @click.stop="emit('reset-blocks', sec.blocks)">{{ t(':fb_reset') }}</button>
+          <button v-if="sec.isCustom" :class="$style.reset" :disabled="!customRules.length || busy" @click.stop="resetCustom">{{ resetArmed ? t(':custom_reset_sure') : t(':fb_reset') }}</button>
+          <button v-else-if="group.id !== 'rules'" :class="$style.reset" :disabled="!sec.changes || busy" @click.stop="emit('reset-blocks', sec.blocks)">{{ t(':fb_reset') }}</button>
         </div>
 
-        <div v-if="isOpen(sec.title)" class="flex flex-col gap-2 p-2">
+        <div v-if="sec.isCustom && isOpen(sec.title)" class="p-2">
+          <CustomRules :parsed="parsed" :rules="customRules" :shown="customShown" :busy="busy" :can-add="canAdd"
+            :focus="customFocus" :highlight="highlight ?? undefined"
+            @add="emit('custom-add')" @action="(...args) => emit('custom-action', ...args)"
+            @save="(b: FilterBlock, c: TierChange) => emit('save', b, c)" @unsaved="(b: FilterBlock, c: TierChange) => emit('unsaved', b, c)" />
+        </div>
+        <div v-else-if="isOpen(sec.title)" class="flex flex-col gap-2 p-2">
           <div v-for="sub of sec.subs" :key="sub.title" :class="[$style.sub, { [$style.open]: isOpen(sec.title + '/' + sub.title) }]">
             <div :class="$style.subHeader" @click="toggle(sec.title + '/' + sub.title)">
               <img v-if="sub.icon" :src="sub.icon" :class="$style.subIcon">
@@ -84,6 +91,7 @@ import { iconForBlocks, iconForBase, sampleName, shapeGlyph, effectColor } from 
 import { CATEGORIES, GROUPS, placeOf } from './fb-categories'
 import { blockTierName, conditionHints } from './names'
 import TierEditor, { type TierChange } from './TierEditor.vue'
+import CustomRules, { type CustomAction } from './CustomRules.vue'
 
 const props = defineProps<{
   parsed: ParsedFilter
@@ -95,12 +103,15 @@ const props = defineProps<{
   // open this tier (e.g. "Find in Customizer" from an item)
   focus?: { selector: BlockSelector, item?: string } | null
   rules: AptRule[]
+  canAdd: boolean
 }>()
 
 const emit = defineEmits<{
   (e: 'save' | 'unsaved', block: FilterBlock, change: TierChange): void
   (e: 'reset' | 'disable', block: FilterBlock): void
   (e: 'reset-blocks', blocks: FilterBlock[]): void
+  (e: 'custom-add' | 'custom-reset'): void
+  (e: 'custom-action', id: string, action: CustomAction, label?: string): void
   (e: 'move', baseType: string, from: FilterBlock, to: FilterBlock): void
   (e: 'hide-item' | 'unhide-item' | 'own-rule', baseType: string, block: FilterBlock): void
 }>()
@@ -144,7 +155,43 @@ function baseTypes (block: FilterBlock) {
 
 interface Entry { block: FilterBlock, count: number, matchedItems: string[], minimap: ReturnType<typeof styleFromActions>['minimap'] }
 interface Sub { title: string, blocks: Entry[], icon: string | null, changes: number }
-interface Section { title: string, subs: Sub[], blocks: FilterBlock[], icon: string | null, changes: number, order: number }
+interface Section { title: string, subs: Sub[], blocks: FilterBlock[], icon: string | null, changes: number, order: number, isCustom?: boolean }
+
+// ---- rules made from scratch: they are a category of their own, like on FilterBlade ----
+
+const CUSTOM_TITLE = 'Endgame - Highlight specific bases'
+const customRules = computed(() => props.rules.filter(r => r.custom))
+const customShown = computed(() => {
+  const q = search.value.toLowerCase()
+  if (!q || CUSTOM_TITLE.toLowerCase().includes(q)) return customRules.value
+  return customRules.value.filter(r => `${r.label} ${r.conditions.join(' ')}`.toLowerCase().includes(q))
+})
+const customFocus = ref<string | undefined>()
+
+const customSection = computed<Section[]>(() => {
+  if (search.value && !customShown.value.length) return []
+  return [{
+    title: CUSTOM_TITLE,
+    subs: [],
+    blocks: [],
+    icon: iconForBase('Two-Toned Boots') ?? iconForBase('Opal Ring'),
+    changes: customRules.value.length,
+    order: CATEGORIES.length,
+    isCustom: true
+  }]
+})
+
+// asks once more: all the rules are removed
+const resetArmed = ref(false)
+function resetCustom () {
+  if (!resetArmed.value) {
+    resetArmed.value = true
+    setTimeout(() => { resetArmed.value = false }, 3000)
+    return
+  }
+  resetArmed.value = false
+  emit('custom-reset')
+}
 
 // FilterBlade-like tree: group -> category -> NeverSink subsection -> tiers
 const groups = computed(() => {
@@ -153,6 +200,7 @@ const groups = computed(() => {
   const mine: Section = { title: t(':my_rules'), subs: [], blocks: [], icon: null, changes: 0, order: 0 }
   for (const block of props.parsed.blocks) {
     const rule = props.ruleFor(block)
+    if (rule?.custom) continue
     const items = baseTypes(block)
     let matchedItems: string[] = []
     if (q) {
@@ -197,7 +245,10 @@ const groups = computed(() => {
     .map(g => ({
       id: g.id,
       title: g.title,
-      sections: [...byCategory.values()].filter(sec => sec.group === g.id).sort((a, b) => a.order - b.order)
+      sections: [
+        ...[...byCategory.values()].filter(sec => sec.group === g.id).sort((a, b) => a.order - b.order),
+        ...(g.id === 'endgame' ? customSection.value : [])
+      ] as Section[]
     }))
     .filter(g => g.sections.length)]
 })
@@ -206,6 +257,14 @@ watch(() => props.focus, (focus) => {
   if (!focus) return
   const block = findBlock(props.parsed, focus.selector)
   if (!block) return
+  const custom = props.ruleFor(block)?.custom ? props.ruleFor(block) : null
+  if (custom) {
+    search.value = ''
+    highlight.value = focus.item ?? null
+    customFocus.value = custom.id
+    opened.value = new Set([...opened.value, CUSTOM_TITLE])
+    return
+  }
   // the search may not include it
   const isListed = groups.value.some(g => g.sections.some(sec => sec.blocks.some(b => b.index === block.index)))
   if (!isListed) search.value = ''

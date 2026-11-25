@@ -20,6 +20,10 @@ export interface AptRule {
   createdAt: number
   // the tier the rule was made from: it stands right before it; without it - at the top of the filter
   anchor?: BlockSelector
+  // made from scratch by the user ("Highlight specific bases"), not for an item of the filter
+  custom?: boolean
+  // kept by the app, but not written to the filter
+  disabled?: boolean
 }
 
 export const SECTION_START = '#===APT-RULES-START==='
@@ -41,6 +45,28 @@ export function itemConditions (item: FilterItem): string[] {
     if (item.rarity === 'Unique' && item.name.startsWith('Replica ')) out.push('Replica True')
   }
   return out
+}
+
+// a rule without conditions would restyle everything
+export function isActive (rule: AptRule): boolean {
+  return !rule.disabled && rule.conditions.length > 0
+}
+
+// starts disabled, as the user has to choose the items first
+export function newCustomRule (label: string): AptRule {
+  return newRule({
+    visibility: 'Show',
+    label,
+    conditions: ['Rarity Normal Magic Rare', 'Corrupted False', 'ItemLevel >= 68'],
+    actions: ['SetFontSize 40', 'SetBorderColor 220 40 40 255', 'SetBackgroundColor 90 35 40 255'],
+    custom: true,
+    disabled: true
+  })
+}
+
+// my rule as a block of a filter: a disabled one is not in the filter itself
+export function ruleBlock (rule: AptRule): FilterBlock {
+  return parseFilter(ruleLines(rule).join('\n')).blocks[0]
 }
 
 export function newRule (props: Omit<AptRule, 'id' | 'createdAt'>): AptRule {
@@ -102,6 +128,8 @@ function rulesOfTier (filter: ParsedFilter, rules: AptRule[], block: FilterBlock
   const rarities = raritiesOf(block.conditions)
   const tiers = new Set([block.index, ...tierLadder(filter, block).map(b => b.index)])
   return rules.filter(rule => {
+    // it has conditions of its own and is listed separately
+    if (rule.custom) return false
     const anchor = rule.anchor && findBlock(filter, rule.anchor)
     if (anchor) return tiers.has(anchor.index)
     return [...raritiesOf(ruleConditions(rule))].some(r => rarities.has(r))
@@ -149,7 +177,7 @@ export function ownRuleOf (filter: ParsedFilter, rules: AptRule[], baseType: str
   return rulesFor(filter, rules, baseType, block).filter(r => r.visibility !== 'Hide').pop() ?? null
 }
 
-function ruleConditions (rule: AptRule): FilterLine[] {
+export function ruleConditions (rule: AptRule): FilterLine[] {
   return rule.conditions.map(c => parseLine(c)).filter((c): c is FilterLine => c != null)
 }
 
@@ -164,7 +192,7 @@ export function ruleLines (rule: AptRule): string[] {
 // the rule with the text changed in the editor; null = it has nothing left to apply to
 export function ruleFromLines (rule: AptRule, lines: string[] | null): AptRule | null {
   const block = lines && parseFilter(lines.join('\n')).blocks[0]
-  if (!block || !block.conditions.length) return null
+  if (!block || (!block.conditions.length && !rule.custom)) return null
   return {
     ...rule,
     visibility: block.visibility,
@@ -186,8 +214,10 @@ export function renderSection (rules: AptRule[]): string[] {
 }
 
 export function renderRules (rules: AptRule[]): string[] {
-  // newest rules first: the most recent decision wins
-  return [...rules].reverse().flatMap(rule => [...ruleLines(rule), ''])
+  // newest rules first: the most recent decision wins; rules of items are above
+  // the custom ones, which the user puts in order
+  return [...rules.filter(r => !r.custom).reverse(), ...rules.filter(r => r.custom)]
+    .flatMap(rule => [...ruleLines(rule), ''])
 }
 
 // version of a source filter: `#hash:` of online filters, content hash otherwise

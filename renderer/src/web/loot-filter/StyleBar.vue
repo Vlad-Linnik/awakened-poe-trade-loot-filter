@@ -17,7 +17,8 @@
 
       <!-- preview + font size -->
       <div class="flex flex-col items-center justify-center gap-2 min-w-0">
-        <div class="px-2 py-0.5 font-poe whitespace-nowrap max-w-full overflow-hidden" :style="previewCss">
+        <div v-if="notice" class="text-center text-sm px-2" style="color: #e0762b;">{{ notice }}</div>
+        <div v-else class="px-2 py-0.5 font-poe whitespace-nowrap max-w-full overflow-hidden" :style="previewCss">
           <span v-if="style.minimap" :style="{ color: effectColor(style.minimap.color) }">{{ shapeGlyph(style.minimap.shape) }}</span>
           {{ previewName }}
         </div>
@@ -143,6 +144,8 @@ const props = defineProps<{
   initial: FilterStyle
   previewName: string
   hidden: boolean
+  // instead of the preview
+  notice?: string
 }>()
 
 const emit = defineEmits<{

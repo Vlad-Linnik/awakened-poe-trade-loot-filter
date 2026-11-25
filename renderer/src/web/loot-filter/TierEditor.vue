@@ -4,41 +4,29 @@
       <div class="flex flex-wrap gap-2 items-stretch min-w-0">
         <!-- like FilterBlade's Simulate: Show / Disable -->
         <div class="flex flex-col gap-1 justify-center" style="width: 5.5rem;">
-          <button :class="[$style.btn, visibility === 'Show' ? $style.show : $style.hide]"
-            @click="visibility = visibility === 'Show' ? 'Hide' : 'Show'">
-            {{ visibility === 'Show' ? t(':vis_show') : t(':vis_hide') }}
-          </button>
-          <button v-if="!isRule" :class="$style.btn" :disabled="busy" @click="leave('disable')">{{ t(':fb_disable') }}</button>
-          <button v-else :class="$style.btn" :disabled="busy" :title="t(':remove_override')" @click="leave('disable')"><i class="fas fa-trash-alt text-xs"></i> {{ t(':delete_rule') }}</button>
+          <template v-if="custom">
+            <button v-for="state of (['Show', 'Hide', 'disabled'] as const)" :key="state"
+              :class="[$style.btn, { [$style.show]: ruleState === state }]" @click="setRuleState(state)">
+              {{ state === 'Show' ? t(':vis_show') : state === 'Hide' ? t(':vis_hide') : t(':fb_disable') }}
+            </button>
+          </template>
+          <template v-else>
+            <button :class="[$style.btn, visibility === 'Show' ? $style.show : $style.hide]"
+              @click="visibility = visibility === 'Show' ? 'Hide' : 'Show'">
+              {{ visibility === 'Show' ? t(':vis_show') : t(':vis_hide') }}
+            </button>
+            <button v-if="!isRule" :class="$style.btn" :disabled="busy" @click="leave('disable')">{{ t(':fb_disable') }}</button>
+            <button v-else :class="$style.btn" :disabled="busy" :title="t(':remove_override')" @click="leave('disable')"><i class="fas fa-trash-alt text-xs"></i> {{ t(':delete_rule') }}</button>
+          </template>
         </div>
         <StyleBar class="flex-1 min-w-0" v-model="style" :initial="initial"
-          :preview-name="itemName" :hidden="visibility === 'Hide'" />
-      </div>
-
-      <!-- FilterBlade's common conditions: item level, area level, corrupted, identified -->
-      <div :class="$style.items" class="flex flex-col gap-1">
-        <div v-for="row of fbNum" :key="row.keyword" class="flex flex-wrap items-center gap-2">
-          <span class="w-24">• {{ row.keyword }}:</span>
-          <select v-model="row.op" :class="$style.input" class="w-28">
-            <option v-for="op of NUM_OPS" :key="op.op" :value="op.op">{{ op.label }}</option>
-          </select>
-          <input v-model.number="row.value" type="number" min="1" max="100" :disabled="row.op === 'any'"
-            :class="$style.input" class="w-14">
-          <input v-model.number="row.value" type="range" min="1" max="100" :disabled="row.op === 'any'"
-            class="flex-1" style="min-width: 5rem;" :class="{ 'opacity-40': row.op === 'any' }">
-        </div>
-        <div v-for="row of fbBool" :key="row.keyword" class="flex justify-center">
-          <button v-for="opt of (['yes', 'no', 'either'] as const)" :key="opt"
-            :class="[$style.seg, { [$style.segOn]: row.state === opt }]" @click="row.state = opt">
-            {{ opt === 'yes' ? row.keyword : opt === 'no' ? `NOT ${row.keyword}` : 'Either' }}
-          </button>
-        </div>
+          :preview-name="itemName" :hidden="visibility === 'Hide'" :notice="disabled ? t(':custom_disabled') : undefined" />
       </div>
 
       <!-- items of the tier -->
-      <div v-if="hasBaseTypes" :class="$style.items">
+      <div v-if="hasBaseTypes || custom" :class="$style.items">
         <div class="flex items-center gap-2 mb-1">
-          <span class="text-xs uppercase text-gray-400">{{ t(':tier_items', [items.length]) }}</span>
+          <span class="text-xs uppercase text-gray-400">{{ custom ? t(':custom_items', [items.length]) : t(':tier_items', [items.length]) }}</span>
           <span class="flex-1"></span>
           <input v-if="items.length > 12" v-model.trim="itemSearch" :placeholder="t(':search')" :class="$style.input" class="w-32">
         </div>
@@ -90,38 +78,19 @@
         </div>
       </div>
 
-      <!-- conditions -->
-      <details :class="$style.items">
-        <summary class="cursor-pointer text-xs uppercase text-gray-400">{{ t(':conditions') }} ({{ condRows.length }})</summary>
-        <div class="flex flex-col gap-1 mt-1">
-          <div v-for="row of condRows" :key="row.keyword" class="flex items-center gap-2" :class="{ 'opacity-40 line-through': row.removed }">
-            <span class="w-28 truncate" :title="row.keyword">{{ row.keyword }}</span>
-            <template v-if="row.kind === 'number' || row.kind === 'rarity'">
-              <select v-model="row.op" :class="$style.input" :disabled="row.removed">
-                <option v-for="op of OPS" :key="op" :value="op">{{ op }}</option>
-              </select>
-              <select v-if="row.kind === 'rarity'" v-model="row.value" :class="$style.input" class="flex-1" :disabled="row.removed">
-                <option v-for="r of RARITIES" :key="r" :value="r">{{ r }}</option>
-              </select>
-              <input v-else v-model.trim="row.value" :class="$style.input" class="w-16" :disabled="row.removed">
-              <span class="flex-1"></span>
-            </template>
-            <input v-else v-model="row.text" :class="$style.input" class="flex-1 min-w-0" :disabled="row.removed">
-            <button class="text-gray-500 hover:text-red-400" :title="t(':remove_condition')" @click="row.removed = !row.removed">
-              <i class="fas" :class="row.removed ? 'fa-undo' : 'fa-times'"></i>
-            </button>
-          </div>
-          <div class="flex gap-1">
-            <input v-model="newCondition" :placeholder="t(':add_condition')" :class="$style.input" class="flex-1 min-w-0"
-              @keydown.enter.prevent="addCondition">
-            <button :class="$style.btn" :disabled="!newCondition.trim()" @click="addCondition"><i class="fas fa-plus"></i></button>
-          </div>
-          <div v-for="line of addedConditions" :key="line" class="text-xs text-green-300 flex gap-2">
-            <span class="flex-1">+ {{ line }}</span>
-            <button class="text-gray-500 hover:text-red-400" @click="addedConditions = addedConditions.filter(l => l !== line)"><i class="fas fa-times"></i></button>
-          </div>
+      <!-- rarity, corrupted, item level… and what is added from the list of all conditions -->
+      <div :class="$style.items" class="flex flex-col gap-1.5">
+        <ConditionRowEditor v-for="row of rows" :key="row.id" :row="row" :parsed="parsed"
+          @change="changeRow(row, $event)" @remove="removeRow(row)" />
+        <button :class="$style.btn" class="self-center px-8 mt-1" :disabled="!pickerHost" @click="pickerOpen = true">
+          <i class="fas fa-plus text-xs"></i> {{ t(':cond_add') }}
+        </button>
+        <div v-if="custom && !items.length && !namesClass" class="text-xs text-yellow-300">
+          <i class="fas fa-exclamation-triangle"></i> {{ t(':custom_wide') }}
         </div>
-      </details>
+      </div>
+      <ConditionPicker v-if="pickerOpen && pickerHost" :host="pickerHost" :used="usedKeywords"
+        @pick="addRow" @close="pickerOpen = false" />
     </template>
 
     <!-- raw text -->
@@ -143,24 +112,30 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, reactive, ref } from 'vue'
+import { computed, inject, onBeforeUnmount, reactive, ref, type Ref } from 'vue'
 import { useI18nNs } from '@/web/i18n'
-import { parseLine, stripComment, type FilterBlock, type ParsedFilter, type Visibility } from './filter-parser'
+import { type FilterBlock, type ParsedFilter, type Visibility } from './filter-parser'
 import { styleFromActions, styleToActions, STYLE_KEYWORDS, type FilterStyle } from './style'
 import StyleBar from './StyleBar.vue'
 import MoveBar from './MoveBar.vue'
 import { higherTier, listsBase, moveTargets, raritiesOf, tierLadder } from './filter-edit'
 import { ruleItems, type AptRule } from './apt-rules'
-import { baseScope, findBase, listedBases, searchBases } from './base-search'
+import { type BaseEntry, baseScope, findBase, listedBases, searchBases } from './base-search'
 import { blockTierName } from './names'
+import { changesOf, newRow, rowLines, rowsOf, type ConditionDef, type ConditionRow } from './conditions'
+import ConditionRowEditor from './ConditionRow.vue'
+import ConditionPicker from './ConditionPicker.vue'
 
 export interface TierChange {
   visibility?: Visibility
   actions?: Record<string, string | null>
-  conditions?: Record<string, string | null>
+  // keyword -> all its lines
+  conditions?: Record<string, string[]>
   addBaseTypes?: string[]
   removeBaseTypes?: string[]
   raw?: string
+  // only for custom rules
+  disabled?: boolean
 }
 
 const props = defineProps<{
@@ -177,6 +152,8 @@ const props = defineProps<{
   rules: AptRule[]
   // it is one of my rules, not a tier of the filter
   isRule?: boolean
+  // …made from scratch: it can be disabled, and have no items
+  custom?: AptRule
 }>()
 
 const emit = defineEmits<{
@@ -189,87 +166,47 @@ const emit = defineEmits<{
 
 const { t } = useI18nNs('loot_filter')
 
-const OPS = ['=', '==', '!=', '<', '<=', '>', '>=']
-const RARITIES = ['Normal', 'Magic', 'Rare', 'Unique']
-const NUMERIC = new Set([
-  'AreaLevel', 'ItemLevel', 'DropLevel', 'Quality', 'StackSize', 'GemLevel', 'MapTier', 'WaystoneTier',
-  'Sockets', 'LinkedSockets', 'Height', 'Width', 'MemoryStrands', 'CorruptedMods', 'EnchantmentPassiveNum',
-  'BaseArmour', 'BaseEvasion', 'BaseEnergyShield', 'BaseWard', 'BaseDefencePercentile', 'UnidentifiedItemTier'
-])
-
 // ---- visuals ----
 
 const initial: FilterStyle = styleFromActions(props.block.actions)
 const style = ref<FilterStyle>(JSON.parse(JSON.stringify(initial)) as FilterStyle)
 const visibility = ref<Visibility>(props.block.visibility === 'Hide' ? 'Hide' : 'Show')
+const disabled = ref(props.custom?.disabled === true)
+const ruleState = computed(() => disabled.value ? 'disabled' : visibility.value)
+
+function setRuleState (state: 'Show' | 'Hide' | 'disabled') {
+  disabled.value = state === 'disabled'
+  if (state !== 'disabled') visibility.value = state
+}
 
 // ---- conditions ----
 
-// ---- FilterBlade's common conditions ----
+// FilterBlade's common conditions are always there
+const hasRarity = props.block.conditions.some(c => c.keyword === 'Rarity')
+const rows = reactive(rowsOf(props.block.conditions, props.custom
+  ? ['Rarity', 'Corrupted', 'ItemLevel']
+  : [...(hasRarity ? ['Rarity'] : []), 'Corrupted', 'Identified', 'ItemLevel', 'AreaLevel']))
 
-const NUM_OPS = [
-  { op: 'any', label: 'any' },
-  { op: '>=', label: '>= at least' },
-  { op: '<=', label: '<= at most' },
-  { op: '=', label: '= exactly' },
-  { op: '>', label: '> more than' },
-  { op: '<', label: '< less than' }
-] as const
-const FB_NUM = ['ItemLevel', 'AreaLevel']
-const FB_BOOL = ['Corrupted', 'Identified']
+const pickerHost = inject<Ref<HTMLElement | null>>('loot-filter-window', ref(null))
+const pickerOpen = ref(false)
+const usedKeywords = computed(() => rows.filter(r => !r.removed).map(r => r.keyword))
+const namesClass = computed(() => rows.some(r => r.keyword === 'Class' && !r.removed && rowLines(r).length))
 
-const fbNum = reactive(FB_NUM.map(keyword => {
-  const c = props.block.conditions.find(x => x.keyword === keyword)
-  const single = c && c.values.length === 1 && /^\d+$/.test(c.values[0])
-  return {
-    keyword,
-    op: (c && single ? (c.op === '==' ? '=' : (c.op || '=')) : 'any') as string,
-    value: single ? Number(c!.values[0]) : 1,
-    // conditions this editor can't show (several values...) stay as they are
-    editable: !c || single,
-    initialOp: (c && single ? (c.op === '==' ? '=' : (c.op || '=')) : 'any') as string,
-    initialValue: single ? Number(c!.values[0]) : 1
-  }
-}).filter(r => r.editable))
+function changeRow (row: ConditionRow, patch: Partial<ConditionRow>) {
+  Object.assign(row, patch)
+}
 
-const fbBool = reactive(FB_BOOL.map(keyword => {
-  const c = props.block.conditions.find(x => x.keyword === keyword)
-  return {
-    keyword,
-    state: (c ? (/^true$/i.test(c.values[0] ?? '') ? 'yes' : 'no') : 'either') as 'yes' | 'no' | 'either',
-    initial: (c ? (/^true$/i.test(c.values[0] ?? '') ? 'yes' : 'no') : 'either') as 'yes' | 'no' | 'either'
-  }
-}))
+// a saved condition is only crossed out until Save
+function removeRow (row: ConditionRow) {
+  if (row.lines.length) row.removed = !row.removed
+  else rows.splice(rows.indexOf(row), 1)
+}
 
-const FB_KEYWORDS = new Set([...fbNum.map(r => r.keyword), ...FB_BOOL])
-
-const condRows = reactive(props.block.conditions
-  .filter(c => c.keyword !== 'BaseType' && !FB_KEYWORDS.has(c.keyword))
-  .map(c => {
-    const kind = (c.values.length === 1 && NUMERIC.has(c.keyword))
-      ? 'number' as const
-      : (c.values.length === 1 && c.keyword === 'Rarity') ? 'rarity' as const : 'text' as const
-    // everything after the keyword, e.g. `== "Divination Cards"`
-    const text = stripComment(c.raw).trim().slice(c.keyword.length).trim()
-    return {
-      keyword: c.keyword,
-      kind,
-      op: c.op || '=',
-      value: c.values[0] ?? '',
-      text,
-      initial: kind === 'text' ? text : `${c.op || '='} ${c.values[0]}`,
-      removed: false
-    }
-  }))
-
-const newCondition = ref('')
-const addedConditions = ref<string[]>([])
-function addCondition () {
-  const line = newCondition.value.trim()
-  const parsed = line ? parseLine(line) : null
-  if (!parsed) return
-  addedConditions.value = [...addedConditions.value.filter(l => parseLine(l)?.keyword !== parsed.keyword), line]
-  newCondition.value = ''
+function addRow (def: ConditionDef) {
+  pickerOpen.value = false
+  const removed = rows.find(r => r.keyword === def.keyword && r.removed)
+  if (removed && !def.repeatable) removed.removed = false
+  else rows.push(newRow(def))
 }
 
 // ---- items (BaseType list) ----
@@ -320,8 +257,9 @@ function addItem (name: string) {
 }
 
 // only the items this tier can have: no currency in a tier of uniques
-const scope = baseScope(props.block, listedBases(moveTargets(props.parsed, props.block)), props.parsed)
-const withUniques = props.block.conditions.some(c => c.keyword === 'Rarity') && raritiesOf(props.block.conditions).has('Unique')
+const scope: (base: BaseEntry) => boolean = props.custom ? () => true : baseScope(props.block, listedBases(moveTargets(props.parsed, props.block)), props.parsed)
+const withUniques = props.custom != null ||
+  (props.block.conditions.some(c => c.keyword === 'Rarity') && raritiesOf(props.block.conditions).has('Unique'))
 
 interface Suggestion { ref: string, name: string, icon: string | null, unique?: string, inTier: boolean, where?: string }
 const suggestions = computed<Suggestion[]>(() => searchBases(newItem.value, { scope, withUniques, limit: 30, filter: props.parsed })
@@ -377,32 +315,12 @@ function buildChange (): TierChange {
   }
   if (Object.keys(actions).length) change.actions = actions
 
-  const conditions: Record<string, string | null> = {}
-  for (const row of condRows) {
-    if (row.removed) {
-      conditions[row.keyword] = null
-    } else if (row.kind === 'text') {
-      if (row.text.trim() !== row.initial && row.text.trim()) conditions[row.keyword] = `${row.keyword} ${row.text.trim()}`
-    } else if (`${row.op} ${row.value}` !== row.initial && row.value !== '') {
-      conditions[row.keyword] = `${row.keyword} ${row.op} ${row.value}`
-    }
-  }
-  for (const line of addedConditions.value) {
-    conditions[parseLine(line)!.keyword] = line
-  }
-  for (const row of fbNum) {
-    const same = row.op === row.initialOp && (row.op === 'any' || row.value === row.initialValue)
-    if (same) continue
-    conditions[row.keyword] = (row.op === 'any' || !Number.isFinite(row.value)) ? null : `${row.keyword} ${row.op} ${row.value}`
-  }
-  for (const row of fbBool) {
-    if (row.state === row.initial) continue
-    conditions[row.keyword] = row.state === 'either' ? null : `${row.keyword} ${row.state === 'yes' ? 'True' : 'False'}`
-  }
+  const conditions = changesOf(rows)
   if (Object.keys(conditions).length) change.conditions = conditions
 
   if (added.value.length) change.addBaseTypes = [...added.value]
   if (removed.value.length) change.removeBaseTypes = [...removed.value]
+  if (props.custom && disabled.value !== Boolean(props.custom.disabled)) change.disabled = disabled.value
   return change
 }
 
@@ -516,16 +434,6 @@ onBeforeUnmount(() => {
 }
 .chipGone {
   color: #777;
-}
-.seg {
-  background: #13235e;
-  border: 1px solid #2a4fa8;
-  color: #fff;
-  font-size: 0.8rem;
-  padding: 0.15rem 0.5rem;
-}
-.segOn {
-  background: #1b8fc1;
 }
 .input {
   background: #13235e;

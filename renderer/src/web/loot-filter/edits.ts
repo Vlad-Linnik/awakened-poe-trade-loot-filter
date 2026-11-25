@@ -5,8 +5,8 @@
 // Tiers are found by their FilterBlade/NeverSink tags (`$type->currency $tier->t1`),
 // so edits survive economy updates of the filter.
 
-import { parseFilter, parseLine, tokenize, stripComment, type FilterBlock, type ParsedFilter, type Visibility } from './filter-parser'
-import { renderSection, renderRules, hostOfRule, onlineVersion, rulesHiding, withoutHiding, MANAGED_HEADER, type AptRule } from './apt-rules'
+import { ACTION_KEYWORDS, parseFilter, parseLine, tokenize, stripComment, type FilterBlock, type ParsedFilter, type Visibility } from './filter-parser'
+import { renderSection, renderRules, hostOfRule, onlineVersion, rulesHiding, withoutHiding, isActive, MANAGED_HEADER, type AptRule } from './apt-rules'
 import { findBlock, fingerprint, isPositiveBaseType, listsBase, selectorOf, tierLadder, type BlockSelector } from './filter-edit'
 
 export { findBlock, selectorOf, type BlockSelector }
@@ -19,7 +19,9 @@ export interface TierPatch {
   disabled?: boolean
   // keyword -> full line (without indent), null = remove the line
   actions?: Record<string, string | null>
-  conditions?: Record<string, string | null>
+  // an array replaces all lines of the keyword ("from..to" is two lines);
+  // a line (older versions) - only the first one
+  conditions?: Record<string, string | string[] | null>
   // items added to / removed from the tier's BaseType list
   addBaseTypes?: string[]
   removeBaseTypes?: string[]
@@ -273,7 +275,7 @@ export function applyPatch (lines: string[], patch: TierPatch): string[] | null 
     out[0] = out[0].replace(/^(\s*)(Show|Hide|Minimal)\b/, `$1${patch.visibility}`)
   }
   for (const [kw, line] of Object.entries(patch.conditions ?? {})) {
-    out = setKeywordLine(out, kw, line, 'condition')
+    out = Array.isArray(line) ? setConditionLines(out, kw, line) : setKeywordLine(out, kw, line, 'condition')
   }
   for (const bt of patch.addBaseTypes ?? []) {
     out = addBaseType(out, bt)
@@ -320,6 +322,27 @@ function setKeywordLine (lines: string[], keyword: string, line: string | null, 
   return out
 }
 
+function isActionLine (line: string) {
+  const keyword = parseLine(line)?.keyword
+  return keyword === 'Continue' || (keyword != null && ACTION_KEYWORDS.has(keyword))
+}
+
+// all conditions of the keyword; the BaseType list is kept, only `BaseType !` are replaced
+function setConditionLines (lines: string[], keyword: string, conditions: string[]): string[] {
+  const isOwn = (line: string, i: number) => {
+    const parsed = i > 0 ? parseLine(line) : null
+    return parsed?.keyword === keyword && !isPositiveBaseType(parsed)
+  }
+  let at = lines.findIndex(isOwn)
+  // a new one goes after the rest of conditions
+  if (at < 0) at = lines.findIndex((line, i) => i > 0 && isActionLine(line))
+  if (at < 0) at = lines.length
+  const indent = indentOf(lines)
+  const added = conditions.map(c => indent + c)
+  return lines.flatMap((line, i) => [...(i === at ? added : []), ...(isOwn(line, i) ? [] : [line])])
+    .concat(at === lines.length ? added : [])
+}
+
 function baseTypeLine (lines: string[]) {
   for (let i = 1; i < lines.length; ++i) {
     const parsed = parseLine(lines[i])
@@ -357,6 +380,7 @@ function addBaseType (lines: string[], baseType: string): string[] {
 // Rules of tier items go right before the tier: more special rules above it
 // (6 links, replicas, stacks…) still work. The others stay at the top of the filter.
 function placeRules (text: string, rules: AptRule[]): { text: string, top: AptRule[] } {
+  rules = rules.filter(isActive)
   if (!rules.some(r => r.anchor)) return { text, top: rules }
   const filter = parseFilter(text)
   const top: AptRule[] = []
