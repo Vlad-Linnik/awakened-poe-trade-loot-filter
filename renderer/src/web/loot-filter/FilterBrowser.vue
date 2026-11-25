@@ -110,6 +110,7 @@ import type { AptRule, NewBase } from './apt-rules'
 import { findBlock, selectorOf, type BlockSelector, type TierPatch } from './edits'
 import { styleFromActions, styleCss } from './style'
 import { previewStyle } from './preview'
+import { isRuleCopy } from './rule-priority'
 import { iconForBlocks, iconForBase, sampleName, shapeGlyph, effectColor } from './fb'
 import { CATEGORIES, GROUPS, isHideRule, placeOf, rareTitle } from './fb-categories'
 import { RANKS_OF_SUB, RARE_PRESETS, RARES_SCOPE, rareRule, type RankChange } from './ranks'
@@ -245,7 +246,7 @@ const groups = computed(() => {
   const mine: Section = { title: t(':my_rules_items'), subs: [], blocks: [], icon: null, changes: 0, order: 0 }
   for (const block of allBlocks(props.parsed)) {
     const rule = props.ruleFor(block)
-    if (rule?.custom || isHiddenTier(block)) continue
+    if (rule?.custom || isRuleCopy(block) || isHiddenTier(block)) continue
     const items = baseTypes(block)
     let matchedItems: string[] = []
     if (q) {

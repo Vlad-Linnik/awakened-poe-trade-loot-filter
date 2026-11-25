@@ -33,6 +33,15 @@
         </button>
       </div>
 
+      <!-- the rules of the filter that mine is above -->
+      <div v-if="myRule && under.length" :class="$style.items" class="flex flex-wrap items-center gap-1 text-xs">
+        <span class="text-gray-400" :title="t(':rule_over_hint')">{{ t(':rule_over') }}</span>
+        <span v-for="b of under" :key="b.index" :class="$style.chip" :title="ruleTitle(b)">
+          <span class="px-1">{{ blockTierName(b, t) }}</span>
+          <button v-if="raisedOver(b)" :class="$style.chipX" :title="t(':rule_over_remove')" @click="over = over.filter(x => x !== raisedOver(b))">×</button>
+        </span>
+      </div>
+
       <!-- items of a rule made from scratch -->
       <template v-if="custom">
         <div :class="$style.strip">
@@ -158,10 +167,11 @@ import { type FilterBlock, type ParsedFilter, type Visibility } from './filter-p
 import { styleCss, styleFromActions, styleToActions, STYLE_KEYWORDS, type FilterStyle } from './style'
 import StyleBar from './StyleBar.vue'
 import MoveBar from './MoveBar.vue'
-import { higherTier, listsBase, lookOf, moveTargets, raritiesOf, ruleIdOfBlock, tierLadder, tierLooks } from './filter-edit'
+import { findBlock, type BlockSelector, higherTier, listsBase, lookOf, moveTargets, raritiesOf, ruleIdOfBlock, tierLadder, tierLooks } from './filter-edit'
 import { hostOfRule, ownRuleOf, ruleBlock, ruleItems, type AptRule } from './apt-rules'
 import { type BaseEntry, baseScope, findBase, listedBases, searchBases } from './base-search'
 import { previewBase } from './preview'
+import { blocksUnder } from './rule-priority'
 import type { FilterItem } from './item-props'
 import { iconForBase } from './fb'
 import { blockTierName, blockTierNames } from './names'
@@ -179,6 +189,8 @@ export interface TierChange {
   raw?: string
   // only for custom rules
   disabled?: boolean
+  // only for my rules: the rules of the filter it is raised above
+  over?: BlockSelector[]
   // only for the tiers that are disabled in the filter
   enabled?: boolean
 }
@@ -228,6 +240,12 @@ function toggleShow () {
 
 // the tiers my rule can look like
 const myRule = props.isRule && !props.custom ? props.rules.find(r => r.id === ruleIdOfBlock(props.block)) : undefined
+const over = ref<BlockSelector[]>([...(myRule?.over ?? [])])
+const under = computed(() => myRule ? blocksUnder(props.parsed, { ...myRule, over: over.value }) : [])
+// the user raised it, otherwise it is above on its own
+function raisedOver (b: FilterBlock) {
+  return over.value.find(sel => findBlock(props.parsed, sel)?.index === b.index)
+}
 const ruleHost = myRule ? hostOfRule(props.parsed, myRule) : null
 const ruleLooks = ruleHost ? tierLooks(props.parsed, ruleHost).slice(0, 24) : []
 const pickedLook = ref<string | null>(null)
@@ -410,6 +428,7 @@ function buildChange (): TierChange {
   if (added.value.length) change.addBaseTypes = [...added.value]
   if (removed.value.length) change.removeBaseTypes = [...removed.value]
   if (props.block.isDisabled && !disabled.value) change.enabled = true
+  if (myRule && over.value.length !== (myRule.over ?? []).length) change.over = over.value
   if (props.custom && disabled.value !== Boolean(props.custom.disabled)) change.disabled = disabled.value
   return change
 }

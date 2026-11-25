@@ -138,6 +138,11 @@ export function rareTitle (block: FilterBlock): string | null {
   return RARE_TITLES[`${type};${tier}`] ?? null
 }
 
+// a short name without the language of the app
+export function blockTierLabel (block: FilterBlock): string {
+  return rareTitle(block) ?? ([block.tags.type, block.tags.tier].filter(Boolean).join(' ') || `line ${block.startLine + 1}`)
+}
+
 // these rules only hide: they are either enabled or disabled
 export function isHideRule (block: FilterBlock): boolean {
   return /^(hidelayer|rareoptional)/.test(block.tags.type ?? '')

@@ -6,6 +6,7 @@ import { enabledLines, parseLine, type FilterBlock, type ParsedFilter } from './
 import { applyPatch, findBlock, isEmptyPatch, moveSources, type FilterEdits, type FilterSource, type TierPatch } from './edits'
 import { hostOfRule, onlineVersion, type AptRule } from './apt-rules'
 import { listsBase } from './filter-edit'
+import { blocksUnder } from './rule-priority'
 import { placeOf } from './fb-categories'
 import { blockTierName } from './names'
 
@@ -60,6 +61,7 @@ export function describeChanges (source: ParsedFilter, edits: FilterEdits, t: T)
         ...(rule.disabled ? [t(':rep_rule_disabled')] : []),
         t(':rep_rule_vis', [visName(rule.visibility, t)]),
         ...rule.conditions.map(c => `  ${c}`),
+        ...blocksUnder(source, rule).map(b => t(':rep_rule_over', [whereOf(b, t)])),
         ...(rule.actions.length ? [t(':rep_rule_style'), ...rule.actions.map(a => `  ${a}`)] : [])
       ],
       text: [`${rule.visibility} # ${rule.label}`, ...rule.conditions.map(c => `\t${c}`), ...rule.actions.map(a => `\t${a}`)].join('\n'),

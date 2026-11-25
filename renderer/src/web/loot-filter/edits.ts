@@ -7,6 +7,7 @@
 
 import { ACTION_KEYWORDS, allBlocks, disabledLines, enabledLines, parseFilter, parseLine, tokenize, stripComment, type FilterBlock, type ParsedFilter, type Visibility } from './filter-parser'
 import { renderSection, renderRules, hostOfRule, onlineVersion, rulesHiding, withoutHiding, isActive, MANAGED_HEADER, type AptRule } from './apt-rules'
+import { blocksUnder, copyLines } from './rule-priority'
 import { findBlock, fingerprint, isPositiveBaseType, listsBase, selectorOf, tierLadder, type BlockSelector } from './filter-edit'
 
 export { findBlock, selectorOf, type BlockSelector }
@@ -400,14 +401,20 @@ function placeRules (text: string, rules: AptRule[]): { text: string, top: AptRu
   const filter = parseFilter(text)
   const top: AptRule[] = []
   const placed = new Map<number, AptRule[]>()
+  const copies = new Map<number, string[]>()
   for (const rule of rules) {
     const host = hostOfRule(filter, rule)
-    if (host) placed.set(host.startLine, [...(placed.get(host.startLine) ?? []), rule])
-    else top.push(rule)
+    if (!host) { top.push(rule); continue }
+    placed.set(host.startLine, [...(placed.get(host.startLine) ?? []), rule])
+    for (const block of blocksUnder(filter, rule)) {
+      // the newest rule is above the others
+      const text = copyLines(rule, block)
+      if (text) copies.set(block.startLine, [...text, ...(copies.get(block.startLine) ?? [])])
+    }
   }
   const lines = [...filter.lines]
-  for (const [line, list] of [...placed].sort((a, b) => b[0] - a[0])) {
-    lines.splice(line, 0, ...renderRules(list))
+  for (const line of [...new Set([...placed.keys(), ...copies.keys()])].sort((a, b) => b - a)) {
+    lines.splice(line, 0, ...(copies.get(line) ?? []), ...renderRules(placed.get(line) ?? []))
   }
   return { text: lines.join(filter.eol), top }
 }

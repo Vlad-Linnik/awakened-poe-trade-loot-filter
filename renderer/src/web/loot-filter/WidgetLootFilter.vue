@@ -70,6 +70,14 @@
                 <button v-if="!itemRule" :class="$style.fbBtn" @click="findInCustomizer(finalBlock)">{{ t(':fb_find') }} <i class="fas fa-arrow-right"></i></button>
               </div>
               <div v-if="match.final!.result === null" class="text-xs text-yellow-400 px-2">{{ t(':assumed') }}</div>
+              <!-- my rule of the item stands below -->
+              <div v-if="shadowed" class="mx-2 bg-yellow-900 text-yellow-100 rounded px-2 py-1 text-sm">
+                <i class="fas fa-exclamation-triangle"></i> {{ t(':rule_shadowed', [shadowed.label]) }}
+                <div class="flex gap-2 mt-1">
+                  <button class="btn flex-1" :disabled="busy" @click="raiseRule(shadowed)"><i class="fas fa-arrow-up"></i> {{ t(':rule_raise') }}</button>
+                  <button class="btn" @click="openRule(shadowed.id, fItem!.baseType)">{{ t(':own_rule_open') }}</button>
+                </div>
+              </div>
               <!-- the tier editor has the same for the items of its list -->
               <MoveBar v-if="!matchedRule && (finalClosed || !listsBase(finalBlock, fItem.baseType))" class="px-2" no-own-rule
                 :parsed="parsed" :block="finalBlock" :base-type="fItem.baseType" :has-own-rule="false"
@@ -84,12 +92,12 @@
                 <!-- an own rule of the item is edited like a tier -->
                 <TierEditor v-if="matchedRule.visibility !== 'Hide' || matchedRule.custom"
                   :key="`editor-rule-${finalBlock.index}-${info.mtime}`"
-                  :parsed="parsed" :block="finalBlock" :block-text="blockText(parsed, finalBlock)"
+                  :parsed="parsed" :block="ruleMain!" :block-text="blockText(parsed, ruleMain!)"
                   :item-name="item!.info.name" :has-patch="false" :busy="busy" is-rule
                   :custom="matchedRule.custom ? matchedRule : undefined"
                   :rule-title="ruleTitle" :highlight="fItem.baseType" :preview-item="fItem" :rules="edits.rules"
-                  @unsaved="addUnsaved(finalBlock!, $event)"
-                  @save="saveTier(finalBlock!, $event)" @disable="removeRule(matchedRule.id)" />
+                  @unsaved="addUnsaved(ruleMain!, $event)"
+                  @save="saveTier(ruleMain!, $event)" @disable="removeRule(matchedRule.id)" />
               </template>
               <TierEditor v-else-if="!finalClosed"
                 :key="`editor-final-${finalBlock.index}-${info.mtime}`"
@@ -324,7 +332,8 @@ import type { RankChange } from './ranks'
 import FilterBrowser from './FilterBrowser.vue'
 import { parseFilter, parseLine, blockText, type FilterBlock, type ParsedFilter, type Visibility } from './filter-parser'
 import { toFilterItem, type FilterItem } from './item-props'
-import { matchItem, relatedBlocks } from './matcher'
+import { evalBlock, matchItem, relatedBlocks } from './matcher'
+import { blocksUnder, isRuleCopy, mainBlockOf, shadowedRule } from './rule-priority'
 import { isPositiveBaseType, listsBase } from './filter-edit'
 import {
   ruleForItem, ruleForBase, ruleLines, ruleFromLines, ownRuleOf, withoutHiding,
@@ -439,6 +448,7 @@ async function load () {
     loading.value = false
   }
   await hideRemoved()
+  await raiseOldRules()
 }
 
 // ---- filter state ----
@@ -531,6 +541,22 @@ function findInCustomizer (block: FilterBlock) {
 }
 
 const matchedRule = computed(() => finalBlock.value ? ruleOf(finalBlock.value) : null)
+// my rule can be written several times: the first one is edited
+const ruleMain = computed(() => finalBlock.value && parsed.value ? mainBlockOf(parsed.value, finalBlock.value) : null)
+
+// my rule that could be used for the item if it stood higher
+const shadowed = computed(() => {
+  const [p, it, block] = [parsed.value, fItem.value, finalBlock.value]
+  if (!p || !it || !block || matchedRule.value) return null
+  return shadowedRule(p, edits.value.rules, block, b => listsBase(b, it.baseType) && evalBlock(b, it).result !== false)
+})
+
+function raiseRule (rule: AptRule) {
+  if (busy.value) return
+  const over = [...(rule.over ?? []), selectorOf(finalBlock.value!)]
+  return withEdits(e => ({ ...e, rules: e.rules.map(r => r.id === rule.id ? { ...r, over } : r) }), t(':done_raised', [rule.label]))
+}
+
 // my rule of this item, not a rule for many of them
 const itemRule = computed(() => matchedRule.value?.custom ? null : matchedRule.value)
 const itemCondText = computed(() => fItem.value ? itemConditions(fItem.value).join(', ') : '')
@@ -806,15 +832,15 @@ function newItemRule (it: FilterItem, hiding: AptRule | null): AptRule {
 // open the editor of my rule (the rule of the item under cursor is already open)
 function openRule (id: string, baseType: string) {
   if (!parsed.value || matchedRule.value?.id === id) return
-  const block = parsed.value.blocks.find(b => ruleOf(b)?.id === id)
+  const block = parsed.value.blocks.find(b => ruleOf(b)?.id === id && !isRuleCopy(b))
   if (!block) return
   browseFocus.value = { selector: selectorOf(block), item: baseType }
   mode.value = 'browse'
 }
 
 function saveRule (rule: AptRule, change: TierChange) {
-  const { disabled, ...rest } = change
-  let base = rule
+  const { disabled, over, ...rest } = change
+  let base = over ? { ...rule, over: over.length ? over : undefined } : rule
   if (rule.custom) {
     base = { ...rule, disabled: disabled ?? rule.disabled }
     // the last item is removed: the rule stays, it just has no items
@@ -891,6 +917,18 @@ function hideRemoved () {
   const clean = withoutRemoved(edits.value, items)
   const rules = items.map(x => tierItemRule(x.baseType, x.block, 'Hide'))
   return commit({ ...clean, rules: [...clean.rules, ...rules] }, t(':done_hidden'), { noHistory: true, keepFilter: true })
+}
+
+// Rules written by the older versions were not above the rules they have to be above
+let areRaised = false
+function raiseOldRules () {
+  const p = parsed.value
+  if (areRaised || !p || !isCopy.value || !info.value?.source || sourceUpdated.value) return
+  const isWritten = (id: string) => p.blocks.some(b => ruleIdOfBlock(b) === id && isRuleCopy(b))
+  if (!edits.value.rules.some(r => blocksUnder(p, r).length && !isWritten(r.id))) return
+  // once is enough
+  areRaised = true
+  return commit(edits.value, t(':done_rebuilt'), { noHistory: true })
 }
 
 // ---- edits of a tier left without Save: ask what to do with them ----

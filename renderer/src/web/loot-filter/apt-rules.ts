@@ -24,6 +24,8 @@ export interface AptRule {
   custom?: boolean
   // kept by the app, but not written to the filter
   disabled?: boolean
+  // the rules of the filter it was raised above (see rule-priority)
+  over?: BlockSelector[]
   // the category a custom rule belongs to
   scope?: string
 }

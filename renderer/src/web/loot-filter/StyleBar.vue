@@ -22,7 +22,7 @@
           {{ previewName }}
         </div>
         <div v-if="!notice && decorators" class="text-xs text-gray-300 max-w-full truncate" :title="t(':preview_decorators', [decorators])">+ {{ decorators }}</div>
-        <RangeSlider class="self-stretch mx-4" :title="t(':font_size')" :min="18" :max="45" op="=" :value="style.fontSize ?? 32" :value2="45"
+        <RangeSlider class="self-stretch mx-4" style="min-width: 0;" :title="t(':font_size')" :min="18" :max="45" op="=" :value="style.fontSize ?? 32" :value2="45"
           @update:value="update({ fontSize: $event })" />
       </div>
 
@@ -70,7 +70,7 @@
 
     <!-- sound -->
     <div v-if="panel === 'sound'" :class="$style.panel">
-      <button :class="[$style.toggle, { [$style.on]: style.sound }]" @click="update({ sound: style.sound ? null : { id: '1', volume: 300, positional: false } })">
+      <button :class="[$style.toggle, { [$style.on]: style.sound }]" @click="toggleSound">
         <i class="far" :class="style.sound ? 'fa-check-square' : 'fa-square'"></i> {{ t(':sound') }}
       </button>
       <template v-if="style.sound">
@@ -127,7 +127,7 @@ let clipboardStyle: FilterStyle | null = null
 </script>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import { useI18nNs } from '@/web/i18n'
 import {
   layerStyle, styleCss, toHex, fromHex, EFFECT_COLORS, ICON_SHAPES, DEFAULT_TEXT, DEFAULT_BACKGROUND,
@@ -196,6 +196,11 @@ function setIcon (patch: Partial<NonNullable<FilterStyle['minimap']>>) {
 }
 function setSound (patch: Partial<NonNullable<FilterStyle['sound']>>) {
   update({ sound: { ...style.value.sound!, ...patch } })
+  playSoon()
+}
+function toggleSound () {
+  update({ sound: style.value.sound ? null : { id: '1', volume: 300, positional: false } })
+  playSoon()
 }
 function setEffect (patch: Partial<NonNullable<FilterStyle['effect']>>) {
   update({ effect: { ...style.value.effect!, ...patch } })
@@ -235,14 +240,17 @@ function play () {
   audio.volume = Math.max(0, Math.min(1, snd.volume / 300))
   audio.play().catch(() => {})
 }
-// hear the change: a new file or volume (debounced while dragging the slider)
-let playTimer: ReturnType<typeof setTimeout> | null = null
-watch(() => [style.value.sound?.custom, style.value.sound?.id, style.value.sound?.volume], (now, before) => {
-  if (!canPlay.value || before === undefined) return
-  if (playTimer) clearTimeout(playTimer)
-  playTimer = setTimeout(play, 250)
+// hear the sound being set up (debounced while dragging the slider);
+// changes of colors, tiers… that keep or replace it are silent
+let playTimer: ReturnType<typeof setTimeout> | undefined
+function playSoon () {
+  clearTimeout(playTimer)
+  playTimer = setTimeout(() => { if (canPlay.value) play() }, 250)
+}
+onBeforeUnmount(() => {
+  clearTimeout(playTimer)
+  audio?.pause()
 })
-onBeforeUnmount(() => audio?.pause())
 
 function togglePanel (p: 'icon' | 'sound' | 'beam') {
   panel.value = panel.value === p ? null : p
