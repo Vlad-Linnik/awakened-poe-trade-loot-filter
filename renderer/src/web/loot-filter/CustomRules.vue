@@ -47,8 +47,9 @@
 import { computed, nextTick, ref, watch } from 'vue'
 import { useI18nNs } from '@/web/i18n'
 import type { FilterBlock, ParsedFilter } from './filter-parser'
-import { hiddenAbove, ruleBlock, ruleLines, type AptRule, type NewBase } from './apt-rules'
-import { styleFromActions, styleCss } from './style'
+import { hiddenAbove, hostOfRule, ruleBlock, ruleLines, type AptRule, type NewBase } from './apt-rules'
+import { styleCss } from './style'
+import { previewStyle } from './preview'
 import { sampleName } from './fb'
 import { conditionHints } from './names'
 import BaseInput from './BaseInput.vue'
@@ -123,7 +124,8 @@ function rename (rule: AptRule, e: Event) {
 }
 
 function chipStyle (rule: AptRule) {
-  const css = styleCss(styleFromActions(blockOf(rule).actions), rule.visibility === 'Hide')
+  const line = hostOfRule(props.parsed, rule)?.startLine ?? 0
+  const css = styleCss(previewStyle(props.parsed, blockOf(rule), { line }), rule.visibility === 'Hide')
   return { ...css, fontSize: '0.8rem', borderWidth: '1px', ...(rule.disabled ? { opacity: 0.4 } : {}) }
 }
 </script>

@@ -49,6 +49,7 @@ const pendingOf: Record<RankGroup, Map<string, number | null>> = {
 import { computed, ref } from 'vue'
 import { useI18nNs } from '@/web/i18n'
 import type { ParsedFilter } from './filter-parser'
+import { rareTitle } from './fb-categories'
 import { CLASS_BY_CATEGORY } from './item-props'
 import {
   CLASSES_OF, DEFENCES, RANK_COLORS, RANK_NAMES, UNTIERED_COLOR, defenceOf, ranksOf, type RankChange, type RankedBase
@@ -97,8 +98,8 @@ function isOff (x: RankedBase) {
   return rank != null && ranks.value.tierOf(x.base, rank)?.isDisabled === true
 }
 const offRanks = computed(() => {
-  const off = new Set(ranks.value.bases.filter(isOff).map(rankOf))
-  return rankIndexes.value.filter(r => off.has(r)).map(rankTitle)
+  const off = ranks.value.bases.filter(isOff).map(x => ranks.value.tierOf(x.base, rankOf(x)!)!)
+  return [...new Set(off.map(b => rareTitle(b)))].sort()
 })
 
 function titleOf (x: RankedBase) {

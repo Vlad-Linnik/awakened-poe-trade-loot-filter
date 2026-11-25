@@ -20,7 +20,7 @@
           </template>
         </div>
         <StyleBar class="flex-1 min-w-0" v-model="style" :initial="initial"
-          :preview-name="previewName" :hidden="visibility === 'Hide'" :notice="disabled ? t(custom ? ':custom_disabled' : ':tier_off_notice') : undefined" />
+          :preview-name="previewName" :below="preview.style" :decorators="preview.decorators.map(b => blockTierName(b, t)).join(', ')" :hidden="visibility === 'Hide'" :notice="disabled ? t(custom ? ':custom_disabled' : ':tier_off_notice') : undefined" />
       </div>
 
       <!-- my rule made from a tier: the looks of its tier list -->
@@ -161,6 +161,8 @@ import MoveBar from './MoveBar.vue'
 import { higherTier, listsBase, lookOf, moveTargets, raritiesOf, ruleIdOfBlock, tierLadder, tierLooks } from './filter-edit'
 import { hostOfRule, ownRuleOf, ruleBlock, ruleItems, type AptRule } from './apt-rules'
 import { type BaseEntry, baseScope, findBase, listedBases, searchBases } from './base-search'
+import { previewBase } from './preview'
+import type { FilterItem } from './item-props'
 import { iconForBase } from './fb'
 import { blockTierName, blockTierNames } from './names'
 import { changesOf, newRow, rowLines, rowsOf, type ConditionDef, type ConditionRow } from './conditions'
@@ -197,6 +199,8 @@ const props = defineProps<{
   isRule?: boolean
   // …made from scratch: it can be disabled, and have no items
   custom?: AptRule
+  // the item under the cursor
+  previewItem?: FilterItem | null
 }>()
 
 const emit = defineEmits<{
@@ -312,6 +316,16 @@ const previewName = computed(() => {
   if (!props.custom) return props.itemName
   return items.value.find(n => n === props.highlight) ?? items.value[0] ?? props.itemName
 })
+// a disabled rule is not in the filter itself
+const previewLine = props.custom ? hostOfRule(props.parsed, props.custom)?.startLine ?? 0 : undefined
+const preview = computed(() => previewBase(props.parsed, props.block, {
+  item: props.previewItem?.baseType === previewName.value || !props.custom ? props.previewItem : null,
+  baseType: hasItem(previewName.value) ? previewName.value : undefined,
+  line: previewLine
+}))
+function hasItem (name: string) {
+  return items.value.includes(name)
+}
 function removeItem (name: string) {
   if (added.value.includes(name)) removeAdded(name)
   else removed.value = [...removed.value, name]

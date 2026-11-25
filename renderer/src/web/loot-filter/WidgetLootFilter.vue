@@ -87,7 +87,7 @@
                   :parsed="parsed" :block="finalBlock" :block-text="blockText(parsed, finalBlock)"
                   :item-name="item!.info.name" :has-patch="false" :busy="busy" is-rule
                   :custom="matchedRule.custom ? matchedRule : undefined"
-                  :rule-title="ruleTitle" :highlight="fItem.baseType" :rules="edits.rules"
+                  :rule-title="ruleTitle" :highlight="fItem.baseType" :preview-item="fItem" :rules="edits.rules"
                   @unsaved="addUnsaved(finalBlock!, $event)"
                   @save="saveTier(finalBlock!, $event)" @disable="removeRule(matchedRule.id)" />
               </template>
@@ -95,7 +95,7 @@
                 :key="`editor-final-${finalBlock.index}-${info.mtime}`"
                 :parsed="parsed" :block="finalBlock" :block-text="blockText(parsed, finalBlock)"
                 :item-name="item!.info.name" :has-patch="Boolean(patchOf(finalBlock))" :busy="busy"
-                :rule-title="ruleTitle" :highlight="fItem.baseType" :rules="edits.rules"
+                :rule-title="ruleTitle" :highlight="fItem.baseType" :preview-item="fItem" :rules="edits.rules"
                 @hide-item="hideBase($event, finalBlock!)" @unhide-item="unhideBase($event, finalBlock!)" @own-rule="ownRule($event, finalBlock!)"
                 @unsaved="addUnsaved(finalBlock!, $event)"
                 @move="(bt: string, to: FilterBlock) => moveBaseType(bt, finalBlock!, to)" @look="(bt: string, to: FilterBlock) => lookLike(bt, finalBlock!, to)"
@@ -122,7 +122,7 @@
                   :key="`editor-d${ev.block.index}-${info.mtime}`"
                   :parsed="parsed" :block="ev.block" :block-text="blockText(parsed, ev.block)"
                   :item-name="item!.info.name" :has-patch="Boolean(patchOf(ev.block))" :busy="busy"
-                  :rule-title="ruleTitle" :highlight="fItem.baseType" :rules="edits.rules"
+                  :rule-title="ruleTitle" :highlight="fItem.baseType" :preview-item="fItem" :rules="edits.rules"
                   @hide-item="hideBase($event, ev.block)" @unhide-item="unhideBase($event, ev.block)" @own-rule="ownRule($event, ev.block)"
                   @unsaved="addUnsaved(ev.block, $event)"
                   @move="(bt: string, to: FilterBlock) => moveBaseType(bt, ev.block, to)" @look="(bt: string, to: FilterBlock) => lookLike(bt, ev.block, to)"
@@ -159,7 +159,7 @@
                   :key="`editor-r${ev.block.index}-${info.mtime}`"
                   :parsed="parsed" :block="ev.block" :block-text="blockText(parsed, ev.block)"
                   :item-name="item!.info.name" :has-patch="Boolean(patchOf(ev.block))" :busy="busy"
-                  :rule-title="ruleTitle" :highlight="fItem.baseType" :rules="edits.rules"
+                  :rule-title="ruleTitle" :highlight="fItem.baseType" :preview-item="fItem" :rules="edits.rules"
                   @hide-item="hideBase($event, ev.block)" @unhide-item="unhideBase($event, ev.block)" @own-rule="ownRule($event, ev.block)"
                   @unsaved="addUnsaved(ev.block, $event)"
                   @move="(bt: string, to: FilterBlock) => moveBaseType(bt, ev.block, to)" @look="(bt: string, to: FilterBlock) => lookLike(bt, ev.block, to)"
@@ -339,7 +339,8 @@ import { describeChanges, searchChanges, renderReport, reportFileName, formatTim
 import { canBeUnique } from './base-search'
 import { iconForBlock, safeIcon } from './fb'
 import { blockTitle, blockTierName, conditionHints } from './names'
-import { styleFromActions, styleCss } from './style'
+import { layerStyle, styleFromActions, styleCss } from './style'
+import { defaultText, previewStyle as ruleStyle } from './preview'
 import * as api from './api'
 
 const props = defineProps<{
@@ -518,7 +519,8 @@ const relatedFiltered = computed(() => {
 const relatedShown = computed(() => relatedShowAll.value ? relatedFiltered.value : relatedFiltered.value.slice(0, 30))
 
 function chipStyle (block: FilterBlock) {
-  return { ...styleCss(styleFromActions(block.actions), block.visibility === 'Hide'), fontSize: '0.75rem', borderWidth: '1px' }
+  const style = block.continue ? styleFromActions(block.actions) : ruleStyle(parsed.value!, block, { item: fItem.value })
+  return { ...styleCss(style, block.visibility === 'Hide'), fontSize: '0.75rem', borderWidth: '1px' }
 }
 
 const finalIcon = computed(() => finalBlock.value ? (iconForBlock(finalBlock.value) ?? safeIcon(item.value?.info.icon)) : null)
@@ -562,9 +564,10 @@ function ruleTitle (block: FilterBlock) {
 
 const previewStyle = computed(() => {
   const m = match.value
-  if (!m?.final) return styleCss(styleFromActions([]), false)
-  const actions = [...m.continued.flatMap(e => e.block.actions), ...m.final.block.actions]
-  return styleCss(styleFromActions(actions), m.final.block.visibility === 'Hide')
+  if (!m?.final) return styleCss({ ...styleFromActions([]), text: fItem.value && defaultText(fItem.value) }, false)
+  const actions = [...m.continued, m.final].flatMap(e => e.block.actions)
+  const style = layerStyle({ ...styleFromActions([]), text: defaultText(fItem.value!) }, styleFromActions(actions))
+  return styleCss(style, m.final.block.visibility === 'Hide')
 })
 
 // ---- list of changes: what differs from the source filter ----

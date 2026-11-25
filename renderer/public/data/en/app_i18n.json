@@ -627,6 +627,7 @@
     "tier_off_notice": "Tier disabled. Click on Show to enable",
     "tier_enabled": "Tier enabled",
     "done_ranks": "Ranks changed: {0}.",
+    "preview_decorators": "Decorators of the filter are applied too: {0}",
     "custom_hint": "Quickly highlight bases by adding a rule of your own! It works before all rules of the filter; the rule listed higher wins.",
     "custom_unnamed": "Unnamed custom rule",
     "custom_disabled": "Rule disabled. Click on Show/Hide to enable",

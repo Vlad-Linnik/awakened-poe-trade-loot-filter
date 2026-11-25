@@ -18,9 +18,10 @@
       <div class="flex flex-col items-center justify-center gap-2 min-w-0" style="container-type: inline-size;">
         <div v-if="notice" class="text-center text-sm px-2" style="color: #e0762b;">{{ notice }}</div>
         <div v-else class="px-2 py-0.5 font-poe-sc whitespace-nowrap max-w-full overflow-hidden" :style="previewCss">
-          <span v-if="style.minimap" :style="{ color: effectColor(style.minimap.color) }">{{ shapeGlyph(style.minimap.shape) }}</span>
+          <span v-if="shown.minimap" :style="{ color: effectColor(shown.minimap.color) }">{{ shapeGlyph(shown.minimap.shape) }}</span>
           {{ previewName }}
         </div>
+        <div v-if="!notice && decorators" class="text-xs text-gray-300 max-w-full truncate" :title="t(':preview_decorators', [decorators])">+ {{ decorators }}</div>
         <RangeSlider class="self-stretch mx-4" :title="t(':font_size')" :min="18" :max="45" op="=" :value="style.fontSize ?? 32" :value2="45"
           @update:value="update({ fontSize: $event })" />
       </div>
@@ -129,7 +130,7 @@ let clipboardStyle: FilterStyle | null = null
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18nNs } from '@/web/i18n'
 import {
-  styleCss, toHex, fromHex, EFFECT_COLORS, ICON_SHAPES, DEFAULT_TEXT, DEFAULT_BACKGROUND,
+  layerStyle, styleCss, toHex, fromHex, EFFECT_COLORS, ICON_SHAPES, DEFAULT_TEXT, DEFAULT_BACKGROUND,
   type RGBA
 } from './style'
 import { shapeGlyph, effectColor, sizeLetter } from './fb'
@@ -140,6 +141,10 @@ const props = defineProps<{
   modelValue: FilterStyle
   initial: FilterStyle
   previewName: string
+  // what the rule is drawn over: the color of the item and the decorators
+  below?: FilterStyle
+  // names of the decorators
+  decorators?: string
   hidden: boolean
   // instead of the preview
   notice?: string
@@ -256,10 +261,11 @@ function cssColor (c: RGBA) {
 }
 
 // about the size it has in the game
+const shown = computed(() => props.below ? layerStyle(props.below, style.value) : style.value)
 const previewCss = computed(() => ({
-  ...styleCss(style.value, props.hidden),
+  ...styleCss(shown.value, props.hidden),
   // a long name fits into a narrow window
-  fontSize: `clamp(11px, ${140 / (props.previewName.length + (style.value.minimap ? 3 : 1))}cqi, ${(style.value.fontSize ?? 32) * 0.7}px)`,
+  fontSize: `clamp(11px, ${140 / (props.previewName.length + (shown.value.minimap ? 3 : 1))}cqi, ${(shown.value.fontSize ?? 32) * 0.7}px)`,
   lineHeight: 1.25
 }))
 </script>

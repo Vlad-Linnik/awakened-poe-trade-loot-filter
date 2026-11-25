@@ -84,6 +84,20 @@ export function styleToActions (style: FilterStyle): Record<string, string | nul
   }
 }
 
+// what is not set on top stays as it was below
+export function layerStyle (below: FilterStyle, top: FilterStyle): FilterStyle {
+  return {
+    fontSize: top.fontSize ?? below.fontSize,
+    text: top.text ?? below.text,
+    border: top.border ?? below.border,
+    background: top.background ?? below.background,
+    sound: top.sound ?? below.sound,
+    minimap: top.minimap ?? below.minimap,
+    effect: top.effect ?? below.effect,
+    dropSound: top.dropSound && below.dropSound
+  }
+}
+
 export function styleCss (style: FilterStyle, hidden: boolean): Record<string, string> {
   const text = style.text ?? DEFAULT_TEXT
   const bg = style.background ?? DEFAULT_BACKGROUND

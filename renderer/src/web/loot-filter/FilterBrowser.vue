@@ -109,6 +109,7 @@ import { allBlocks, blockText, type FilterBlock, type ParsedFilter } from './fil
 import type { AptRule, NewBase } from './apt-rules'
 import { findBlock, selectorOf, type BlockSelector, type TierPatch } from './edits'
 import { styleFromActions, styleCss } from './style'
+import { previewStyle } from './preview'
 import { iconForBlocks, iconForBase, sampleName, shapeGlyph, effectColor } from './fb'
 import { CATEGORIES, GROUPS, isHideRule, placeOf, rareTitle } from './fb-categories'
 import { RANKS_OF_SUB, RARE_PRESETS, RARES_SCOPE, rareRule, type RankChange } from './ranks'
@@ -335,7 +336,7 @@ function toggle (key: string) {
 }
 
 function chipStyle (block: FilterBlock) {
-  return { ...styleCss(styleFromActions(block.actions), !isOn(block)), fontSize: '0.85rem', borderWidth: '1px' }
+  return { ...styleCss(previewStyle(props.parsed, block, {}), !isOn(block)), fontSize: '0.85rem', borderWidth: '1px' }
 }
 
 </script>
