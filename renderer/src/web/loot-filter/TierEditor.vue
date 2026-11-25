@@ -8,7 +8,8 @@
             @click="visibility = visibility === 'Show' ? 'Hide' : 'Show'">
             {{ visibility === 'Show' ? t(':vis_show') : t(':vis_hide') }}
           </button>
-          <button :class="$style.btn" :disabled="busy" @click="leave('disable')">{{ t(':fb_disable') }}</button>
+          <button v-if="!isRule" :class="$style.btn" :disabled="busy" @click="leave('disable')">{{ t(':fb_disable') }}</button>
+          <button v-else :class="$style.btn" :disabled="busy" :title="t(':remove_override')" @click="leave('disable')"><i class="fas fa-trash-alt text-xs"></i> {{ t(':delete_rule') }}</button>
         </div>
         <StyleBar class="flex-1 min-w-0" v-model="style" :initial="initial"
           :preview-name="itemName" :hidden="visibility === 'Hide'" />
@@ -49,33 +50,42 @@
             [$style.chipGone]: isHidden(name)
           }]">
             <button class="px-1" @click="selectedItem = selectedItem === name ? null : name">
-              <i v-if="isHidden(name)" class="fas fa-eye-slash text-xs"></i> {{ name }}
+              <i v-if="isHidden(name)" class="fas fa-eye-slash text-xs"></i>
+              <i v-else-if="hasOwnRule(name)" class="fas fa-star text-xs text-yellow-400" :title="t(':own_rule_exists')"></i> {{ name }}
             </button>
+            <button v-if="up && !isHidden(name) && !added.includes(name)" :class="$style.chipUp" :disabled="busy"
+              :title="t(':move_up', [blockTierName(up, t)])" @click="emit('move', name, up)"><i class="fas fa-arrow-up text-xs"></i></button>
             <!-- like "Hide this item": an APT rule above the filter, applied at once -->
             <button v-if="isHidden(name)" :class="$style.chipX" :disabled="busy" :title="t(':unhide_item')"
               @click="emit('unhide-item', name)"><i class="fas fa-undo text-xs"></i></button>
             <button v-else-if="added.includes(name)" :class="$style.chipX" :title="t(':remove_from_tier')" @click="removeAdded(name)">×</button>
+            <button v-else-if="isRule" :class="$style.chipX" :title="t(':remove_from_rule')" @click="removed = [...removed, name]">×</button>
             <button v-else :class="$style.chipX" :disabled="busy" :title="t(':hide_item')" @click="emit('hide-item', name)">×</button>
           </span>
         </div>
-        <div v-if="selectedItem && moveTargets.length" class="flex items-center gap-1 mt-1">
-          <span class="text-xs text-gray-300">{{ selectedItem }} →</span>
-          <select v-model="itemMoveTarget" :class="$style.input" class="flex-1 min-w-0">
-            <option :value="null" disabled>{{ t(':move_to') }}</option>
-            <option v-for="b of moveTargets" :key="b.index" :value="b.index">{{ b.visibility }} · {{ ruleTitle(b) }}</option>
-          </select>
-          <button :class="$style.btn" :disabled="itemMoveTarget == null || busy" @click="moveSelected">{{ t(':move') }}</button>
-        </div>
+        <MoveBar v-if="!isRule && selectedItem && !added.includes(selectedItem)" class="mt-1"
+          :parsed="parsed" :block="block" :base-type="selectedItem" :has-own-rule="hasOwnRule(selectedItem)"
+          :busy="busy" :rule-title="ruleTitle"
+          @move="emit('move', selectedItem!, $event)" @own-rule="emit('own-rule', selectedItem!)" />
         <div class="relative flex gap-1 mt-1">
           <input v-model="newItem" :placeholder="t(':fb_enter_basetype')" :class="$style.input" class="flex-1 min-w-0"
-            @keydown.enter.prevent="addItem(newItem)">
-          <button :class="$style.btn" :disabled="!newItem.trim()" @click="addItem(newItem)">{{ t(':fb_add') }}</button>
-          <div v-if="suggestions.length" class="absolute z-10 left-0 right-12 top-full bg-gray-900 border border-gray-600 max-h-40 overflow-y-auto">
+            @keydown.enter.prevent="submitItem">
+          <button :class="$style.btn" :disabled="!newItem.trim()" @click="submitItem">{{ t(':fb_add') }}</button>
+          <div v-if="suggestions.length || notice" class="absolute z-10 left-0 right-12 top-full bg-gray-900 border border-gray-600 max-h-40 overflow-y-auto">
             <button v-for="sg of suggestions" :key="sg.ref" class="flex items-center gap-1 w-full text-left px-1 text-xs hover:bg-gray-700"
-              @click="addItem(sg.ref)">
+              @click="pick(sg)">
               <img v-if="sg.icon" :src="sg.icon" class="w-5 h-5 object-contain">
-              {{ sg.ref }}<span v-if="sg.name !== sg.ref" class="text-gray-500"> · {{ sg.name }}</span>
+              <span :class="{ 'text-gray-500': sg.inTier }">{{ sg.ref }}</span>
+              <span v-if="sg.name !== sg.ref" class="text-gray-500"> · {{ sg.name }}</span>
+              <span v-if="sg.unique" class="text-orange-400"> · {{ sg.unique }}</span>
+              <span class="flex-1"></span>
+              <span v-if="sg.inTier" class="text-gray-500 whitespace-nowrap">{{ t(':in_this_tier') }}</span>
+              <span v-else-if="sg.where" class="text-yellow-400 whitespace-nowrap">{{ t(':now_in_tier', [sg.where]) }}</span>
             </button>
+            <div v-if="notice" class="flex items-center gap-2 px-1 py-0.5 text-xs text-yellow-200">
+              <span class="flex-1">{{ notice.text }}</span>
+              <button :class="$style.btn" @click="addItem(notice!.name)">{{ t(':add_anyway') }}</button>
+            </div>
           </div>
         </div>
       </div>
@@ -135,11 +145,14 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, reactive, ref } from 'vue'
 import { useI18nNs } from '@/web/i18n'
-import { ITEMS_ITERATOR } from '@/assets/data'
-import { parseLine, stripComment, type FilterBlock, type Visibility } from './filter-parser'
+import { parseLine, stripComment, type FilterBlock, type ParsedFilter, type Visibility } from './filter-parser'
 import { styleFromActions, styleToActions, STYLE_KEYWORDS, type FilterStyle } from './style'
 import StyleBar from './StyleBar.vue'
-import { safeIcon } from './fb'
+import MoveBar from './MoveBar.vue'
+import { higherTier, listsBase, moveTargets, raritiesOf, tierLadder } from './filter-edit'
+import { ruleItems, type AptRule } from './apt-rules'
+import { baseScope, findBase, listedBases, searchBases } from './base-search'
+import { blockTierName } from './names'
 
 export interface TierChange {
   visibility?: Visibility
@@ -151,17 +164,19 @@ export interface TierChange {
 }
 
 const props = defineProps<{
+  parsed: ParsedFilter
   block: FilterBlock
   blockText: string
   itemName: string
   hasPatch: boolean
   busy: boolean
-  moveTargets: FilterBlock[]
   ruleTitle: (block: FilterBlock) => string
   // the item the editor was opened for
   highlight?: string
-  // items of the tier hidden by APT rules ("Hide this item")
-  hiddenItems?: string[]
+  // my rules: items of the tier can be hidden or have rules of their own
+  rules: AptRule[]
+  // it is one of my rules, not a tier of the filter
+  isRule?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -169,7 +184,7 @@ const emit = defineEmits<{
   (e: 'save' | 'unsaved', change: TierChange): void
   (e: 'reset' | 'disable' | 'close'): void
   (e: 'move', baseType: string, target: FilterBlock): void
-  (e: 'hide-item' | 'unhide-item', baseType: string): void
+  (e: 'hide-item' | 'unhide-item' | 'own-rule', baseType: string): void
 }>()
 
 const { t } = useI18nNs('loot_filter')
@@ -263,7 +278,9 @@ const baseTypeCond = props.block.conditions.find(c => c.keyword === 'BaseType' &
 const hasBaseTypes = Boolean(baseTypeCond)
 const originalItems = baseTypeCond?.values ?? []
 const added = ref<string[]>([])
-const items = computed(() => [...originalItems, ...added.value])
+// only for my rules: items of a tier are hidden or moved, not removed
+const removed = ref<string[]>([])
+const items = computed(() => [...originalItems.filter(n => !removed.value.includes(n)), ...added.value])
 const itemSearch = ref('')
 const visibleItems = computed(() => {
   const q = itemSearch.value.toLowerCase()
@@ -273,44 +290,66 @@ const visibleItems = computed(() => {
     ? [props.highlight, ...list.filter(n => n !== props.highlight)]
     : list
 })
-const selectedItem = ref<string | null>(null)
-const itemMoveTarget = ref<number | null>(null)
+// the item the editor was opened for can be moved right away
+const selectedItem = ref<string | null>(props.highlight && originalItems.includes(props.highlight) ? props.highlight : null)
 
+// the editor is created anew after every change of the filter
+const ladder = tierLadder(props.parsed, props.block)
+const up = higherTier(ladder, props.block)
+
+const itemRules = computed(() => props.isRule ? new Map<string, never>() : ruleItems(props.parsed, props.rules, props.block))
 function isHidden (name: string) {
-  return props.hiddenItems?.includes(name) ?? false
+  return itemRules.value.get(name) === 'hidden'
+}
+function hasOwnRule (name: string) {
+  return itemRules.value.get(name) === 'own'
 }
 // an item added in this editor (not saved yet) is just dropped
 function removeAdded (name: string) {
   added.value = added.value.filter(n => n !== name)
   if (selectedItem.value === name) selectedItem.value = null
 }
-function moveSelected () {
-  const target = props.moveTargets.find(b => b.index === itemMoveTarget.value)
-  if (!target || !selectedItem.value) return
-  emit('move', selectedItem.value, target)
-}
 
 const newItem = ref('')
 function addItem (name: string) {
   name = name.trim()
-  if (!name || items.value.includes(name)) return
-  added.value = [...added.value, name]
   newItem.value = ''
+  if (!name || items.value.includes(name)) return
+  if (removed.value.includes(name)) removed.value = removed.value.filter(n => n !== name)
+  else added.value = [...added.value, name]
 }
-const suggestions = computed(() => {
-  const q = newItem.value.trim()
-  if (q.length < 2) return []
-  const out: Array<{ ref: string, name: string, icon: string | null }> = []
-  const seen = new Set<string>()
-  for (const base of ITEMS_ITERATOR(q)) {
-    if (base.namespace === 'UNIQUE' || base.namespace === 'CAPTURED_BEAST') continue
-    if (seen.has(base.refName) || items.value.includes(base.refName)) continue
-    seen.add(base.refName)
-    out.push({ ref: base.refName, name: base.name, icon: safeIcon(base.icon) })
-    if (out.length >= 10) break
-  }
-  return out
+
+// only the items this tier can have: no currency in a tier of uniques
+const scope = baseScope(props.block, listedBases(moveTargets(props.parsed, props.block)), props.parsed)
+const withUniques = props.block.conditions.some(c => c.keyword === 'Rarity') && raritiesOf(props.block.conditions).has('Unique')
+
+interface Suggestion { ref: string, name: string, icon: string | null, unique?: string, inTier: boolean, where?: string }
+const suggestions = computed<Suggestion[]>(() => searchBases(newItem.value, { scope, withUniques, limit: 30, filter: props.parsed })
+  .map(({ base, unique }) => {
+    const inTier = items.value.includes(base.ref)
+    const other = inTier ? undefined : ladder.find(b => b.index !== props.block.index && listsBase(b, base.ref))
+    return { ref: base.ref, name: base.name, icon: base.icon, unique: unique?.name, inTier, where: other && blockTierName(other, t) }
+  }))
+
+// an unknown BaseType makes the game reject the whole filter: add it only on purpose
+const notice = computed(() => {
+  const name = newItem.value.trim()
+  if (name.length < 2) return null
+  const known = findBase(name, props.parsed)
+  if (known) return scope(known) ? null : { name: known.ref, text: t(':base_not_for_tier', [known.ref]) }
+  return suggestions.value.length ? null : { name, text: t(':base_unknown', [name]) }
 })
+
+function pick (sg: Suggestion) {
+  if (sg.inTier) selectedItem.value = sg.ref
+  addItem(sg.ref)
+}
+
+function submitItem () {
+  const exact = findBase(newItem.value, props.parsed)
+  const sg = exact ? suggestions.value.find(s => s.ref === exact.ref) : suggestions.value[0]
+  if (sg) pick(sg)
+}
 
 // ---- raw text ----
 
@@ -363,6 +402,7 @@ function buildChange (): TierChange {
   if (Object.keys(conditions).length) change.conditions = conditions
 
   if (added.value.length) change.addBaseTypes = [...added.value]
+  if (removed.value.length) change.removeBaseTypes = [...removed.value]
   return change
 }
 
@@ -450,6 +490,17 @@ onBeforeUnmount(() => {
   color: #fff;
   padding: 0 0.3rem;
   align-self: stretch;
+}
+.chipUp {
+  background: #13235e;
+  color: #9fb3ff;
+  padding: 0 0.3rem;
+  align-self: stretch;
+  border-right: 1px solid #333a5c;
+}
+.chipUp:hover:not(:disabled) {
+  background: #1b8fc1;
+  color: #fff;
 }
 .chipX:hover {
   background: #a3263a;

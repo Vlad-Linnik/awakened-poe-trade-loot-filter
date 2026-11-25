@@ -86,6 +86,11 @@ const FLASKS = /Flask|Tincture|Charm/i
 const MAPS = /^Maps$/i
 
 const isEquipment = (cls: string) => WEAPONS.test(cls) || ARMOUR.test(cls) || JEWELLERY.test(cls)
+// items of these classes can be unique
+export function isGearClass (cls: string) {
+  return isEquipment(cls) || JEWELS.test(cls) || FLASKS.test(cls) || MAPS.test(cls)
+}
+
 const FEATURE_CLASSES: Record<string, (cls: string) => boolean> = {
   Sockets: cls => WEAPONS.test(cls) || ARMOUR.test(cls),
   LinkedSockets: cls => WEAPONS.test(cls) || ARMOUR.test(cls),
@@ -216,6 +221,9 @@ export function evalCondition (cond: FilterLine, item: FilterItem): Tri {
       return boolMatch(values, item.influences.includes('Shaper'))
     case 'Replica':
       return boolMatch(values, item.rarity === 'Unique' && item.name.startsWith('Replica '))
+    case 'Foulborn':
+      // the name of an unidentified item may not tell it
+      return item.foulborn || item.identified || item.rarity !== 'Unique' ? boolMatch(values, item.foulborn) : null
     case 'HasInfluence':
       return influenceMatch(op, values, item.influences)
     case 'Imbued':

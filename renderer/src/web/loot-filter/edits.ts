@@ -6,14 +6,10 @@
 // so edits survive economy updates of the filter.
 
 import { parseFilter, parseLine, tokenize, stripComment, type FilterBlock, type ParsedFilter, type Visibility } from './filter-parser'
-import { renderSection, onlineVersion, MANAGED_HEADER, type AptRule } from './apt-rules'
+import { renderSection, renderRules, hostOfRule, onlineVersion, rulesHiding, withoutHiding, MANAGED_HEADER, type AptRule } from './apt-rules'
+import { findBlock, fingerprint, isPositiveBaseType, listsBase, selectorOf, tierLadder, type BlockSelector } from './filter-edit'
 
-export interface BlockSelector {
-  type?: string
-  tier?: string
-  header: string
-  fingerprint: string
-}
+export { findBlock, selectorOf, type BlockSelector }
 
 export interface TierPatch {
   id: string
@@ -35,8 +31,10 @@ export interface TierPatch {
 export interface TierMove {
   id: string
   baseType: string
-  // remove the base type from every tier of this `$type`; when null - only from `from`
+  // `$type` of the tier list; null - the base type is removed only from `from`
   typeTag: string | null
+  // with `typeTag`: the base type is removed from the tiers of the same tier list (see moveSources);
+  // null (older versions): from every tier of this `$type`
   from: BlockSelector | null
   to: BlockSelector
   label: string
@@ -90,41 +88,119 @@ export function newId () {
 
 // ---- block lookup ----
 
-export function selectorOf (block: FilterBlock): BlockSelector {
-  return {
-    type: block.tags.type,
-    tier: block.tags.tier,
-    header: block.headerComment,
-    fingerprint: fingerprint(block)
-  }
-}
-
-function fingerprint (block: FilterBlock) {
-  return block.conditions
-    .filter(c => c.keyword !== 'BaseType')
-    .map(c => `${c.keyword}${c.op}${c.values.join(',')}`)
-    .join('|')
-}
-
-export function findBlock (filter: ParsedFilter, sel: BlockSelector): FilterBlock | null {
-  const blocks = filter.blocks
-  const exact = blocks.find(b => b.headerComment === sel.header && fingerprint(b) === sel.fingerprint)
-  if (exact) return exact
-  if (sel.type && sel.tier) {
-    const sameTier = blocks.filter(b => b.tags.type === sel.type && b.tags.tier === sel.tier)
-    if (sameTier.length === 1) return sameTier[0]
-    if (sameTier.length > 1) return sameTier.find(b => fingerprint(b) === sel.fingerprint) ?? sameTier[0]
-  }
-  if (sel.header) {
-    const sameHeader = blocks.find(b => b.headerComment === sel.header)
-    if (sameHeader) return sameHeader
-  }
-  const sameFp = blocks.filter(b => fingerprint(b) === sel.fingerprint)
-  return sameFp.length === 1 ? sameFp[0] : null
-}
-
 export function patchForBlock (filter: ParsedFilter, edits: FilterEdits, block: FilterBlock): TierPatch | undefined {
   return edits.patches.find(p => findBlock(filter, p.selector)?.index === block.index)
+}
+
+// ---- moving items between tiers ----
+
+// tiers the base type is taken from
+export function moveSources (filter: ParsedFilter, move: TierMove, target: FilterBlock): FilterBlock[] {
+  const from = move.from ? findBlock(filter, move.from) : null
+  if (!move.typeTag) return from && from.index !== target.index ? [from] : []
+  const sameType = filter.blocks.filter(b => b.tags.type === move.typeTag && b.index !== target.index)
+  if (!move.from) return sameType
+  // rules for special cases ("6 links", decorators…) keep the base type
+  const fp = fingerprint(target)
+  return sameType.filter(b => b.index === from?.index || (!b.continue && fingerprint(b) === fp))
+}
+
+// Move a base type to another tier. `current` is the filter the tiers belong to (the copy),
+// `source` is the original one.
+export function withMove (
+  edits: FilterEdits, current: ParsedFilter, source: ParsedFilter,
+  baseType: string, from: FilterBlock, to: FilterBlock, label: string
+): FilterEdits {
+  const move: TierMove = {
+    id: newId(),
+    baseType,
+    typeTag: from.tags.type ?? null,
+    from: selectorOf(from),
+    to: selectorOf(to),
+    label,
+    createdAt: Date.now()
+  }
+  // older edits must not put it back to the tiers it is taken from, or drop from the new one
+  const taken = new Set(moveSources(current, move, to).map(b => b.index))
+  const patches = edits.patches.flatMap(p => {
+    const block = findBlock(current, p.selector)
+    if (!block || !(block.index === to.index || taken.has(block.index))) return [p]
+    const patch = withoutBase(p, baseType, block.index !== to.index)
+    if (patch === p) return [p]
+    return isEmptyPatch(patch) ? [] : [patch]
+  })
+  // moved once more: only the last tier counts, but the item stays removed from the first one
+  const moves = edits.moves.filter(m => !(m.baseType === baseType && m.typeTag === move.typeTag))
+  const rules = withoutHiding(current, edits.rules, baseType, from)
+
+  const target = findBlock(source, move.to)
+  const atHome = target != null && listsBase(target, baseType) &&
+    !moveSources(source, move, target).some(b => listsBase(b, baseType))
+  return { rules, patches, moves: atHome ? moves : [...moves, move] }
+}
+
+// Items typed into a tier: the ones listed by another tier of the same tier list are moved
+export function splitAdded (current: ParsedFilter, block: FilterBlock, baseTypes: string[]) {
+  const others = tierLadder(current, block).filter(b => b.index !== block.index)
+  const moved: Array<{ baseType: string, from: FilterBlock }> = []
+  const added: string[] = []
+  for (const baseType of baseTypes) {
+    const from = others.find(b => listsBase(b, baseType))
+    if (from) moved.push({ baseType, from })
+    else added.push(baseType)
+  }
+  return { moved, added }
+}
+
+function withoutBase (patch: TierPatch, baseType: string, dropAdded: boolean): TierPatch {
+  const has = (list?: string[]) => list?.includes(baseType) ?? false
+  if (!has(patch.removeBaseTypes) && !(dropAdded && has(patch.addBaseTypes))) return patch
+  const without = (list?: string[]) => {
+    const out = list?.filter(x => x !== baseType)
+    return out?.length ? out : undefined
+  }
+  return {
+    ...patch,
+    removeBaseTypes: without(patch.removeBaseTypes),
+    addBaseTypes: dropAdded ? without(patch.addBaseTypes) : patch.addBaseTypes
+  }
+}
+
+export function isEmptyPatch (p: TierPatch) {
+  return p.raw == null && !p.disabled && p.visibility == null &&
+    !Object.keys(p.actions ?? {}).length && !Object.keys(p.conditions ?? {}).length &&
+    !p.addBaseTypes?.length && !p.removeBaseTypes?.length
+}
+
+// In the first versions the × removed the item from its tier, so it was not hidden
+// but got the style of the "Rest" tier.
+export interface RemovedItem { patchId: string, baseType: string, block: FilterBlock }
+
+export function removedItems (current: ParsedFilter, edits: FilterEdits): RemovedItem[] {
+  const out: RemovedItem[] = []
+  for (const p of edits.patches) {
+    if (!p.removeBaseTypes?.length || p.raw != null || p.disabled) continue
+    const block = findBlock(current, p.selector)
+    if (!block) continue
+    const ladder = tierLadder(current, block)
+    for (const baseType of p.removeBaseTypes) {
+      if (ladder.some(b => listsBase(b, baseType)) || rulesHiding(current, edits.rules, baseType, block).length) continue
+      out.push({ patchId: p.id, baseType, block })
+    }
+  }
+  return out
+}
+
+// put the items back to their tiers
+export function withoutRemoved (edits: FilterEdits, items: RemovedItem[]): FilterEdits {
+  return {
+    ...edits,
+    patches: edits.patches.flatMap(p => {
+      const patch = items.filter(x => x.patchId === p.id)
+        .reduce((acc, x) => withoutBase(acc, x.baseType, false), p)
+      return patch !== p && isEmptyPatch(patch) ? [] : [patch]
+    })
+  }
 }
 
 // ---- applying ----
@@ -141,24 +217,34 @@ export function applyEdits (sourceText: string, edits: FilterEdits): { text: str
     ops.set(block.index, list)
   }
 
+  const patches: Array<{ patch: TierPatch, block: FilterBlock }> = []
+  for (const patch of edits.patches) {
+    const block = findBlock(filter, patch.selector)
+    if (block) patches.push({ patch, block })
+    else orphans.push(patch.id)
+  }
+  const replaced = new Set(patches.filter(p => p.patch.raw != null && !p.patch.disabled).map(p => p.block.index))
+
+  // a replaced text goes first, so that it doesn't cancel the moves
+  for (const { patch, block } of patches) {
+    if (replaced.has(block.index)) addOp(block, lines => applyPatch(lines, patch))
+  }
+  // items are added before any is removed: a tier that gets an item is not empty
+  const removals: Array<() => void> = []
   for (const move of edits.moves) {
     const target = findBlock(filter, move.to)
     if (!target) { orphans.push(move.id); continue }
-    const sources = move.typeTag
-      ? filter.blocks.filter(b => b.tags.type === move.typeTag && b.index !== target.index)
-      : [move.from ? findBlock(filter, move.from) : null].filter((b): b is FilterBlock => b != null && b.index !== target.index)
-    for (const b of sources) {
-      if (b.conditions.some(c => isPositiveBaseType(c.keyword, c.op) && c.values.includes(move.baseType))) {
-        addOp(b, lines => removeBaseType(lines, move.baseType))
+    addOp(target, lines => addBaseType(lines, move.baseType))
+    for (const b of moveSources(filter, move, target)) {
+      if (replaced.has(b.index) || listsBase(b, move.baseType)) {
+        removals.push(() => addOp(b, lines => removeBaseType(lines, move.baseType)))
       }
     }
-    addOp(target, lines => addBaseType(lines, move.baseType))
   }
+  removals.forEach(fn => fn())
 
-  for (const patch of edits.patches) {
-    const block = findBlock(filter, patch.selector)
-    if (!block) { orphans.push(patch.id); continue }
-    addOp(block, lines => applyPatch(lines, patch))
+  for (const { patch, block } of patches) {
+    if (!replaced.has(block.index)) addOp(block, lines => applyPatch(lines, patch))
   }
 
   const lines = [...filter.lines]
@@ -234,14 +320,10 @@ function setKeywordLine (lines: string[], keyword: string, line: string | null, 
   return out
 }
 
-function isPositiveBaseType (keyword: string, op: string) {
-  return keyword === 'BaseType' && op !== '!' && op !== '!='
-}
-
 function baseTypeLine (lines: string[]) {
   for (let i = 1; i < lines.length; ++i) {
     const parsed = parseLine(lines[i])
-    if (parsed && isPositiveBaseType(parsed.keyword, parsed.op)) return { index: i, parsed }
+    if (parsed && isPositiveBaseType(parsed)) return { index: i, parsed }
   }
   return null
 }
@@ -272,6 +354,25 @@ function addBaseType (lines: string[], baseType: string): string[] {
   return out
 }
 
+// Rules of tier items go right before the tier: more special rules above it
+// (6 links, replicas, stacks…) still work. The others stay at the top of the filter.
+function placeRules (text: string, rules: AptRule[]): { text: string, top: AptRule[] } {
+  if (!rules.some(r => r.anchor)) return { text, top: rules }
+  const filter = parseFilter(text)
+  const top: AptRule[] = []
+  const placed = new Map<number, AptRule[]>()
+  for (const rule of rules) {
+    const host = hostOfRule(filter, rule)
+    if (host) placed.set(host.startLine, [...(placed.get(host.startLine) ?? []), rule])
+    else top.push(rule)
+  }
+  const lines = [...filter.lines]
+  for (const [line, list] of [...placed].sort((a, b) => b[0] - a[0])) {
+    lines.splice(line, 0, ...renderRules(list))
+  }
+  return { text: lines.join(filter.eol), top }
+}
+
 // ---- the copy used by the game ----
 
 export function copyName (source: FilterSource) {
@@ -287,12 +388,13 @@ export function copySourceVersion (copyText: string): string | null {
 export function buildCopy (source: FilterSource, sourceText: string, edits: FilterEdits): { text: string, orphans: string[] } {
   const eol = sourceText.includes('\r\n') ? '\r\n' : '\n'
   const ref = source.kind === 'online' ? `online:${source.id}` : `local:${encodeURIComponent(source.id)}`
-  const { text, orphans } = applyEdits(sourceText, edits)
+  const { text: patched, orphans } = applyEdits(sourceText, edits)
+  const { text, top } = placeRules(patched, edits.rules)
   const header = [
     `${MANAGED_HEADER} source=${ref} version=${onlineVersion(sourceText)}`,
     `# Copy of the filter "${source.name}" with your changes from Awakened PoE Trade.`,
     '# Generated automatically: edit the original filter (FilterBlade) or use the app, manual edits here will be lost.',
     ''
   ]
-  return { text: [...header, ...renderSection(edits.rules), text].join(eol), orphans }
+  return { text: [...header, ...renderSection(top), text].join(eol), orphans }
 }

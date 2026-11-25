@@ -3,8 +3,9 @@
 // in the widget and by the downloadable report, so the changes can be repeated in FilterBlade.
 
 import { parseLine, type FilterBlock, type ParsedFilter } from './filter-parser'
-import { applyPatch, findBlock, type FilterEdits, type FilterSource } from './edits'
-import { onlineVersion } from './apt-rules'
+import { applyPatch, findBlock, moveSources, type FilterEdits, type FilterSource } from './edits'
+import { hostOfRule, onlineVersion, type AptRule } from './apt-rules'
+import { listsBase } from './filter-edit'
 import { placeOf } from './fb-categories'
 import { blockTierName } from './names'
 
@@ -51,7 +52,7 @@ export function describeChanges (source: ParsedFilter, edits: FilterEdits, t: T)
       id: rule.id,
       kind: 'rule',
       label: rule.label,
-      where: null,
+      where: whereOfRule(rule, source, t),
       group: rulesGroup,
       time: rule.createdAt,
       orphan: false,
@@ -101,10 +102,7 @@ export function describeChanges (source: ParsedFilter, edits: FilterEdits, t: T)
   for (const move of edits.moves) {
     const target = findBlock(source, move.to)
     const from = target
-      ? (move.typeTag
-          ? source.blocks.filter(b => b.tags.type === move.typeTag && b.index !== target.index)
-          : [move.from ? findBlock(source, move.from) : null].filter((b): b is FilterBlock => b != null && b.index !== target.index)
-        ).filter(b => b.conditions.some(c => c.keyword === 'BaseType' && c.op !== '!' && c.op !== '!=' && c.values.includes(move.baseType)))
+      ? moveSources(source, move, target).filter(b => listsBase(b, move.baseType))
       : []
     out.push({
       id: move.id,
@@ -126,6 +124,11 @@ export function describeChanges (source: ParsedFilter, edits: FilterEdits, t: T)
   }
 
   return out.sort((a, b) => b.time - a.time)
+}
+
+function whereOfRule (rule: AptRule, source: ParsedFilter, t: T) {
+  const host = hostOfRule(source, rule)
+  return host && whereOf(host, t)
 }
 
 function whereOf (block: FilterBlock, t: T) {

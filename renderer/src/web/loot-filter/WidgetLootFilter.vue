@@ -43,6 +43,15 @@
             {{ t(':source_updated') }}
             <button class="btn mt-1 w-full" :disabled="busy" @click="rebuild(false)">{{ t(':rebuild_copy') }}</button>
           </div>
+          <!-- items dropped from their tiers by the × of the older versions -->
+          <div v-if="removedByX.length" class="bg-yellow-900 text-yellow-100 rounded px-2 py-1 text-sm">
+            {{ t(':removed_items', [removedByX.length]) }}
+            <div class="text-xs truncate" :title="removedByX.map(x => x.baseType).join(', ')">{{ removedByX.map(x => x.baseType).join(', ') }}</div>
+            <div class="flex gap-2 mt-1">
+              <button class="btn flex-1" :disabled="busy || !info.source" @click="fixRemoved(true)"><i class="fas fa-eye-slash"></i> {{ t(':removed_hide') }}</button>
+              <button class="btn flex-1" :disabled="busy || !info.source" @click="fixRemoved(false)"><i class="fas fa-undo"></i> {{ t(':removed_return') }}</button>
+            </div>
+          </div>
           <div v-if="orphans.length" class="bg-yellow-900 text-yellow-100 rounded px-2 py-1 text-xs">{{ t(':orphans', [orphans.length]) }}</div>
 
           <template v-if="mode === 'item' && fItem && match">
@@ -70,14 +79,21 @@
                   <span class="flex-1"></span>
                   <button :class="$style.fbBtn" :disabled="busy" @click="removeRule(matchedRule.id)"><i class="fas fa-undo"></i> {{ t(':remove_override') }}</button>
                 </div>
+                <!-- an own rule of the item is edited like a tier -->
+                <TierEditor v-if="matchedRule.visibility !== 'Hide'"
+                  :key="`editor-rule-${finalBlock.index}-${info.mtime}`"
+                  :parsed="parsed" :block="finalBlock" :block-text="blockText(parsed, finalBlock)"
+                  :item-name="item!.info.name" :has-patch="false" :busy="busy" is-rule
+                  :rule-title="ruleTitle" :highlight="fItem.baseType" :rules="edits.rules"
+                  @unsaved="addUnsaved(finalBlock!, $event)"
+                  @save="saveTier(finalBlock!, $event)" @disable="removeRule(matchedRule.id)" />
               </template>
               <TierEditor v-else-if="!finalClosed"
                 :key="`editor-final-${finalBlock.index}-${info.mtime}`"
-                :block="finalBlock" :block-text="blockText(parsed, finalBlock)"
+                :parsed="parsed" :block="finalBlock" :block-text="blockText(parsed, finalBlock)"
                 :item-name="item!.info.name" :has-patch="Boolean(patchOf(finalBlock))" :busy="busy"
-                :move-targets="moveTargets(parsed, finalBlock)" :rule-title="ruleTitle" :highlight="fItem.baseType"
-                :hidden-items="hiddenBases"
-                @hide-item="hideBase($event, finalBlock!)" @unhide-item="unhideBase"
+                :rule-title="ruleTitle" :highlight="fItem.baseType" :rules="edits.rules"
+                @hide-item="hideBase($event, finalBlock!)" @unhide-item="unhideBase($event, finalBlock!)" @own-rule="ownRule($event, finalBlock!)"
                 @unsaved="addUnsaved(finalBlock!, $event)"
                 @move="(bt: string, to: FilterBlock) => moveBaseType(bt, finalBlock!, to)"
                 @save="saveTier(finalBlock!, $event)" @reset="resetTier(finalBlock!)"
@@ -101,11 +117,10 @@
                 </div>
                 <TierEditor v-if="isEditing('d', ev.block)"
                   :key="`editor-d${ev.block.index}-${info.mtime}`"
-                  :block="ev.block" :block-text="blockText(parsed, ev.block)"
+                  :parsed="parsed" :block="ev.block" :block-text="blockText(parsed, ev.block)"
                   :item-name="item!.info.name" :has-patch="Boolean(patchOf(ev.block))" :busy="busy"
-                  :move-targets="moveTargets(parsed, ev.block)" :rule-title="ruleTitle" :highlight="fItem.baseType"
-                  :hidden-items="hiddenBases"
-                  @hide-item="hideBase($event, ev.block)" @unhide-item="unhideBase"
+                  :rule-title="ruleTitle" :highlight="fItem.baseType" :rules="edits.rules"
+                  @hide-item="hideBase($event, ev.block)" @unhide-item="unhideBase($event, ev.block)" @own-rule="ownRule($event, ev.block)"
                   @unsaved="addUnsaved(ev.block, $event)"
                   @move="(bt: string, to: FilterBlock) => moveBaseType(bt, ev.block, to)"
                   @save="saveTier(ev.block, $event)" @reset="resetTier(ev.block)"
@@ -139,11 +154,10 @@
                 </div>
                 <TierEditor v-if="isEditing('r', ev.block)"
                   :key="`editor-r${ev.block.index}-${info.mtime}`"
-                  :block="ev.block" :block-text="blockText(parsed, ev.block)"
+                  :parsed="parsed" :block="ev.block" :block-text="blockText(parsed, ev.block)"
                   :item-name="item!.info.name" :has-patch="Boolean(patchOf(ev.block))" :busy="busy"
-                  :move-targets="moveTargets(parsed, ev.block)" :rule-title="ruleTitle" :highlight="fItem.baseType"
-                  :hidden-items="hiddenBases"
-                  @hide-item="hideBase($event, ev.block)" @unhide-item="unhideBase"
+                  :rule-title="ruleTitle" :highlight="fItem.baseType" :rules="edits.rules"
+                  @hide-item="hideBase($event, ev.block)" @unhide-item="unhideBase($event, ev.block)" @own-rule="ownRule($event, ev.block)"
                   @unsaved="addUnsaved(ev.block, $event)"
                   @move="(bt: string, to: FilterBlock) => moveBaseType(bt, ev.block, to)"
                   @save="saveTier(ev.block, $event)" @reset="resetTier(ev.block)"
@@ -172,15 +186,11 @@
               <div class="text-xs text-gray-500 -mt-1">{{ t(':rule_hint', [itemCondText]) }}</div>
             </template>
 
-            <div v-if="targets.length" class="flex gap-2">
-              <select v-model="moveTarget" class="p-1 rounded bg-gray-900 flex-1 min-w-0">
-                <option :value="null" disabled>{{ t(':move_to') }}</option>
-                <option v-for="b of targets" :key="b.index" :value="b.index">
-                  {{ b.visibility }} · {{ ruleTitle(b) }}
-                </option>
-              </select>
-              <button class="btn" :disabled="busy || moveTarget == null || !info.source" @click="moveItem">{{ t(':move') }}</button>
-            </div>
+            <!-- the tier editor has the same for the items of its list -->
+            <MoveBar v-if="!matchedRule && finalBlock && (finalClosed || !listsBase(finalBlock, fItem.baseType))"
+              :parsed="parsed" :block="finalBlock" :base-type="fItem.baseType" :has-own-rule="false"
+              :busy="busy || !info.source" :rule-title="ruleTitle"
+              @move="moveBaseType(fItem!.baseType, finalBlock!, $event)" @own-rule="ownItemRule" />
           </div>
 
           </template>
@@ -188,9 +198,9 @@
           <!-- the whole filter, like FilterBlade -->
           <FilterBrowser v-if="mode === 'browse'" style="height: 70vh;"
             :parsed="parsed" :mtime="info.mtime" :busy="busy" :focus="browseFocus"
-            :patch-of="patchOf" :rule-title="ruleTitle" :is-apt-rule="(b) => Boolean(ruleOf(b))"
+            :patch-of="patchOf" :rule-title="ruleTitle" :rule-for="ruleOf"
             @save="saveTier" @reset="resetTier" @disable="disableTier" @move="moveBaseType"
-            :hidden-items="hiddenBases" @hide-item="hideBase" @unhide-item="unhideBase" @unsaved="addUnsaved"
+            :rules="edits.rules" @hide-item="hideBase" @unhide-item="unhideBase" @own-rule="ownRule" @unsaved="addUnsaved"
             @reset-blocks="resetBlocks" />
 
           <!-- all my edits for this filter -->
@@ -311,20 +321,25 @@ import { parseClipboard, type ParsedItem } from '@/parser'
 import type { WidgetManager } from '../overlay/interfaces'
 import Widget from '../overlay/Widget.vue'
 import TierEditor, { type TierChange } from './TierEditor.vue'
+import MoveBar from './MoveBar.vue'
 import FilterBrowser from './FilterBrowser.vue'
 import { parseFilter, blockText, type FilterBlock, type ParsedFilter, type Visibility } from './filter-parser'
 import { toFilterItem, type FilterItem } from './item-props'
 import { matchItem, relatedBlocks } from './matcher'
-import { moveTargets } from './filter-edit'
-import { ruleForItem, ruleHidingBase, hiddenBaseOf, itemConditions, ruleIdOfBlock, isRuleBlock, onlineVersion, type AptRule } from './apt-rules'
+import { listsBase } from './filter-edit'
+import {
+  ruleForItem, ruleForBase, ruleLines, ruleFromLines, ownRuleOf, withoutHiding,
+  itemConditions, ruleIdOfBlock, onlineVersion, type AptRule
+} from './apt-rules'
 import {
   emptyEdits, editsCount, normalizeStore, storeKey as storeKeyOf, newId, selectorOf, patchForBlock, findBlock,
-  buildCopy, copyName, copySourceVersion,
+  buildCopy, copyName, copySourceVersion, applyPatch, withMove, splitAdded, isEmptyPatch, removedItems, withoutRemoved,
   type EditsStore, type FilterEdits, type FilterSource, type TierPatch, type BlockSelector
 } from './edits'
 import { describeChanges, searchChanges, renderReport, reportFileName, formatTime, badge, type ChangeEntry } from './changes-report'
+import { canBeUnique } from './base-search'
 import { iconForBlock, safeIcon } from './fb'
-import { blockTitle, conditionHints } from './names'
+import { blockTitle, blockTierName, conditionHints } from './names'
 import { styleFromActions, styleCss } from './style'
 import * as api from './api'
 
@@ -352,7 +367,6 @@ const history = shallowRef<FilterEdits[]>([])
 // open editor of a decorator ('d') or related ('r') tier; found by selector,
 // so it stays open after the filter is rewritten
 const editing = shallowRef<{ kind: 'd' | 'r', selector: BlockSelector } | null>(null)
-const moveTarget = ref<number | null>(null)
 const pendingCommand = ref<string | null>(null)
 // the "remove all my changes" question is shown
 const confirmClear = ref(false)
@@ -377,7 +391,6 @@ MainProcess.onEvent('MAIN->CLIENT::item-text', (e) => {
   assumed.value = new Set()
   history.value = []
   editing.value = null
-  moveTarget.value = null
   status.value = null
   pendingCommand.value = null
   wm.show(props.config.wmId)
@@ -463,10 +476,10 @@ const match = computed(() => {
 const finalBlock = computed(() => match.value?.final?.block ?? null)
 
 function ruleOf (block: FilterBlock): AptRule | null {
-  if (!parsed.value || !isRuleBlock(parsed.value, block)) return null
   const id = ruleIdOfBlock(block)
+  if (id == null) return null
   return edits.value.rules.find(r => r.id === id) ??
-    { id: id!, label: block.headerComment, visibility: block.visibility, conditions: [], actions: [], createdAt: 0 }
+    { id, label: block.headerComment, visibility: block.visibility, conditions: [], actions: [], createdAt: 0 }
 }
 function patchOf (block: FilterBlock): TierPatch | undefined {
   return parsed.value ? patchForBlock(parsed.value, edits.value, block) : undefined
@@ -510,10 +523,6 @@ function findInCustomizer (block: FilterBlock) {
 }
 
 const matchedRule = computed(() => finalBlock.value ? ruleOf(finalBlock.value) : null)
-const targets = computed(() => {
-  if (!parsed.value || !finalBlock.value || matchedRule.value) return []
-  return moveTargets(parsed.value, finalBlock.value)
-})
 const itemCondText = computed(() => fItem.value ? itemConditions(fItem.value).join(', ') : '')
 
 function assume (index: number) {
@@ -633,7 +642,6 @@ function chat (command: string) {
 
 function afterWrite (message: string, command: string) {
   assumed.value = new Set()
-  moveTarget.value = null
   status.value = message
   if (!props.config.reloadAfterHide) {
     pendingCommand.value = command
@@ -716,21 +724,67 @@ function addItemRule (visibility: Visibility) {
     visibility === 'Hide' ? t(':done_hidden') : t(':done_shown'))
 }
 
-// the × on an item of a tier: the same as "Hide this item", saved at once
+function tierItemRule (baseType: string, block: FilterBlock, visibility: Visibility) {
+  return ruleForBase(baseType, block, { visibility, isGear: canBeUnique(baseType, block) })
+}
+
+// the × on an item of a tier: hides the items that this tier shows, saved at once
 function hideBase (baseType: string, block: FilterBlock) {
   if (busy.value) return
-  if (fItem.value && baseType === fItem.value.baseType) return addItemRule('Hide')
-  const rule = ruleHidingBase(baseType, block)
+  const rule = tierItemRule(baseType, block, 'Hide')
   return withEdits(e => ({ ...e, rules: [...e.rules, rule] }), t(':done_hidden'))
 }
 
-function unhideBase (baseType: string) {
+function unhideBase (baseType: string, block: FilterBlock) {
   if (busy.value) return
-  return withEdits(e => ({ ...e, rules: e.rules.filter(r => hiddenBaseOf(r) !== baseType) }), t(':done_shown'))
+  return withEdits(e => ({ ...e, rules: withoutHiding(parsed.value!, e.rules, baseType, block) }), t(':done_shown'))
 }
 
-// base types hidden by my rules: shown dimmed in the tier editors
-const hiddenBases = computed(() => edits.value.rules.map(hiddenBaseOf).filter((x): x is string => x != null))
+// ---- own rule of one base type: starts as a copy of its tier's rule ----
+
+async function ownRule (baseType: string, block: FilterBlock) {
+  if (busy.value) return
+  const existing = ownRuleOf(parsed.value!, edits.value.rules, baseType, block)
+  const rule = existing ?? tierItemRule(baseType, block, 'Show')
+  if (!existing) {
+    await withEdits(e => ({ ...e, rules: [...withoutHiding(parsed.value!, e.rules, baseType, block), rule] }), t(':done_own_rule', [baseType]))
+  }
+  openRule(rule.id, baseType)
+}
+
+async function ownItemRule () {
+  if (busy.value) return
+  const rule = tierItemRule(fItem.value!.baseType, finalBlock.value!, 'Show')
+  await withEdits(e => ({ ...e, rules: [...e.rules, rule] }), t(':done_own_rule', [rule.label]))
+}
+
+// open the editor of my rule (the rule of the item under cursor is already open)
+function openRule (id: string, baseType: string) {
+  if (!parsed.value || matchedRule.value?.id === id) return
+  const block = parsed.value.blocks.find(b => ruleOf(b)?.id === id)
+  if (!block) return
+  browseFocus.value = { selector: selectorOf(block), item: baseType }
+  mode.value = 'browse'
+}
+
+function saveRule (rule: AptRule, change: TierChange) {
+  const patch: TierPatch = { id: rule.id, selector: { header: '', fingerprint: '' }, label: rule.label, updatedAt: 0, ...change }
+  const changed = ruleFromLines(rule, applyPatch(ruleLines(rule), patch))
+  if (!changed) return removeRule(rule.id)
+  return withEdits(e => ({ ...e, rules: e.rules.map(r => r.id === rule.id ? changed : r) }), t(':done_rule'))
+}
+
+// ---- items dropped from their tiers by the × of the older versions ----
+
+const removedByX = computed(() => parsed.value ? removedItems(parsed.value, edits.value) : [])
+
+function fixRemoved (hide: boolean) {
+  const items = removedByX.value
+  return withEdits(e => {
+    const out = withoutRemoved(e, items)
+    return hide ? { ...out, rules: [...out.rules, ...items.map(x => tierItemRule(x.baseType, x.block, 'Hide'))] } : out
+  }, hide ? t(':done_hidden') : t(':done_returned'))
+}
 
 // ---- edits of a tier left without Save: ask what to do with them ----
 
@@ -764,29 +818,24 @@ function removeRule (id: string) {
   return withEdits(e => ({ ...e, rules: e.rules.filter(r => r.id !== id) }), t(':done_override_removed'))
 }
 
-function moveBaseType (baseType: string, from: FilterBlock, to: FilterBlock) {
-  return withEdits(e => ({
-    ...e,
-    moves: [
-      ...e.moves.filter(m => m.baseType !== baseType),
-      {
-        id: newId(),
-        baseType,
-        typeTag: from.tags.type ?? null,
-        from: from.tags.type ? null : selectorOf(from),
-        to: selectorOf(to),
-        label: `${baseType} → ${ruleTitle(to)}`,
-        createdAt: Date.now()
-      }
-    ]
-  }), t(':done_moved'))
+function movedIn (e: FilterEdits, baseType: string, from: FilterBlock, to: FilterBlock) {
+  const src = parseFilter(info.value!.source!.contents)
+  return withMove(e, parsed.value!, src, baseType, from, to, `${baseType} → ${ruleTitle(to)}`)
 }
 
-function moveItem () {
-  return moveBaseType(fItem.value!.baseType, finalBlock.value!, parsed.value!.blocks[moveTarget.value!])
+function moveBaseType (baseType: string, from: FilterBlock, to: FilterBlock) {
+  if (busy.value || !info.value?.source) return
+  return withEdits(e => movedIn(e, baseType, from, to), t(':done_moved_to', [baseType, blockTierName(to, t)]))
 }
 
 function saveTier (block: FilterBlock, change: TierChange) {
+  const rule = ruleOf(block)
+  if (rule) return saveRule(rule, change)
+  // items of other tiers are moved, not copied: they would stay in both
+  const { moved, added } = splitAdded(parsed.value!, block, change.addBaseTypes ?? [])
+  if (moved.length && info.value?.source) {
+    change = { ...change, addBaseTypes: added.length ? added : undefined }
+  }
   const old = patchOf(block)
   let patch: TierPatch
   if (change.raw != null) {
@@ -803,7 +852,11 @@ function saveTier (block: FilterBlock, change: TierChange) {
       updatedAt: Date.now()
     }
   }
-  return withEdits(e => ({ ...e, patches: [...e.patches.filter(p => p.id !== patch.id), patch] }), t(':done_tier'))
+  return withEdits(e => {
+    const patches = e.patches.filter(p => p.id !== patch.id)
+    const out = { ...e, patches: isEmptyPatch(patch) ? patches : [...patches, patch] }
+    return info.value?.source ? moved.reduce((acc, m) => movedIn(acc, m.baseType, m.from, block), out) : out
+  }, t(':done_tier'))
 }
 
 // adding an item that was removed earlier cancels the removal, and vice versa
@@ -842,6 +895,8 @@ function resetTier (block: FilterBlock) {
 }
 
 function disableTier (block: FilterBlock) {
+  const rule = ruleOf(block)
+  if (rule) return removeRule(rule.id)
   const old = patchOf(block)
   const patch: TierPatch = {
     id: old?.id ?? newId(),

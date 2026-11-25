@@ -33,7 +33,7 @@ export interface FilterItem {
 }
 
 // English item class names used by loot filters, for non-English game clients
-const CLASS_BY_CATEGORY: Partial<Record<ItemCategory, string>> = {
+export const CLASS_BY_CATEGORY: Partial<Record<ItemCategory, string>> = {
   [ItemCategory.Map]: 'Maps',
   [ItemCategory.Helmet]: 'Helmets',
   [ItemCategory.BodyArmour]: 'Body Armours',

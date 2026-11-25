@@ -1,9 +1,15 @@
 // User rules created in-game. They are stored by the app (not only in the
 // .filter file), so they survive FilterBlade re-downloads and online filter updates,
-// and are written at the top of the filter as a separate section.
+// and are written before the tier they were made from or at the top of the filter.
 
-import { stripComment, type FilterBlock, type ParsedFilter, type Visibility } from './filter-parser'
+import { parseFilter, parseLine, stripComment, type FilterBlock, type FilterLine, type ParsedFilter, type Visibility } from './filter-parser'
+import {
+  findBlock, isExactBaseType, isPositiveBaseType, listsBase, raritiesOf, ruleIdOfBlock, selectorOf, tierLadder,
+  type BlockSelector
+} from './filter-edit'
 import type { FilterItem } from './item-props'
+
+export { ruleIdOfBlock }
 
 export interface AptRule {
   id: string
@@ -12,6 +18,8 @@ export interface AptRule {
   conditions: string[] // `Class == "Divination Cards"`
   actions: string[] // style copied from another tier; empty = default style
   createdAt: number
+  // the tier the rule was made from: it stands right before it; without it - at the top of the filter
+  anchor?: BlockSelector
 }
 
 export const SECTION_START = '#===APT-RULES-START==='
@@ -28,6 +36,9 @@ export function itemConditions (item: FilterItem): string[] {
   out.push(`BaseType == ${q(item.baseType)}`)
   if (!item.class || !STACKABLE_CLASSES.test(item.class)) {
     out.push(`Rarity == ${item.rarity}`)
+    // the ordinary item of this base is another item
+    if (item.foulborn) out.push('Foulborn True')
+    if (item.rarity === 'Unique' && item.name.startsWith('Replica ')) out.push('Replica True')
   }
   return out
 }
@@ -49,33 +60,117 @@ export function ruleForItem (item: FilterItem, visibility: Visibility, style?: F
   })
 }
 
-// "Hide this item" for any base type of a tier (the × in the tier editor):
-// the tier's Class / Rarity scope is kept, so e.g. uniques of the base stay visible
-export function ruleHidingBase (baseType: string, block: FilterBlock): AptRule {
-  const scope = (keyword: string) => block.conditions
-    .filter(c => c.keyword === keyword && c.op !== '!' && c.op !== '!=')
-    .map(c => stripComment(c.raw).trim())
-  const classes = scope('Class')
-  const rarity = scope('Rarity')
-  if (!rarity.length && classes.length && !STACKABLE_CLASSES.test(classes.join(' '))) {
-    rarity.push('Rarity <= Rare')
-  }
+// A rule for one base type of a tier. It has all the conditions of the tier and stands right before it,
+// so it applies to the same items as the tier does.
+// `isGear`: the item can be unique; uniques must not be caught by a tier without Rarity
+export function ruleForBase (baseType: string, block: FilterBlock, opts: {
+  visibility: Visibility
+  isGear: boolean
+}): AptRule {
+  const list = block.conditions.find(c => isPositiveBaseType(c) && c.values.includes(baseType))
+  const partial = list != null && !isExactBaseType(list)
   return newRule({
-    visibility: 'Hide',
+    visibility: opts.visibility,
     label: baseType,
-    conditions: [...classes, `BaseType == ${q(baseType)}`, ...rarity],
-    actions: []
+    conditions: [
+      ...block.conditions.filter(c => c.keyword !== 'BaseType').map(conditionText),
+      ...(opts.isGear && !block.conditions.some(c => c.keyword === 'Rarity') ? ['Rarity <= Rare'] : []),
+      `BaseType ${partial ? '' : '== '}${q(baseType)}`
+    ],
+    actions: opts.visibility === 'Hide' ? [] : block.actions.map(conditionText),
+    anchor: selectorOf(block)
   })
 }
 
-// the base type a "Hide this item" rule hides
-export function hiddenBaseOf (rule: AptRule): string | null {
-  if (rule.visibility !== 'Hide') return null
-  for (const c of rule.conditions) {
-    const m = /^BaseType\s*==\s*"([^"]+)"$/.exec(c.trim())
-    if (m) return m[1]
+// the tier my rule stands before: its item could have been moved to another tier
+export function hostOfRule (filter: ParsedFilter, rule: AptRule): FilterBlock | null {
+  const anchor = rule.anchor && findBlock(filter, rule.anchor)
+  if (!anchor) return null
+  const ladder = tierLadder(filter, anchor)
+  const hosts = ruleConditions(rule).filter(isPositiveBaseType).flatMap(c => c.values)
+    .map(base => ladder.find(b => listsBase(b, base)) ?? anchor)
+  return hosts.reduce((a, b) => b.index < a.index ? b : a, hosts[0] ?? anchor)
+}
+
+function conditionText (c: FilterLine) {
+  return stripComment(c.raw).trim()
+}
+
+// my rules that work in this tier: made from one of its tier list, or (top of the filter)
+// with the same rarities: "Rarity Unique" rules have nothing to do with the crafting bases
+function rulesOfTier (filter: ParsedFilter, rules: AptRule[], block: FilterBlock): AptRule[] {
+  const rarities = raritiesOf(block.conditions)
+  const tiers = new Set([block.index, ...tierLadder(filter, block).map(b => b.index)])
+  return rules.filter(rule => {
+    const anchor = rule.anchor && findBlock(filter, rule.anchor)
+    if (anchor) return tiers.has(anchor.index)
+    return [...raritiesOf(ruleConditions(rule))].some(r => rarities.has(r))
+  })
+}
+
+function basesOf (rule: AptRule): string[] {
+  return ruleConditions(rule).filter(isPositiveBaseType).flatMap(c => c.values)
+}
+
+function rulesFor (filter: ParsedFilter, rules: AptRule[], baseType: string, block: FilterBlock): AptRule[] {
+  return rulesOfTier(filter, rules.filter(r => basesOf(r).includes(baseType)), block)
+}
+
+export function rulesHiding (filter: ParsedFilter, rules: AptRule[], baseType: string, block: FilterBlock): AptRule[] {
+  return rulesFor(filter, rules, baseType, block).filter(r => r.visibility === 'Hide')
+}
+
+// what my rules do with the base types of a tier: the newest rule wins in the filter
+export function ruleItems (filter: ParsedFilter, rules: AptRule[], block: FilterBlock): Map<string, 'hidden' | 'own'> {
+  const out = new Map<string, 'hidden' | 'own'>()
+  for (const rule of rulesOfTier(filter, rules, block)) {
+    for (const name of basesOf(rule)) out.set(name, rule.visibility === 'Hide' ? 'hidden' : 'own')
   }
-  return null
+  return out
+}
+
+// the rules without those hiding the base type in this tier
+export function withoutHiding (filter: ParsedFilter, rules: AptRule[], baseType: string, block: FilterBlock): AptRule[] {
+  const hiding = new Set(rulesHiding(filter, rules, baseType, block))
+  return rules.flatMap(rule => {
+    if (!hiding.has(rule)) return [rule]
+    const conditions = rule.conditions.map(raw => {
+      const c = parseLine(raw)
+      if (c?.keyword !== 'BaseType' || !c.values.includes(baseType)) return raw
+      const rest = c.values.filter(v => v !== baseType)
+      return rest.length ? `BaseType ${c.op}${c.op && ' '}${rest.map(q).join(' ')}` : null
+    })
+    return conditions.includes(null) ? [] : [{ ...rule, conditions: conditions as string[] }]
+  })
+}
+
+// the own rule of a base type: the newest one wins in the filter
+export function ownRuleOf (filter: ParsedFilter, rules: AptRule[], baseType: string, block: FilterBlock): AptRule | null {
+  return rulesFor(filter, rules, baseType, block).filter(r => r.visibility !== 'Hide').pop() ?? null
+}
+
+function ruleConditions (rule: AptRule): FilterLine[] {
+  return rule.conditions.map(c => parseLine(c)).filter((c): c is FilterLine => c != null)
+}
+
+export function ruleLines (rule: AptRule): string[] {
+  return [
+    `${rule.visibility} # APT: ${rule.label.replace(/[\r\n]/g, ' ')} [apt:${rule.id}]`,
+    ...rule.conditions.map(c => `\t${c}`),
+    ...rule.actions.map(a => `\t${a}`)
+  ]
+}
+
+// the rule with the text changed in the editor; null = it has nothing left to apply to
+export function ruleFromLines (rule: AptRule, lines: string[] | null): AptRule | null {
+  const block = lines && parseFilter(lines.join('\n')).blocks[0]
+  if (!block || !block.conditions.length) return null
+  return {
+    ...rule,
+    visibility: block.visibility,
+    conditions: block.conditions.map(conditionText),
+    actions: [...block.actions.map(conditionText), ...(block.continue ? ['Continue'] : [])]
+  }
 }
 
 // ---- rendering ----
@@ -86,15 +181,13 @@ export function renderSection (rules: AptRule[]): string[] {
     `${SECTION_START} Rules added in-game with Awakened PoE Trade. They are stored in the app and re-applied automatically, edit them from the app.`,
     ''
   ]
-  // newest rules first: the most recent decision wins
-  for (const rule of [...rules].reverse()) {
-    lines.push(`${rule.visibility} # APT: ${rule.label.replace(/[\r\n]/g, ' ')} [apt:${rule.id}]`)
-    for (const c of rule.conditions) lines.push(`\t${c}`)
-    for (const a of rule.actions) lines.push(`\t${a}`)
-    lines.push('')
-  }
-  lines.push(SECTION_END, '')
+  lines.push(...renderRules(rules), SECTION_END, '')
   return lines
+}
+
+export function renderRules (rules: AptRule[]): string[] {
+  // newest rules first: the most recent decision wins
+  return [...rules].reverse().flatMap(rule => [...ruleLines(rule), ''])
 }
 
 // version of a source filter: `#hash:` of online filters, content hash otherwise
@@ -107,19 +200,6 @@ export function onlineVersion (onlineText: string): string {
     h = Math.imul(h, 0x01000193) >>> 0
   }
   return `fnv${h.toString(16)}`
-}
-
-// ---- lookup ----
-
-export function ruleIdOfBlock (block: FilterBlock): string | null {
-  return /\[apt:(\w+)\]/.exec(block.headerComment)?.[1] ?? null
-}
-
-export function isRuleBlock (filter: ParsedFilter, block: FilterBlock): boolean {
-  if (ruleIdOfBlock(block) == null) return false
-  const start = filter.lines.findIndex(l => l.startsWith(SECTION_START))
-  const end = filter.lines.findIndex(l => l.startsWith(SECTION_END))
-  return start >= 0 && block.startLine > start && block.startLine < end
 }
 
 function q (value: string) {

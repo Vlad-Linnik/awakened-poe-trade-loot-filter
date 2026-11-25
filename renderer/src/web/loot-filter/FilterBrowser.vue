@@ -14,7 +14,7 @@
           <span v-else :class="$style.icon"></span>
           <span :class="$style.headerTitle">{{ sec.title }}</span>
           <span v-if="sec.changes" :class="$style.changes">{{ t(':fb_changes', [sec.changes]) }}</span>
-          <button :class="$style.reset" :disabled="!sec.changes || busy" @click.stop="emit('reset-blocks', sec.blocks)">{{ t(':fb_reset') }}</button>
+          <button v-if="group.id !== 'rules'" :class="$style.reset" :disabled="!sec.changes || busy" @click.stop="emit('reset-blocks', sec.blocks)">{{ t(':fb_reset') }}</button>
         </div>
 
         <div v-if="isOpen(sec.title)" class="flex flex-col gap-2 p-2">
@@ -24,7 +24,7 @@
               <span v-else :class="$style.subIcon"></span>
               <span :class="$style.headerTitle">{{ sub.title }}</span>
               <span v-if="sub.changes" :class="$style.changes">{{ t(':fb_changes', [sub.changes]) }}</span>
-              <button :class="$style.reset" :disabled="!sub.changes || busy" @click.stop="emit('reset-blocks', sub.blocks.map(e => e.block))">{{ t(':fb_reset') }}</button>
+              <button v-if="group.id !== 'rules'" :class="$style.reset" :disabled="!sub.changes || busy" @click.stop="emit('reset-blocks', sub.blocks.map(e => e.block))">{{ t(':fb_reset') }}</button>
             </div>
 
             <div v-if="isOpen(sec.title + '/' + sub.title)" class="flex flex-col gap-1 p-1">
@@ -39,7 +39,7 @@
                   </button>
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-1">
-                      <span :class="$style.tierName">{{ blockTierName(e.block, t) }}</span>
+                      <span :class="$style.tierName">{{ ruleFor(e.block)?.label ?? blockTierName(e.block, t) }}</span>
                       <i v-if="patchOf(e.block)" class="fas fa-pen text-blue-400 text-xs" :title="t(':tier_changed')"></i>
                       <span v-if="e.count" class="text-xs text-gray-500">{{ e.count }}</span>
                     </div>
@@ -53,11 +53,12 @@
                 </div>
                 <TierEditor v-if="selected?.index === e.block.index"
                   :key="`${e.block.index}-${mtime}`"
-                  :block="e.block" :block-text="blockText(parsed, e.block)"
+                  :parsed="parsed" :block="e.block" :block-text="blockText(parsed, e.block)"
                   :item-name="highlight ?? sampleName(e.block)" :has-patch="Boolean(patchOf(e.block))" :busy="busy"
-                  :move-targets="moveTargets(parsed, e.block)" :rule-title="ruleTitle" :highlight="highlight ?? undefined"
-                  :hidden-items="hiddenItems"
-                  @hide-item="emit('hide-item', $event, e.block)" @unhide-item="emit('unhide-item', $event)"
+                  :rule-title="ruleTitle" :highlight="highlight ?? undefined"
+                  :rules="rules" :is-rule="Boolean(ruleFor(e.block))"
+                  @hide-item="emit('hide-item', $event, e.block)" @unhide-item="emit('unhide-item', $event, e.block)"
+                  @own-rule="emit('own-rule', $event, e.block)"
                   @unsaved="emit('unsaved', e.block, $event)"
                   @move="(bt: string, to: FilterBlock) => emit('move', bt, e.block, to)"
                   @save="emit('save', e.block, $event)" @reset="emit('reset', e.block)"
@@ -76,7 +77,7 @@
 import { computed, nextTick, ref, shallowRef, watch } from 'vue'
 import { useI18nNs } from '@/web/i18n'
 import { blockText, type FilterBlock, type ParsedFilter } from './filter-parser'
-import { moveTargets } from './filter-edit'
+import type { AptRule } from './apt-rules'
 import { findBlock, selectorOf, type BlockSelector, type TierPatch } from './edits'
 import { styleFromActions, styleCss } from './style'
 import { iconForBlocks, iconForBase, sampleName, shapeGlyph, effectColor } from './fb'
@@ -90,11 +91,10 @@ const props = defineProps<{
   busy: boolean
   patchOf: (block: FilterBlock) => TierPatch | undefined
   ruleTitle: (block: FilterBlock) => string
-  isAptRule: (block: FilterBlock) => boolean
+  ruleFor: (block: FilterBlock) => AptRule | null
   // open this tier (e.g. "Find in Customizer" from an item)
   focus?: { selector: BlockSelector, item?: string } | null
-  // base types hidden by APT rules
-  hiddenItems: string[]
+  rules: AptRule[]
 }>()
 
 const emit = defineEmits<{
@@ -102,8 +102,7 @@ const emit = defineEmits<{
   (e: 'reset' | 'disable', block: FilterBlock): void
   (e: 'reset-blocks', blocks: FilterBlock[]): void
   (e: 'move', baseType: string, from: FilterBlock, to: FilterBlock): void
-  (e: 'hide-item', baseType: string, block: FilterBlock): void
-  (e: 'unhide-item', baseType: string): void
+  (e: 'hide-item' | 'unhide-item' | 'own-rule', baseType: string, block: FilterBlock): void
 }>()
 
 const { t } = useI18nNs('loot_filter')
@@ -125,16 +124,9 @@ function select (block: FilterBlock, item?: string) {
   highlight.value = item ?? null
 }
 
-watch(() => props.focus, (focus) => {
-  if (!focus) return
-  const block = findBlock(props.parsed, focus.selector)
-  if (!block) return
-  selectedSel.value = selectorOf(block)
-  highlight.value = focus.item ?? null
-  const place = placeOf(block)
-  opened.value = new Set([...opened.value, place.category.title, `${place.category.title}/${place.sub}`])
-  scrollToBlock(block.index)
-}, { immediate: true })
+function rulesSub (rule: AptRule) {
+  return rule.visibility === 'Hide' ? t(':my_rules_hide') : t(':my_rules_show')
+}
 
 const listEl = ref<HTMLElement | null>(null)
 
@@ -158,14 +150,22 @@ interface Section { title: string, subs: Sub[], blocks: FilterBlock[], icon: str
 const groups = computed(() => {
   const q = search.value.toLowerCase()
   const byCategory = new Map<string, Section & { group: string }>()
+  const mine: Section = { title: t(':my_rules'), subs: [], blocks: [], icon: null, changes: 0, order: 0 }
   for (const block of props.parsed.blocks) {
-    if (props.isAptRule(block)) continue
+    const rule = props.ruleFor(block)
     const items = baseTypes(block)
     let matchedItems: string[] = []
     if (q) {
       matchedItems = items.filter(n => n.toLowerCase().includes(q))
-      const text = `${props.ruleTitle(block)} ${blockTierName(block, t)} ${block.headerComment} ${block.section ?? ''} ${block.topSection ?? ''}`.toLowerCase()
+      const text = `${rule?.label ?? ''} ${props.ruleTitle(block)} ${blockTierName(block, t)} ${block.headerComment} ${block.section ?? ''} ${block.topSection ?? ''}`.toLowerCase()
       if (!matchedItems.length && !text.includes(q)) continue
+    }
+    if (rule) {
+      let sub = mine.subs.find(x => x.title === rulesSub(rule))
+      if (!sub) mine.subs.push(sub = { title: rulesSub(rule), blocks: [], icon: null, changes: 0 })
+      sub.blocks.push({ block, count: items.length, matchedItems: matchedItems.slice(0, 5), minimap: styleFromActions(block.actions).minimap })
+      mine.blocks.push(block)
+      continue
     }
     const { category: cat, sub: subTitle } = placeOf(block)
     let sec = byCategory.get(cat.id)
@@ -190,14 +190,33 @@ const groups = computed(() => {
     sec.subs.sort((a, b) => order.indexOf(a.title) - order.indexOf(b.title))
     for (const sub of sec.subs) sub.icon = iconForBlocks(sub.blocks.map(e => e.block)) ?? sec.icon
   }
-  return GROUPS
+  for (const sub of mine.subs) sub.icon = iconForBlocks(sub.blocks.map(e => e.block))
+  mine.icon = mine.subs[0]?.icon ?? null
+  const rulesGroup = mine.subs.length ? [{ id: 'rules', title: t(':my_rules'), sections: [mine] }] : []
+  return [...rulesGroup, ...GROUPS
     .map(g => ({
       id: g.id,
       title: g.title,
       sections: [...byCategory.values()].filter(sec => sec.group === g.id).sort((a, b) => a.order - b.order)
     }))
-    .filter(g => g.sections.length)
+    .filter(g => g.sections.length)]
 })
+
+watch(() => props.focus, (focus) => {
+  if (!focus) return
+  const block = findBlock(props.parsed, focus.selector)
+  if (!block) return
+  // the search may not include it
+  const isListed = groups.value.some(g => g.sections.some(sec => sec.blocks.some(b => b.index === block.index)))
+  if (!isListed) search.value = ''
+  selectedSel.value = selectorOf(block)
+  highlight.value = focus.item ?? null
+  const rule = props.ruleFor(block)
+  const place = rule ? null : placeOf(block)
+  const [title, sub] = place ? [place.category.title, place.sub] : [t(':my_rules'), rulesSub(rule!)]
+  opened.value = new Set([...opened.value, title, `${title}/${sub}`])
+  scrollToBlock(block.index)
+}, { immediate: true })
 
 function isOpen (key: string) {
   return Boolean(search.value) || opened.value.has(key)
