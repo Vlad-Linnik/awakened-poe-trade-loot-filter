@@ -704,5 +704,29 @@
     "fb_play": "Play",
     "fb_builtin_sound": "This sound can't be played here",
     "fb_no_sounds": "No audio files in the filter folder"
+  },
+  "codex": {
+    "name": "Codex",
+    "title": "Codex",
+    "hotkey": "Open the codex (dust of uniques, divination cards)",
+    "close": "Close",
+    "tab_dust": "Dust",
+    "tab_cards": "Divination cards",
+    "cards_soon": "Divination cards are coming next",
+    "dust_search": "Search: name, base type…",
+    "dust_all_classes": "All classes",
+    "dust_ilvl": "Item level",
+    "dust_quality": "Quality",
+    "dust_extras": "Influences / corrupted implicits",
+    "dust_extras_hint": "+50% dust for each influence type and each corruption implicit",
+    "dust_count": "{0} uniques",
+    "dust_col_name": "Unique",
+    "dust_col_size": "Size",
+    "dust_col_dust": "Dust",
+    "dust_col_per_slot": "Per slot",
+    "dust_col_per_slot_hint": "Dust per inventory cell (the disenchanting grid is 12 × 10)",
+    "dust_empty": "Nothing found",
+    "dust_wiki": "Open in PoE Wiki",
+    "dust_note": "Thaumaturgic Dust from Kingsmarch disenchanting. Values come from the app's item data and are updated with the game."
   }
 }

@@ -10,6 +10,7 @@ import WidgetDelveGrid from './WidgetDelveGrid.vue'
 import WidgetItemSearch from '../item-search/WidgetItemSearch.vue'
 import WidgetSettings from '../settings/SettingsWindow.vue'
 import WidgetLootFilter from '../loot-filter/WidgetLootFilter.vue'
+import WidgetCodex from '../codex/WidgetCodex.vue'
 
 type WidgetComponent = Component & { widget: WidgetSpec }
 
@@ -33,3 +34,4 @@ registry.widgets.push(WidgetItemCheck as unknown as WidgetComponent)
 registry.widgets.push(WidgetImageStrip as unknown as WidgetComponent)
 registry.widgets.push(WidgetDelveGrid as unknown as WidgetComponent)
 registry.widgets.push(WidgetLootFilter as unknown as WidgetComponent)
+registry.widgets.push(WidgetCodex as unknown as WidgetComponent)

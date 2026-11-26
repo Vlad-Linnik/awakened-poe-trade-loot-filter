@@ -7,6 +7,7 @@ import type { StashSearchWidget } from './stash-search/widget'
 import type { ItemCheckWidget } from './item-check/widget'
 import type { ItemSearchWidget } from './item-search/widget'
 import type { LootFilterWidget } from './loot-filter/api'
+import type { CodexWidget } from './codex/widget'
 import { registry as widgetRegistry } from './overlay/widget-registry.js'
 
 const _config = shallowRef<Config | null>(null)
@@ -124,7 +125,7 @@ export interface Config {
 }
 
 export const defaultConfig = (): Config => ({
-  configVersion: 21,
+  configVersion: 22,
   overlayKey: 'Shift + Space',
   overlayBackground: 'rgba(129, 139, 149, 0.15)',
   overlayBackgroundClose: true,
@@ -464,6 +465,17 @@ function upgradeConfig (_config: Config): Config {
 
     config.configVersion = 21
   }
+
+  if (config.configVersion < 22) {
+    if (!config.widgets.some(w => w.wmType === 'codex')) {
+      const spec = widgetRegistry.getWidgetComponent('codex')!.widget
+      const codex = spec.initInstance!()
+      codex.wmId = Math.max(0, ...config.widgets.map(_ => _.wmId)) + 1
+      config.widgets.push(codex)
+    }
+
+    config.configVersion = 22
+  }
   /* eslint-enable */
 
   return config as unknown as Config
@@ -534,6 +546,13 @@ function getConfigForHost (): HostConfig {
     actions.push({
       shortcut: lootFilter.browseHotkey,
       action: { type: 'trigger-event', target: 'loot-filter-browse', focusOverlay: true }
+    })
+  }
+  const codex = AppConfig('codex') as CodexWidget | undefined
+  if (codex?.hotkey) {
+    actions.push({
+      shortcut: codex.hotkey,
+      action: { type: 'trigger-event', target: 'codex', focusOverlay: true }
     })
   }
   const delveGrid = AppConfig('delve-grid') as widget.DelveGridWidget

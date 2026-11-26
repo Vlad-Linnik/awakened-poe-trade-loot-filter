@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts" generic="T">
-import { computed, ref, triggerRef } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, triggerRef } from 'vue'
 
 const props = defineProps<{
   items: T[]
@@ -44,4 +44,9 @@ const fullHeight = computed(() => props.items.length * props.itemHeight)
 function handleScroll () {
   triggerRef(el)
 }
+
+// mounted while hidden (v-show) or resized: the number of visible rows changes
+const resizeObserver = new ResizeObserver(() => triggerRef(el))
+onMounted(() => { if (el.value) resizeObserver.observe(el.value) })
+onBeforeUnmount(() => resizeObserver.disconnect())
 </script>
