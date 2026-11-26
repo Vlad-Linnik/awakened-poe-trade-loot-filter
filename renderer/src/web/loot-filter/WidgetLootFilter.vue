@@ -3,7 +3,7 @@
     <div ref="windowEl" :class="$style.window" class="relative text-gray-200 shadow-lg flex flex-col"
       :style="mode === 'browse' ? 'width: 64rem; max-width: 96vw; height: 88vh;' : 'width: 36rem; max-width: 96vw; max-height: 92vh;'">
       <!-- codex facts about the item (dust, divination card weight…) next to the window -->
-      <ItemFacts v-if="mode === 'item' && item" :item="item" class="absolute top-0" style="width: 15rem;"
+      <ItemFacts v-if="mode === 'item' && item" :item="item" class="absolute top-0" style="width: 17rem;"
         :style="factsOnRight ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'" />
       <!-- header -->
       <div :class="$style.titlebar" class="px-3 py-2 flex items-baseline gap-2">
@@ -1205,7 +1205,7 @@ function openFilterBlade () {
 const factsOnRight = computed(() => {
   if (anchor.value.pos !== 'cl') return false
   const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
-  return wm.poePanelWidth.value < 16 * rem
+  return wm.poePanelWidth.value < 18 * rem
 })
 
 const anchor = computed(() => {

@@ -12,7 +12,8 @@
         <button class="text-gray-400 hover:text-white px-1" :title="t(':close')" @click="wm.hide(config.wmId)"><i class="fas fa-times"></i></button>
       </div>
       <DustTab v-if="config.tab === 'dust'" v-model="config.dust" class="flex-1 min-h-0" />
-      <CardsTab v-else v-model="config.cards" class="flex-1 min-h-0" />
+      <CardsTab v-else-if="config.tab === 'cards'" v-model="config.cards" class="flex-1 min-h-0" />
+      <SocketsTab v-else v-model="config.sockets" class="flex-1 min-h-0" />
     </div>
   </Widget>
 </template>
@@ -48,6 +49,7 @@ import type { WidgetManager } from '../overlay/interfaces'
 import Widget from '../overlay/Widget.vue'
 import DustTab from './DustTab.vue'
 import CardsTab from './CardsTab.vue'
+import SocketsTab from './SocketsTab.vue'
 
 const props = defineProps<{
   config: CodexWidget
@@ -58,7 +60,8 @@ const { t } = useI18nNs('codex')
 
 const TABS = [
   { id: 'dust' as const, label: ':tab_dust' },
-  { id: 'cards' as const, label: ':tab_cards' }
+  { id: 'cards' as const, label: ':tab_cards' },
+  { id: 'sockets' as const, label: ':tab_sockets' }
 ]
 
 // configs saved by older versions
@@ -66,6 +69,7 @@ const defaults = codexDefaults()
 props.config.tab ??= defaults.tab
 props.config.dust = { ...defaults.dust, ...props.config.dust }
 props.config.cards = { ...defaults.cards, ...props.config.cards }
+props.config.sockets = { ...defaults.sockets, ...props.config.sockets }
 
 MainProcess.onEvent('MAIN->CLIENT::widget-action', (e) => {
   if (e.target !== 'codex') return

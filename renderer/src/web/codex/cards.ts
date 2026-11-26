@@ -1,5 +1,5 @@
 // Divination cards: drop weights and where they drop.
-// The data is a snapshot made by `npm run update-cards` (scripts/update-div-cards.mjs);
+// The data is a snapshot made by `npm run update-codex` (scripts/update-div-cards.mjs);
 // cards added or removed by a patch come with the next run of the script.
 
 export interface CardSource {

@@ -764,6 +764,25 @@
     "cards_col_tier": "Tier",
     "cards_col_weight": "Weight",
     "cards_col_chance": "Chance",
-    "cards_note": "Tiers by drop weight. Weights: {0} league (wraeclast.cards, fateweaver); where cards drop: divcord (divicards). Data of {1}."
+    "cards_note": "Tiers by drop weight. Weights: {0} league (wraeclast.cards, fateweaver); where cards drop: divcord (divicards). Data of {1}.",
+    "tab_sockets": "Socket colours",
+    "facts_sockets": "Socket colours",
+    "sockets_click": "Click: the colour you want (white = any)",
+    "sockets_want": "want: {0}",
+    "sockets_pick": "Click the sockets to choose the colours you want",
+    "sockets_col_way": "Way",
+    "sockets_col_chance": "Chance",
+    "sockets_col_tries": "Tries",
+    "sockets_col_cost": "Orbs",
+    "sockets_cost_hint": "Orbs: average cost in {0}. The best way is green.",
+    "sockets_way_drop": "Natural drop",
+    "sockets_way_bench": "Bench: {0} non-white",
+    "sockets_base": "Base type",
+    "sockets_base_hint": "Vaal Regalia…",
+    "sockets_str": "Str",
+    "sockets_dex": "Dex",
+    "sockets_int": "Int",
+    "sockets_count": "Sockets",
+    "sockets_note": "3.29+: sockets are white by default, higher item level and quality give more coloured ones. Colours are weighted by the attribute requirements of the base. Model: Vorici Chromatic Calculator by Siveran (CC0)."
   }
 }

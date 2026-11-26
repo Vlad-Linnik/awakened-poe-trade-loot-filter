@@ -1,5 +1,5 @@
 // Builds src/web/codex/div-cards.json: divination cards with drop weights and where they drop.
-// Run after a new league or patch: `npm run update-cards` (in ./renderer).
+// Run after a new league or patch: `npm run update-codex` (in ./renderer).
 //
 // Sources:
 // - drop weights, stack size, reward: the current PoE 1 league of wraeclast.cards

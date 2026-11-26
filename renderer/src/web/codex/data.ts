@@ -3,7 +3,9 @@
 import { ITEM_BY_REF, ITEMS_ITERATOR } from '@/assets/data'
 import { dustEntries, type DustEntry } from './dust'
 import type { CardData, CardEntry } from './cards'
+import type { Reqs } from './sockets'
 import cardsJson from './div-cards.json'
+import baseReqsJson from './base-reqs.json'
 
 // ---- dust ----
 
@@ -40,4 +42,13 @@ export function cardDisplayName (refName: string): string {
 
 export function areaDisplayName (refName: string): string {
   return ITEM_BY_REF('AREA', refName)?.[0]?.name ?? refName
+}
+
+// ---- sockets ----
+
+export const BASE_REQS = baseReqsJson as Record<string, Reqs>
+
+// attribute requirements of a base type that can have sockets (English name)
+export function baseReqs (baseRef: string): Reqs | undefined {
+  return BASE_REQS[baseRef]
 }

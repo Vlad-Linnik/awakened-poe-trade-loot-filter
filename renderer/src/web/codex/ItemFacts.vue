@@ -1,6 +1,6 @@
 <template>
   <!-- facts about the item from the codex: dust of a unique, weight of a divination card… -->
-  <div v-if="dust || card" :class="$style.panel" class="text-gray-200 shadow-lg flex flex-col gap-2 p-2">
+  <div v-if="dust || card || sockets" :class="$style.panel" class="text-gray-200 shadow-lg flex flex-col gap-2 p-2">
     <template v-if="dust">
       <div :class="$style.head"><img src="/images/dust.png" class="w-5 h-5 object-contain"> {{ t(':facts_dust') }}</div>
       <template v-if="dust.kind === 'one'">
@@ -24,6 +24,10 @@
       <CardFacts :card="card" :max-sources="6" />
       <div class="text-xs text-gray-600">{{ t(':facts_card_data', [CARD_DATA.league]) }}</div>
     </template>
+    <template v-if="sockets">
+      <div :class="$style.head"><i class="fas fa-palette"></i> {{ t(':facts_sockets') }}</div>
+      <SocketCalc :reqs="sockets.reqs" :initial="sockets.colors" :item-level="sockets.itemLevel" :quality="sockets.quality" />
+    </template>
   </div>
 </template>
 
@@ -32,9 +36,12 @@ import { computed } from 'vue'
 import { useI18nNs } from '@/web/i18n'
 import { ItemCategory, ItemRarity, type ParsedItem } from '@/parser'
 import { ModifierMechanic } from '@/parser/modifiers'
+import { CLIENT_STRINGS as _$ } from '@/assets/data'
 import { dustValue } from './dust'
-import { CARD_DATA, cardByName, dustEntriesOfBase } from './data'
+import { parseSockets } from './sockets'
+import { CARD_DATA, baseReqs, cardByName, dustEntriesOfBase } from './data'
 import CardFacts from './CardFacts.vue'
+import SocketCalc from './SocketCalc.vue'
 
 const props = defineProps<{
   item: ParsedItem
@@ -78,6 +85,18 @@ const dust = computed(() => {
 const card = computed(() => props.item.category === ItemCategory.DivinationCard
   ? cardByName(props.item.info.refName) ?? null
   : null)
+
+// socket colours of an item that has sockets (weighted by the attribute requirements of its base)
+const sockets = computed(() => {
+  const item = props.item
+  const line = item.rawText.split(/\r?\n/).find(l => l.startsWith(_$.SOCKETS))
+  const colors = parseSockets(line?.slice(_$.SOCKETS.length))
+  if (!colors.length) return null
+  const baseRef = item.info.unique?.base ?? item.uniqueBase?.refName ?? item.info.refName
+  const reqs = baseReqs(baseRef)
+  if (!reqs) return null
+  return { colors, reqs, itemLevel: item.itemLevel ?? 84, quality: item.quality ?? 0 }
+})
 
 function compact (n: number) {
   if (n >= 1e6) return `${(n / 1e6).toFixed(2)}M`
