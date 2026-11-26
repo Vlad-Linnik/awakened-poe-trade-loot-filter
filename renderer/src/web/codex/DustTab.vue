@@ -68,10 +68,10 @@
 <script setup lang="ts">
 import { computed, ref, shallowRef } from 'vue'
 import { useI18nNs } from '@/web/i18n'
-import { ITEM_BY_REF, ITEMS_ITERATOR } from '@/assets/data'
 import VirtualScroll from '@/web/ui/VirtualScroll.vue'
 import { CATEGORY_TO_TRADE_ID } from '@/web/price-check/trade/pathofexile-trade'
-import { dustEntries, dustValue, type DustEntry } from './dust'
+import { dustValue, type DustEntry } from './dust'
+import { allDustEntries } from './data'
 import type { CodexWidget } from './widget'
 
 type DustSettings = CodexWidget['dust']
@@ -93,10 +93,7 @@ function update (patch: Partial<DustSettings>) {
 
 const search = ref('')
 
-const entries = shallowRef<DustEntry[]>(dustEntries(
-  ITEMS_ITERATOR('"disenchantValue"'),
-  ref => ITEM_BY_REF('ITEM', ref)?.[0]
-))
+const entries = shallowRef<DustEntry[]>(allDustEntries())
 
 function categoryLabel (category: string | null): string | null {
   if (!category) return null

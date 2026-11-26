@@ -12,7 +12,7 @@
         <button class="text-gray-400 hover:text-white px-1" :title="t(':close')" @click="wm.hide(config.wmId)"><i class="fas fa-times"></i></button>
       </div>
       <DustTab v-if="config.tab === 'dust'" v-model="config.dust" class="flex-1 min-h-0" />
-      <div v-else class="flex-1 flex items-center justify-center text-gray-500">{{ t(':cards_soon') }}</div>
+      <CardsTab v-else v-model="config.cards" class="flex-1 min-h-0" />
     </div>
   </Widget>
 </template>
@@ -47,6 +47,7 @@ import { MainProcess } from '@/web/background/IPC'
 import type { WidgetManager } from '../overlay/interfaces'
 import Widget from '../overlay/Widget.vue'
 import DustTab from './DustTab.vue'
+import CardsTab from './CardsTab.vue'
 
 const props = defineProps<{
   config: CodexWidget
@@ -64,6 +65,7 @@ const TABS = [
 const defaults = codexDefaults()
 props.config.tab ??= defaults.tab
 props.config.dust = { ...defaults.dust, ...props.config.dust }
+props.config.cards = { ...defaults.cards, ...props.config.cards }
 
 MainProcess.onEvent('MAIN->CLIENT::widget-action', (e) => {
   if (e.target !== 'codex') return

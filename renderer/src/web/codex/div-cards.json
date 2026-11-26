@@ -1,0 +1,7631 @@
+{
+ "league": "Covens",
+ "updated": "2026-11-26",
+ "totalWeight": 1483891,
+ "cards": [
+  {
+   "name": "A Chilling Wind",
+   "stack": 4,
+   "reward": "Level 21 Vaal Cold Snap · Quality: +20% · Corrupted",
+   "weight": 269,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Summit"
+    }
+   ]
+  },
+  {
+   "name": "A Dab of Ink",
+   "stack": 9,
+   "reward": "The Poet's Pen",
+   "weight": 489,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Academy"
+    }
+   ]
+  },
+  {
+   "name": "A Dusty Memory",
+   "stack": 5,
+   "reward": "Item · Item Level: 100 · Fractured",
+   "weight": 202,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Cortex"
+    },
+    {
+     "kind": "map",
+     "name": "Altered Distant Memory"
+    },
+    {
+     "kind": "map",
+     "name": "Augmented Distant Memory"
+    },
+    {
+     "kind": "map",
+     "name": "Twisted Distant Memory"
+    },
+    {
+     "kind": "map",
+     "name": "Rewritten Distant Memory"
+    }
+   ]
+  },
+  {
+   "name": "A Familiar Call",
+   "stack": 3,
+   "reward": "Jewellery of Farrul · Item Level: 100 · Shaper + Hunter Item",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Pit of the Chimera"
+    }
+   ]
+  },
+  {
+   "name": "A Fate Worse Than Death",
+   "stack": 4,
+   "reward": "Cortex · Corrupted",
+   "weight": 62,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Elder Slayer: Baran, The Crusader"
+    },
+    {
+     "kind": "other",
+     "name": "Elder Slayer: Veritania, The Redeemer"
+    },
+    {
+     "kind": "other",
+     "name": "Elder Slayer: Al-Hezmin, The Hunter"
+    },
+    {
+     "kind": "other",
+     "name": "Elder Slayer: Drox, The Warlord"
+    },
+    {
+     "kind": "other",
+     "name": "Elder Slayer: Sirus, Awakener of Worlds"
+    }
+   ]
+  },
+  {
+   "name": "A Modest Request",
+   "stack": 3,
+   "reward": "Megalomaniac · Corrupted",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Villa"
+    }
+   ]
+  },
+  {
+   "name": "A Mother's Parting Gift",
+   "stack": 6,
+   "reward": "Fertile Mind · Corrupted",
+   "weight": 989,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Garden area"
+    }
+   ]
+  },
+  {
+   "name": "A Note in the Wind",
+   "stack": 4,
+   "reward": "Asenath's Mark",
+   "weight": 221,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Pillars of Arun"
+    }
+   ]
+  },
+  {
+   "name": "A Sea of Blue",
+   "stack": 3,
+   "reward": "13x Orb of Alteration",
+   "weight": 7840,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Grotto"
+    },
+    {
+     "kind": "map",
+     "name": "Crystal Ore"
+    },
+    {
+     "kind": "act",
+     "name": "The Crystal Veins (4)"
+    }
+   ]
+  },
+  {
+   "name": "A Stone Perfected",
+   "stack": 5,
+   "reward": "Jewel · Primordial · 1-2 Implicit · Corrupted",
+   "weight": 119,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Coves"
+    }
+   ]
+  },
+  {
+   "name": "Abandoned Wealth",
+   "stack": 5,
+   "reward": "3x Exalted Orb",
+   "weight": 3332,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Underground Sea"
+    },
+    {
+     "kind": "map",
+     "name": "Mineral Pools"
+    }
+   ]
+  },
+  {
+   "name": "Acclimatisation",
+   "stack": 2,
+   "reward": "20x Orb of Alteration",
+   "weight": 3212,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Desert"
+    },
+    {
+     "kind": "map",
+     "name": "Pillars of Arun"
+    }
+   ]
+  },
+  {
+   "name": "Akil's Prophecy",
+   "stack": 3,
+   "reward": "Elegant Round Shield · Two-Implicit · Corrupted",
+   "weight": 152,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "All Incursion Architects in Alva missions or Alva's Memory"
+    }
+   ]
+  },
+  {
+   "name": "Alivia's Grace",
+   "stack": 6,
+   "reward": "Queen of the Forest",
+   "weight": 1885,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Jungle Valley"
+    },
+    {
+     "kind": "map",
+     "name": "Spider Forest"
+    }
+   ]
+  },
+  {
+   "name": "Alluring Bounty",
+   "stack": 7,
+   "reward": "10x Exalted Orb",
+   "weight": 1478,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Atziri area"
+    }
+   ]
+  },
+  {
+   "name": "Alone in the Darkness",
+   "stack": 5,
+   "reward": "Delve Item",
+   "weight": 7225,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Chest: Abyssal Trove"
+    },
+    {
+     "kind": "other",
+     "name": "Stygian Spire"
+    }
+   ]
+  },
+  {
+   "name": "Altered Perception",
+   "stack": 3,
+   "reward": "Simulacrum",
+   "weight": 32,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Sanctuary"
+    }
+   ]
+  },
+  {
+   "name": "Ambitious Obsession",
+   "stack": 4,
+   "reward": "Threaded Delirium Orb",
+   "weight": 1,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Infested Valley"
+    },
+    {
+     "kind": "map",
+     "name": "Basilica"
+    },
+    {
+     "kind": "map",
+     "name": "Summit"
+    },
+    {
+     "kind": "map",
+     "name": "Sunken City"
+    }
+   ]
+  },
+  {
+   "name": "Anarchy's Price",
+   "stack": 13,
+   "reward": "Voltaxic Rift · Corrupted",
+   "weight": 7,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Rogue exile"
+    }
+   ]
+  },
+  {
+   "name": "Apocalypse",
+   "stack": 2,
+   "reward": "Eyes of the Greatwolf · Item Level: 82 · Corrupted",
+   "weight": 3,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Vaults of Atziri"
+    }
+   ]
+  },
+  {
+   "name": "Arrogance of the Vaal",
+   "stack": 8,
+   "reward": "Item · Two-Implicit · Corrupted",
+   "weight": 549,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Vaal Pyramid"
+    }
+   ]
+  },
+  {
+   "name": "Assassin's Favour",
+   "stack": 9,
+   "reward": "Dagger",
+   "weight": 9835,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Park"
+    },
+    {
+     "kind": "map",
+     "name": "Port"
+    },
+    {
+     "kind": "act",
+     "name": "The Quay (8)"
+    },
+    {
+     "kind": "act",
+     "name": "The Marketplace (3)"
+    }
+   ]
+  },
+  {
+   "name": "Assassin's Gift",
+   "stack": 9,
+   "reward": "Divinarius · Two-Implicit · Corrupted",
+   "weight": 1,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Assassins gift area"
+    }
+   ]
+  },
+  {
+   "name": "Astral Protection",
+   "stack": 5,
+   "reward": "Shield · Shaper Item",
+   "weight": 622,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Lair of the Hydra"
+    },
+    {
+     "kind": "map",
+     "name": "Maze of the Minotaur"
+    },
+    {
+     "kind": "map",
+     "name": "Forge of the Phoenix"
+    },
+    {
+     "kind": "map",
+     "name": "Courtyard of Wasting"
+    }
+   ]
+  },
+  {
+   "name": "Atziri's Arsenal",
+   "stack": 4,
+   "reward": "Weapon · Corrupted",
+   "weight": 1116,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Doryani's Machinarium"
+    }
+   ]
+  },
+  {
+   "name": "Audacity",
+   "stack": 5,
+   "reward": "Doryani's Fist · Corrupted",
+   "weight": 69,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Atziri area"
+    }
+   ]
+  },
+  {
+   "name": "Auspicious Ambitions",
+   "stack": 4,
+   "reward": "Experimented Item · Item Level: 100 · Double-Influenced Item",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Fortress"
+    }
+   ]
+  },
+  {
+   "name": "Avian Pursuit",
+   "stack": 3,
+   "reward": "1,500x Vivid Crystallised Lifeforce",
+   "weight": 224,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Spider Forest"
+    }
+   ]
+  },
+  {
+   "name": "Azure Rage",
+   "stack": 4,
+   "reward": "Punishing Map · Map Tier: 16",
+   "weight": 3099,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Tropical Island"
+    }
+   ]
+  },
+  {
+   "name": "Azyran's Reward",
+   "stack": 9,
+   "reward": "Prismatic Jewel · Corrupted",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Crystal Ore"
+    }
+   ]
+  },
+  {
+   "name": "Baited Expectations",
+   "stack": 8,
+   "reward": "Fishing Item",
+   "weight": 364,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Desert"
+    },
+    {
+     "kind": "map",
+     "name": "Pillars of Arun"
+    }
+   ]
+  },
+  {
+   "name": "Beauty Through Death",
+   "stack": 5,
+   "reward": "Atziri's Reflection",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Vaal Temple"
+    }
+   ]
+  },
+  {
+   "name": "Bijoux",
+   "stack": 3,
+   "reward": "Cluster Jewel · Item Level: 84",
+   "weight": 204,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Excavation"
+    }
+   ]
+  },
+  {
+   "name": "Birth of the Three",
+   "stack": 3,
+   "reward": "The Goddess Bound",
+   "weight": 1,
+   "disabled": true
+  },
+  {
+   "name": "Blessing of God",
+   "stack": 3,
+   "reward": "Elreon's Jewellery · Item Level: 85",
+   "weight": 1,
+   "disabled": true
+  },
+  {
+   "name": "Blind Venture",
+   "stack": 7,
+   "reward": "Ring · Corrupted",
+   "weight": 2125,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Maze"
+    },
+    {
+     "kind": "act",
+     "name": "The Reliquary (5)"
+    },
+    {
+     "kind": "act",
+     "name": "The Reliquary (10)"
+    }
+   ]
+  },
+  {
+   "name": "Boon of Justice",
+   "stack": 6,
+   "reward": "Offering to the Goddess",
+   "weight": 8105,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Dungeon"
+    }
+   ]
+  },
+  {
+   "name": "Boon of the First Ones",
+   "stack": 6,
+   "reward": "Bestiary Item",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Pit of the Chimera"
+    }
+   ]
+  },
+  {
+   "name": "Bound by Flame",
+   "stack": 2,
+   "reward": "Level 21 Flame Link · Quality: +20%",
+   "weight": 566,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Caldera"
+    }
+   ]
+  },
+  {
+   "name": "Boundless Realms",
+   "stack": 4,
+   "reward": "Map",
+   "weight": 5307,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Strand"
+    },
+    {
+     "kind": "map",
+     "name": "Wasteland"
+    }
+   ]
+  },
+  {
+   "name": "Bowyer's Dream",
+   "stack": 6,
+   "reward": "Six-Link Harbinger Bow · Item Level: 91",
+   "weight": 121,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Graveyard"
+    }
+   ]
+  },
+  {
+   "name": "Broken Promises",
+   "stack": 2,
+   "reward": "Diamond Ring · Item Level: 87 · Two-Implicit · Synthesised",
+   "weight": 1,
+   "disabled": true
+  },
+  {
+   "name": "Broken Truce",
+   "stack": 5,
+   "reward": "Cold Iron Point",
+   "weight": 1514,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Thane Jorgin"
+    }
+   ]
+  },
+  {
+   "name": "Brother's Gift",
+   "stack": 1,
+   "reward": "5x Divine Orb",
+   "weight": 42,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Cemetery"
+    }
+   ]
+  },
+  {
+   "name": "Brother's Stash",
+   "stack": 1,
+   "reward": "5x Exalted Orb",
+   "weight": 425,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Cemetery"
+    }
+   ]
+  },
+  {
+   "name": "Brotherhood in Exile",
+   "stack": 5,
+   "reward": "One With Nothing · Corrupted",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Dungeon"
+    }
+   ]
+  },
+  {
+   "name": "Brush, Paint and Palette",
+   "stack": 5,
+   "reward": "The Artist",
+   "weight": 648,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Phantasmagoria"
+    },
+    {
+     "kind": "map",
+     "name": "The Putrid Cloister"
+    }
+   ]
+  },
+  {
+   "name": "Buried Treasure",
+   "stack": 3,
+   "reward": "Sulphite Scarab",
+   "weight": 1,
+   "disabled": true,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Mine area"
+    }
+   ]
+  },
+  {
+   "name": "Burning Blood",
+   "stack": 6,
+   "reward": "Xoph's Blood · Corrupted",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Crater"
+    }
+   ]
+  },
+  {
+   "name": "Call to the First Ones",
+   "stack": 5,
+   "reward": "Talisman",
+   "weight": 1699,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Thicket"
+    }
+   ]
+  },
+  {
+   "name": "Cameria's Cut",
+   "stack": 2,
+   "reward": "Scarab",
+   "weight": 1,
+   "disabled": true,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Cameria the Coldblooded"
+    }
+   ]
+  },
+  {
+   "name": "Cartographer's Delight",
+   "stack": 3,
+   "reward": "Map · Map Tier: 5",
+   "weight": 4562
+  },
+  {
+   "name": "Chaotic Disposition",
+   "stack": 1,
+   "reward": "5x Chaos Orb",
+   "weight": 3800,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Underground Sea"
+    }
+   ]
+  },
+  {
+   "name": "Chasing Risk",
+   "stack": 4,
+   "reward": "Synthesis Item",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "The Vaal Omnitect"
+    }
+   ]
+  },
+  {
+   "name": "Checkmate",
+   "stack": 8,
+   "reward": "76x Simulacrum Splinter",
+   "weight": 263,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Scriptorium"
+    }
+   ]
+  },
+  {
+   "name": "Choking Guilt",
+   "stack": 6,
+   "reward": "Stranglegasp",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Endgame Boss: The Infinite Hunger"
+    }
+   ]
+  },
+  {
+   "name": "Costly Curio",
+   "stack": 6,
+   "reward": "Item · Double-Influenced Item",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Doryani's Machinarium"
+    }
+   ]
+  },
+  {
+   "name": "Council of Cats",
+   "stack": 4,
+   "reward": "Farrul Item",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Elder Slayer: Al-Hezmin, The Hunter"
+    }
+   ]
+  },
+  {
+   "name": "Coveted Possession",
+   "stack": 9,
+   "reward": "5x Regal Orb",
+   "weight": 7206,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Cursed Crypt"
+    },
+    {
+     "kind": "map",
+     "name": "Necropolis"
+    },
+    {
+     "kind": "act",
+     "name": "The Ossuary (5)"
+    },
+    {
+     "kind": "act",
+     "name": "The Ossuary (10)"
+    },
+    {
+     "kind": "act",
+     "name": "The Catacombs (3)"
+    }
+   ]
+  },
+  {
+   "name": "Cursed Words",
+   "stack": 13,
+   "reward": "Maw of Mischief",
+   "weight": 3249,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Grave Trough"
+    },
+    {
+     "kind": "map",
+     "name": "Necropolis"
+    }
+   ]
+  },
+  {
+   "name": "Damnation",
+   "stack": 16,
+   "reward": "The Original Scripture · Item Level: 83",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Necropolis"
+    },
+    {
+     "kind": "map",
+     "name": "Sanctuary"
+    }
+   ]
+  },
+  {
+   "name": "Dark Dreams",
+   "stack": 4,
+   "reward": "Bone Helmet · Elder Item",
+   "weight": 72,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Necromancer exile"
+    }
+   ]
+  },
+  {
+   "name": "Dark Temptation",
+   "stack": 5,
+   "reward": "Obliteration",
+   "weight": 9808,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Chest: Delve chest"
+    }
+   ]
+  },
+  {
+   "name": "Darker Half",
+   "stack": 3,
+   "reward": "5x Eldritch Chaos Orb",
+   "weight": 25,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Delirium Currency Rewards"
+    }
+   ]
+  },
+  {
+   "name": "Deadly Joy",
+   "stack": 6,
+   "reward": "Torrent's Reclamation · Two-Implicit · Corrupted",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Castle Ruins"
+    }
+   ]
+  },
+  {
+   "name": "Death",
+   "stack": 4,
+   "reward": "Mon'tregul's Grasp",
+   "weight": 1302,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Primordial Pool"
+    },
+    {
+     "kind": "map",
+     "name": "Sulphur Vents"
+    }
+   ]
+  },
+  {
+   "name": "Deathly Designs",
+   "stack": 7,
+   "reward": "Level 21 Trap Gem · Quality: +23% · Corrupted",
+   "weight": 169,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Rogue Exile: Ash Lessard"
+    }
+   ]
+  },
+  {
+   "name": "Dementophobia",
+   "stack": 11,
+   "reward": "10x Delirium Orb",
+   "weight": 77,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Elder Slayer: Baran, The Crusader"
+    },
+    {
+     "kind": "other",
+     "name": "Elder Slayer: Al-Hezmin, The Hunter"
+    },
+    {
+     "kind": "other",
+     "name": "Elder Slayer: Veritania, The Redeemer"
+    },
+    {
+     "kind": "other",
+     "name": "Elder Slayer: Drox, The Warlord"
+    }
+   ]
+  },
+  {
+   "name": "Demigod's Wager",
+   "stack": 7,
+   "reward": "Orb of Annulment",
+   "weight": 1612,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Basilica"
+    },
+    {
+     "kind": "map",
+     "name": "Lookout"
+    },
+    {
+     "kind": "other",
+     "name": "Act Boss: Innocence, God-Emperor of Eternity"
+    }
+   ]
+  },
+  {
+   "name": "Desecrated Virtue",
+   "stack": 9,
+   "reward": "Level 4 Exceptional Support Gem · Quality: +23% · Corrupted",
+   "weight": null,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Delve protovaal boss"
+    }
+   ]
+  },
+  {
+   "name": "Desperate Crusade",
+   "stack": 3,
+   "reward": "Prism Guardian",
+   "weight": 139,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Peninsula"
+    },
+    {
+     "kind": "map",
+     "name": "Channel"
+    }
+   ]
+  },
+  {
+   "name": "Destined to Crumble",
+   "stack": 5,
+   "reward": "Body Armour · Item Level: 100",
+   "weight": 46004,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Museum"
+    },
+    {
+     "kind": "map",
+     "name": "Scriptorium"
+    }
+   ]
+  },
+  {
+   "name": "Dialla's Subjugation",
+   "stack": 7,
+   "reward": "Support Gem · Quality: +23% · Corrupted",
+   "weight": 1260,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "The Twilight Temple"
+    },
+    {
+     "kind": "act",
+     "name": "The Solaris Temple Level 1 (3)"
+    }
+   ]
+  },
+  {
+   "name": "Disdain",
+   "stack": 5,
+   "reward": "Delirium Orb",
+   "weight": 324,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Chest: The Maven's Crucible"
+    }
+   ]
+  },
+  {
+   "name": "Divine Beauty",
+   "stack": 12,
+   "reward": "7x Divine Orb",
+   "weight": 366,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Whakawairua Tuahu"
+    }
+   ]
+  },
+  {
+   "name": "Divine Justice",
+   "stack": 1,
+   "reward": "Grand Spectrum · Corrupted",
+   "weight": 1,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Strongbox: Armourer's Strongbox"
+    }
+   ]
+  },
+  {
+   "name": "Divine Shard",
+   "stack": 2,
+   "reward": "Divine Vessel",
+   "weight": 1290,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Infested Valley"
+    }
+   ]
+  },
+  {
+   "name": "Doedre's Madness",
+   "stack": 9,
+   "reward": "Doedre Item",
+   "weight": 12594,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Waste Pool"
+    },
+    {
+     "kind": "map",
+     "name": "Core"
+    },
+    {
+     "kind": "map",
+     "name": "Sepulchre"
+    },
+    {
+     "kind": "act",
+     "name": "Doedre's Cesspool (8)"
+    },
+    {
+     "kind": "act",
+     "name": "The Harvest (4)"
+    },
+    {
+     "kind": "act",
+     "name": "The Rotting Core (9)"
+    }
+   ]
+  },
+  {
+   "name": "Doryani's Epiphany",
+   "stack": 3,
+   "reward": "Level 21 Transfigured Gem · Quality: +20% · Corrupted",
+   "weight": 97,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Fortress"
+    },
+    {
+     "kind": "map",
+     "name": "Doryani's Machinarium"
+    }
+   ]
+  },
+  {
+   "name": "Draped in Dreams",
+   "stack": 5,
+   "reward": "Six-Link Astral Plate · Item Level: 100 · Influenced Item",
+   "weight": 46,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Overgrown Shrine"
+    },
+    {
+     "kind": "map",
+     "name": "Core"
+    }
+   ]
+  },
+  {
+   "name": "Duality",
+   "stack": 2,
+   "reward": "Body Armour · Item Level: 100 · Double-Influenced Item",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "All Incursion Architects (The Temple of Atzoatl)"
+    }
+   ]
+  },
+  {
+   "name": "Dying Anguish",
+   "stack": 8,
+   "reward": "Level 19 Transfigured Gem · Quality: +19%",
+   "weight": 2255,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Promenade"
+    }
+   ]
+  },
+  {
+   "name": "Dying Light",
+   "stack": 10,
+   "reward": "Diamond Ring · Item Level: 100 · Shaper + Elder Item",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Maven's Invitation: The Feared"
+    }
+   ]
+  },
+  {
+   "name": "Earth Drinker",
+   "stack": 5,
+   "reward": "Granite Flask",
+   "weight": 1448,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Desert"
+    },
+    {
+     "kind": "map",
+     "name": "Wasteland"
+    },
+    {
+     "kind": "act",
+     "name": "The Vastiri Desert (9)"
+    },
+    {
+     "kind": "act",
+     "name": "The Oasis (9)"
+    }
+   ]
+  },
+  {
+   "name": "Echoes of Love",
+   "stack": 3,
+   "reward": "Fidelitas' Spike · Two-Implicit · Corrupted",
+   "weight": 418,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Core"
+    }
+   ]
+  },
+  {
+   "name": "Eldritch Perfection",
+   "stack": 4,
+   "reward": "Item · Item Level: 100 · Perfect Eldritch Implicit Modifier",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Eldritch Perfection Monster: Consuming Bearer"
+    },
+    {
+     "kind": "other",
+     "name": "Eldritch Perfection Monster: Consuming Parasite"
+    },
+    {
+     "kind": "other",
+     "name": "Eldritch Perfection Monster: Consuming Thrall"
+    },
+    {
+     "kind": "other",
+     "name": "Eldritch Perfection Monster: Grotesque Cavedweller"
+    },
+    {
+     "kind": "other",
+     "name": "Eldritch Perfection Monster: Grotesque Mangler"
+    },
+    {
+     "kind": "other",
+     "name": "Eldritch Perfection Monster: Grotesque Mauler"
+    },
+    {
+     "kind": "other",
+     "name": "Eldritch Perfection Monster: Grotesque Maw"
+    },
+    {
+     "kind": "other",
+     "name": "Eldritch Perfection Monster: Molten Golem"
+    },
+    {
+     "kind": "other",
+     "name": "Eldritch Perfection Monster: Molten Minotaur"
+    },
+    {
+     "kind": "other",
+     "name": "Eldritch Perfection Monster: Molten Wretch"
+    },
+    {
+     "kind": "other",
+     "name": "Eldritch Perfection Monster: Void Flayer"
+    },
+    {
+     "kind": "other",
+     "name": "Eldritch Perfection Monster: Void Jaguar"
+    },
+    {
+     "kind": "other",
+     "name": "Eldritch Perfection Monster: Void Skulker"
+    }
+   ]
+  },
+  {
+   "name": "Emperor of Purity",
+   "stack": 7,
+   "reward": "Six-Link Holy Chainmail · Item Level: 60",
+   "weight": 1831,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Overgrown Ruin"
+    },
+    {
+     "kind": "map",
+     "name": "Death and Taxes"
+    }
+   ]
+  },
+  {
+   "name": "Emperor's Luck",
+   "stack": 5,
+   "reward": "5x Currency",
+   "weight": 52689,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Crater"
+    },
+    {
+     "kind": "act",
+     "name": "The Imperial Gardens (3)"
+    },
+    {
+     "kind": "act",
+     "name": "The High Gardens (8)"
+    }
+   ]
+  },
+  {
+   "name": "Endless Night",
+   "stack": 7,
+   "reward": "Maloney's Mechanism",
+   "weight": 352
+  },
+  {
+   "name": "Energy Sword",
+   "stack": 3,
+   "reward": "Ephemeral Edge",
+   "weight": 3,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Promenade"
+    }
+   ]
+  },
+  {
+   "name": "Etched in Blood",
+   "stack": 9,
+   "reward": "Rigwald's Quills · Two-Implicit · Corrupted",
+   "weight": 24,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Caer Blaidd, Wolfpack's Den"
+    }
+   ]
+  },
+  {
+   "name": "Eternal Bonds",
+   "stack": 4,
+   "reward": "Replica Cortex",
+   "weight": 28,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Chest: Map Reward Heist Chests"
+    }
+   ]
+  },
+  {
+   "name": "Ever-Changing",
+   "stack": 3,
+   "reward": "10x Orb of Unmaking",
+   "weight": 1203,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Silo"
+    }
+   ]
+  },
+  {
+   "name": "Fateful Meeting",
+   "stack": 9,
+   "reward": "League-Specific Item · Double-Influenced Item · Item Level: 97 · Two-Implicit · Corrupted",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Vaal Flesh Merchant"
+    }
+   ]
+  },
+  {
+   "name": "Father's Love",
+   "stack": 2,
+   "reward": "Sublime Vision",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Pit of the Chimera"
+    },
+    {
+     "kind": "map",
+     "name": "Lair of the Hydra"
+    },
+    {
+     "kind": "map",
+     "name": "Maze of the Minotaur"
+    },
+    {
+     "kind": "map",
+     "name": "Forge of the Phoenix"
+    }
+   ]
+  },
+  {
+   "name": "Fire Of Unknown Origin",
+   "stack": 7,
+   "reward": "Nimis",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Villa"
+    }
+   ]
+  },
+  {
+   "name": "Forbidden Power",
+   "stack": 4,
+   "reward": "Balefire · Corrupted",
+   "weight": 2003,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Temple"
+    }
+   ]
+  },
+  {
+   "name": "Friendship",
+   "stack": 3,
+   "reward": "Aul's Uprising",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Dig"
+    }
+   ]
+  },
+  {
+   "name": "From Bone to Ashes",
+   "stack": 8,
+   "reward": "Ngamahu's Flame · Two-Implicit · Corrupted",
+   "weight": 163,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Shore"
+    }
+   ]
+  },
+  {
+   "name": "Further Invention",
+   "stack": 4,
+   "reward": "Helmet · Double-Influenced Item · Item Level: 100",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Factory"
+    }
+   ]
+  },
+  {
+   "name": "Gemcutter's Mercy",
+   "stack": 3,
+   "reward": "Empower, Enhance or Enlighten",
+   "weight": 92
+  },
+  {
+   "name": "Gemcutter's Promise",
+   "stack": 3,
+   "reward": "Gem · Quality: +20%",
+   "weight": 8165,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Colonnade"
+    },
+    {
+     "kind": "map",
+     "name": "Moon Temple"
+    },
+    {
+     "kind": "map",
+     "name": "Promenade"
+    },
+    {
+     "kind": "map",
+     "name": "Cold River"
+    },
+    {
+     "kind": "act",
+     "name": "The Lunaris Concourse (8)"
+    },
+    {
+     "kind": "act",
+     "name": "The Ebony Barracks (3)"
+    }
+   ]
+  },
+  {
+   "name": "Gift of Asenath",
+   "stack": 5,
+   "reward": "Asenath's Gentle Touch · Two-Implicit · Corrupted",
+   "weight": 107,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Dunes"
+    },
+    {
+     "kind": "map",
+     "name": "Desert Spring"
+    }
+   ]
+  },
+  {
+   "name": "Gift of the Gemling Queen",
+   "stack": 9,
+   "reward": "Level 20 Support Gem",
+   "weight": 2000,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Poorjoy's Asylum"
+    }
+   ]
+  },
+  {
+   "name": "Glimmer of Hope",
+   "stack": 8,
+   "reward": "Gold Ring",
+   "weight": 10304,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Primordial Pool"
+    },
+    {
+     "kind": "map",
+     "name": "Marshes"
+    }
+   ]
+  },
+  {
+   "name": "Grave Knowledge",
+   "stack": 6,
+   "reward": "Summon Raging Spirit · Quality: +20%",
+   "weight": 2757,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Bone Crypt"
+    },
+    {
+     "kind": "map",
+     "name": "The Coward's Trial"
+    }
+   ]
+  },
+  {
+   "name": "Guardian's Challenge",
+   "stack": 4,
+   "reward": "Shaper Guardian Map",
+   "weight": 1335,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Vendor: Kirac shop"
+    }
+   ]
+  },
+  {
+   "name": "Harmony of Souls",
+   "stack": 9,
+   "reward": "9x Shrieking Essence",
+   "weight": 179,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Sepulchre"
+    }
+   ]
+  },
+  {
+   "name": "Haunting Shadows",
+   "stack": 4,
+   "reward": "Metamorph Item",
+   "weight": 629,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Silo"
+    }
+   ]
+  },
+  {
+   "name": "Her Mask",
+   "stack": 4,
+   "reward": "Sacrifice Fragment",
+   "weight": 1,
+   "disabled": true,
+   "sources": [
+    {
+     "kind": "act",
+     "name": "The Temple of Decay Level 1 (7)"
+    },
+    {
+     "kind": "act",
+     "name": "The Temple of Decay Level 2 (7)"
+    },
+    {
+     "kind": "act",
+     "name": "The Ancient Pyramid (2)"
+    }
+   ]
+  },
+  {
+   "name": "Heterochromia",
+   "stack": 2,
+   "reward": "Two-Stone Ring",
+   "weight": 1647,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Lava Lake"
+    },
+    {
+     "kind": "map",
+     "name": "Theatre of Lies"
+    }
+   ]
+  },
+  {
+   "name": "History",
+   "stack": 5,
+   "reward": "2x Hinekora's Lock",
+   "weight": 1,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "The Temple of Atzoatl"
+    }
+   ]
+  },
+  {
+   "name": "Home",
+   "stack": 3,
+   "reward": "Exceptional Support Gem · Quality: +1-20%",
+   "weight": null,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Peninsula"
+    },
+    {
+     "kind": "map",
+     "name": "City Square"
+    },
+    {
+     "kind": "map",
+     "name": "Castle Ruins"
+    }
+   ]
+  },
+  {
+   "name": "Hope",
+   "stack": 5,
+   "reward": "Prismatic Ring · Corrupted",
+   "weight": 2123,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Crimson Temple"
+    },
+    {
+     "kind": "map",
+     "name": "Shore"
+    }
+   ]
+  },
+  {
+   "name": "House of Mirrors",
+   "stack": 9,
+   "reward": "Mirror of Kalandra",
+   "weight": 1,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Atziri area"
+    }
+   ]
+  },
+  {
+   "name": "Hubris",
+   "stack": 5,
+   "reward": "Ring",
+   "weight": 6045,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Strongbox: Jeweller's Strongbox"
+    }
+   ]
+  },
+  {
+   "name": "Humility",
+   "stack": 9,
+   "reward": "Tabula Rasa",
+   "weight": 2738,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Channel"
+    },
+    {
+     "kind": "map",
+     "name": "Ancient City"
+    },
+    {
+     "kind": "act",
+     "name": "The Aqueduct (4)"
+    }
+   ]
+  },
+  {
+   "name": "Hunter's Resolve",
+   "stack": 8,
+   "reward": "Bow",
+   "weight": 9042,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Ramparts"
+    },
+    {
+     "kind": "act",
+     "name": "The Southern Forest (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Sarn Ramparts (8)"
+    }
+   ]
+  },
+  {
+   "name": "Hunter's Reward",
+   "stack": 3,
+   "reward": "The Taming",
+   "weight": 234,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Beast Boss: Fenumus, First of the Night"
+    }
+   ]
+  },
+  {
+   "name": "I See Brothers",
+   "stack": 2,
+   "reward": "2x Fracturing Orb",
+   "weight": 2,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Strand"
+    },
+    {
+     "kind": "map",
+     "name": "Acton's Nightmare"
+    }
+   ]
+  },
+  {
+   "name": "Immortal Resolve",
+   "stack": 6,
+   "reward": "Six-Linked Body Armour · Influenced Item",
+   "weight": 707,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "The Putrid Cloister"
+    }
+   ]
+  },
+  {
+   "name": "Imperfect Memories",
+   "stack": 5,
+   "reward": "Astrolabe",
+   "weight": null,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Cortex"
+    },
+    {
+     "kind": "map",
+     "name": "Altered Distant Memory"
+    },
+    {
+     "kind": "map",
+     "name": "Augmented Distant Memory"
+    },
+    {
+     "kind": "map",
+     "name": "Twisted Distant Memory"
+    },
+    {
+     "kind": "map",
+     "name": "Rewritten Distant Memory"
+    }
+   ]
+  },
+  {
+   "name": "Imperial Legacy",
+   "stack": 22,
+   "reward": "Six-Link Imperial Bow · Item Level: 100",
+   "weight": 12620,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Wasteland"
+    },
+    {
+     "kind": "map",
+     "name": "Dunes"
+    },
+    {
+     "kind": "map",
+     "name": "Desert Spring"
+    }
+   ]
+  },
+  {
+   "name": "Jack in the Box",
+   "stack": 4,
+   "reward": "Item",
+   "weight": 4503,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Port"
+    },
+    {
+     "kind": "act",
+     "name": "The Quay (8)"
+    },
+    {
+     "kind": "act",
+     "name": "The Slums (3)"
+    },
+    {
+     "kind": "act",
+     "name": "The Harbour Bridge (8)"
+    },
+    {
+     "kind": "act",
+     "name": "The Battlefront (3)"
+    },
+    {
+     "kind": "act",
+     "name": "The Grain Gate (8)"
+    },
+    {
+     "kind": "act",
+     "name": "The Docks (3)"
+    },
+    {
+     "kind": "act",
+     "name": "The Solaris Concourse (8)"
+    }
+   ]
+  },
+  {
+   "name": "Judging Voices",
+   "stack": 9,
+   "reward": "Forbidden Shako",
+   "weight": null,
+   "boss": true
+  },
+  {
+   "name": "Justified Ambition",
+   "stack": 5,
+   "reward": "Synthesis Map",
+   "weight": 417,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Chambers of Impurity"
+    },
+    {
+     "kind": "other",
+     "name": "Elder Slayer: Baran, The Crusader"
+    },
+    {
+     "kind": "other",
+     "name": "Elder Slayer: Veritania, The Redeemer"
+    },
+    {
+     "kind": "other",
+     "name": "Elder Slayer: Al-Hezmin, The Hunter"
+    },
+    {
+     "kind": "other",
+     "name": "Elder Slayer: Drox, The Warlord"
+    }
+   ]
+  },
+  {
+   "name": "Keeper's Corruption",
+   "stack": 7,
+   "reward": "Eldritch Bone Helmet (Concentrated Effect) · Item Level: 89 · Elder Item",
+   "weight": 20,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Betrayal Catarina: Catarina, Master of Undeath"
+    }
+   ]
+  },
+  {
+   "name": "Lachrymal Necrosis",
+   "stack": 3,
+   "reward": "Jewel · Implicit Modifier: · Corrupted Blood cannot be inflicted on you · Corrupted",
+   "weight": 571,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Geode"
+    },
+    {
+     "kind": "act",
+     "name": "The Chamber of Innocence (5)"
+    },
+    {
+     "kind": "act",
+     "name": "The Desecrated Chambers (10)"
+    }
+   ]
+  },
+  {
+   "name": "Lantador's Lost Love",
+   "stack": 7,
+   "reward": "Two-Stone Ring",
+   "weight": 17014,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Coral Ruins"
+    },
+    {
+     "kind": "map",
+     "name": "Reef"
+    },
+    {
+     "kind": "act",
+     "name": "The Twilight Strand (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Mud Flats (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Tidal Island (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Beacon (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Brine King's Reef (6)"
+    }
+   ]
+  },
+  {
+   "name": "Last Hope",
+   "stack": 3,
+   "reward": "Mortal Hope",
+   "weight": 1,
+   "disabled": true
+  },
+  {
+   "name": "Last Stand",
+   "stack": 3,
+   "reward": "The Surrender",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Ramparts"
+    },
+    {
+     "kind": "map",
+     "name": "Sunken City"
+    }
+   ]
+  },
+  {
+   "name": "Left to Fate",
+   "stack": 4,
+   "reward": "Map · Map Tier: 16 · Unidentified Corrupted",
+   "weight": 2984,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Grave Trough"
+    }
+   ]
+  },
+  {
+   "name": "Lethean Temptation",
+   "stack": 6,
+   "reward": "Nebulis",
+   "weight": null,
+   "boss": true
+  },
+  {
+   "name": "Light and Truth",
+   "stack": 2,
+   "reward": "Crystal Sceptre",
+   "weight": 618,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Residence"
+    }
+   ]
+  },
+  {
+   "name": "Lingering Remnants",
+   "stack": 16,
+   "reward": "Vaal Temple Map · Corrupted",
+   "weight": 1079,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Ancient City"
+    },
+    {
+     "kind": "map",
+     "name": "Defiled Cathedral"
+    }
+   ]
+  },
+  {
+   "name": "Lonely Warrior",
+   "stack": 10,
+   "reward": "Defiance of Destiny",
+   "weight": 4,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Volcano"
+    }
+   ]
+  },
+  {
+   "name": "Lost Worlds",
+   "stack": 8,
+   "reward": "Map · Map Tier: 15",
+   "weight": 8093,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Vendor: Kirac shop"
+    }
+   ]
+  },
+  {
+   "name": "Love Through Ice",
+   "stack": 4,
+   "reward": "Unnatural Instinct · Two-Implicit · Corrupted",
+   "weight": 3,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Elder Slayer: Veritania, The Redeemer"
+    }
+   ]
+  },
+  {
+   "name": "Loyalty",
+   "stack": 5,
+   "reward": "3x Orb of Fusing",
+   "weight": 32768,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Barrows"
+    },
+    {
+     "kind": "map",
+     "name": "Tropical Island"
+    },
+    {
+     "kind": "map",
+     "name": "Fungal Hollow"
+    },
+    {
+     "kind": "act",
+     "name": "The Den (7)"
+    }
+   ]
+  },
+  {
+   "name": "Lucky Bastion",
+   "stack": 6,
+   "reward": "Svalinn",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Armoury"
+    }
+   ]
+  },
+  {
+   "name": "Lucky Connections",
+   "stack": 7,
+   "reward": "20x Orb of Fusing",
+   "weight": 7840,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Port"
+    },
+    {
+     "kind": "act",
+     "name": "The Quay (8)"
+    },
+    {
+     "kind": "act",
+     "name": "The Docks (3)"
+    }
+   ]
+  },
+  {
+   "name": "Lucky Deck",
+   "stack": 9,
+   "reward": "10x Stacked Deck",
+   "weight": 253,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Ziggurat"
+    }
+   ]
+  },
+  {
+   "name": "Luminous Trove",
+   "stack": 7,
+   "reward": "Voices · Corrupted",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Delve protovaal boss"
+    }
+   ]
+  },
+  {
+   "name": "Lysah's Respite",
+   "stack": 6,
+   "reward": "Agate Amulet · Corrupted",
+   "weight": 2145,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Maelström of Chaos"
+    }
+   ]
+  },
+  {
+   "name": "Magnum Opus",
+   "stack": 5,
+   "reward": "Item · Item Level: 100 · Three-Implicit · Synthesised",
+   "weight": 1,
+   "disabled": true,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Synthesis area"
+    }
+   ]
+  },
+  {
+   "name": "Man With Bear",
+   "stack": 3,
+   "reward": "Bestiary Scarab",
+   "weight": 1,
+   "disabled": true,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Bear boss map"
+    }
+   ]
+  },
+  {
+   "name": "Matryoshka",
+   "stack": 8,
+   "reward": "Item · Vestigial · Item Level: 86",
+   "weight": 618,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Palace"
+    }
+   ]
+  },
+  {
+   "name": "Mawr Blaidd",
+   "stack": 16,
+   "reward": "Eyes of the Greatwolf",
+   "weight": 29,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Arachnid Nest"
+    }
+   ]
+  },
+  {
+   "name": "Merciless Armament",
+   "stack": 4,
+   "reward": "Merciless Two-Hand Weapon · Item Level: 100",
+   "weight": 200,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Ramparts"
+    }
+   ]
+  },
+  {
+   "name": "Might is Right",
+   "stack": 9,
+   "reward": "Trypanon",
+   "weight": 2814,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Cursed Crypt"
+    },
+    {
+     "kind": "map",
+     "name": "Oba's Cursed Trove"
+    },
+    {
+     "kind": "act",
+     "name": "The Ossuary (10)"
+    }
+   ]
+  },
+  {
+   "name": "Misery in Darkness",
+   "stack": 6,
+   "reward": "Shroud of the Lightless",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Ziggurat"
+    }
+   ]
+  },
+  {
+   "name": "Mitts",
+   "stack": 5,
+   "reward": "Gloves",
+   "weight": 5997,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Cold River"
+    },
+    {
+     "kind": "map",
+     "name": "Iceberg"
+    },
+    {
+     "kind": "act",
+     "name": "The Ascent (4)"
+    },
+    {
+     "kind": "act",
+     "name": "The Descent (9)"
+    }
+   ]
+  },
+  {
+   "name": "Monochrome",
+   "stack": 3,
+   "reward": "Valdo's Puzzle Box",
+   "weight": 476,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Cortex"
+    },
+    {
+     "kind": "map",
+     "name": "Altered Distant Memory"
+    },
+    {
+     "kind": "map",
+     "name": "Augmented Distant Memory"
+    },
+    {
+     "kind": "map",
+     "name": "Twisted Distant Memory"
+    },
+    {
+     "kind": "map",
+     "name": "Rewritten Distant Memory"
+    },
+    {
+     "kind": "other",
+     "name": "Incarnation: Incarnation of Neglect"
+    }
+   ]
+  },
+  {
+   "name": "More is Never Enough",
+   "stack": 7,
+   "reward": "4x Scarab",
+   "weight": 1,
+   "disabled": true,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "God boss map area"
+    },
+    {
+     "kind": "tag",
+     "name": "God boss map area OR ?"
+    }
+   ]
+  },
+  {
+   "name": "No Traces",
+   "stack": 9,
+   "reward": "30x Orb of Scouring",
+   "weight": 1976,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Oba's Cursed Trove"
+    },
+    {
+     "kind": "act",
+     "name": "The Reliquary (5)"
+    },
+    {
+     "kind": "act",
+     "name": "The Reliquary (10)"
+    },
+    {
+     "kind": "act",
+     "name": "The Ossuary (5)"
+    },
+    {
+     "kind": "act",
+     "name": "The Ossuary (10)"
+    }
+   ]
+  },
+  {
+   "name": "Nook's Crown",
+   "stack": 4,
+   "reward": "Bone Helmet · Item Level: 100 · Elder Item",
+   "weight": 14,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Ziggurat"
+    },
+    {
+     "kind": "other",
+     "name": "Betrayal Catarina: Catarina, Master of Undeath"
+    },
+    {
+     "kind": "other",
+     "name": "Map Boss: Nightmare of Catarina"
+    }
+   ]
+  },
+  {
+   "name": "One Last Score",
+   "stack": 5,
+   "reward": "Experimented Jewellery · Item Level: 86",
+   "weight": 1,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Museum"
+    },
+    {
+     "kind": "map",
+     "name": "Fortress"
+    }
+   ]
+  },
+  {
+   "name": "Outfoxed",
+   "stack": 2,
+   "reward": "Veiled Exalted Orb",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Channel"
+    },
+    {
+     "kind": "map",
+     "name": "Ziggurat"
+    }
+   ]
+  },
+  {
+   "name": "Parasitic Passengers",
+   "stack": 8,
+   "reward": "10x Incubator · Item Level: 84",
+   "weight": 1,
+   "disabled": true,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Internal name contains \"Parasite\" OR arachnid tomb map area"
+    }
+   ]
+  },
+  {
+   "name": "Peaceful Moments",
+   "stack": 5,
+   "reward": "Timeless Jewel",
+   "weight": null,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Conservatory"
+    }
+   ]
+  },
+  {
+   "name": "Pearls Before Swine",
+   "stack": 3,
+   "reward": "Progenesis",
+   "weight": null,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Ancient City"
+    }
+   ]
+  },
+  {
+   "name": "Perfection",
+   "stack": 5,
+   "reward": "Jewellery · Item Level: 100 · Shaper Item",
+   "weight": 32,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Lair of the Hydra"
+    },
+    {
+     "kind": "map",
+     "name": "Maze of the Minotaur"
+    },
+    {
+     "kind": "map",
+     "name": "Forge of the Phoenix"
+    },
+    {
+     "kind": "other",
+     "name": "Shaper Guardian Boss: Guardian of the Chimera"
+    },
+    {
+     "kind": "other",
+     "name": "Shaper Guardian Boss: Guardian of the Hydra"
+    },
+    {
+     "kind": "other",
+     "name": "Shaper Guardian Boss: Guardian of the Minotaur"
+    },
+    {
+     "kind": "other",
+     "name": "Shaper Guardian Boss: Guardian of the Phoenix"
+    }
+   ]
+  },
+  {
+   "name": "Poisoned Faith",
+   "stack": 8,
+   "reward": "Arakaali's Fang · Corrupted",
+   "weight": 52,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Arachnid Nest"
+    }
+   ]
+  },
+  {
+   "name": "Prejudice",
+   "stack": 7,
+   "reward": "Item · Influenced Item",
+   "weight": 2169,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Redeemer influenced maps"
+    }
+   ]
+  },
+  {
+   "name": "Pride Before the Fall",
+   "stack": 8,
+   "reward": "Kaom's Heart · Corrupted",
+   "weight": 118,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Lava Lake"
+    },
+    {
+     "kind": "map",
+     "name": "Crater"
+    }
+   ]
+  },
+  {
+   "name": "Pride of the First Ones",
+   "stack": 7,
+   "reward": "Farrul's Fur",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Caer Blaidd, Wolfpack's Den"
+    }
+   ]
+  },
+  {
+   "name": "Prometheus' Armoury",
+   "stack": 6,
+   "reward": "One-Hand Weapon · Item Level: 100 · Double-Influenced Item",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Haku, Warmaster"
+    }
+   ]
+  },
+  {
+   "name": "Prosperity",
+   "stack": 10,
+   "reward": "Perandus' Gold Ring",
+   "weight": 11892,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Basilica"
+    },
+    {
+     "kind": "map",
+     "name": "Relic Chambers"
+    }
+   ]
+  },
+  {
+   "name": "Rain of Chaos",
+   "stack": 8,
+   "reward": "Chaos Orb",
+   "weight": 121400,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Fields"
+    },
+    {
+     "kind": "map",
+     "name": "Plateau"
+    },
+    {
+     "kind": "act",
+     "name": "The Imperial Fields (8)"
+    },
+    {
+     "kind": "act",
+     "name": "The Crossroads (7)"
+    }
+   ]
+  },
+  {
+   "name": "Rain Tempter",
+   "stack": 9,
+   "reward": "Map · Map Tier: 6",
+   "weight": 12678,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Conservatory"
+    },
+    {
+     "kind": "map",
+     "name": "Marshes"
+    }
+   ]
+  },
+  {
+   "name": "Rats",
+   "stack": 8,
+   "reward": "Rat's Nest",
+   "weight": 15741,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Ancient City"
+    },
+    {
+     "kind": "map",
+     "name": "Fields"
+    },
+    {
+     "kind": "act",
+     "name": "The Grain Gate (8)"
+    },
+    {
+     "kind": "act",
+     "name": "The Refinery (9)"
+    }
+   ]
+  },
+  {
+   "name": "Rebirth",
+   "stack": 27,
+   "reward": "Charan's Sword",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "act",
+     "name": "Shavronne's Tower (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Ashen Fields (7)"
+    },
+    {
+     "kind": "act",
+     "name": "The Bath House (8)"
+    },
+    {
+     "kind": "act",
+     "name": "The Battlefront (3)"
+    },
+    {
+     "kind": "act",
+     "name": "The Beacon (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Blood Aqueduct (9)"
+    },
+    {
+     "kind": "act",
+     "name": "The Broken Bridge (7)"
+    },
+    {
+     "kind": "act",
+     "name": "The Control Blocks (10)"
+    },
+    {
+     "kind": "act",
+     "name": "The Crypt (7)"
+    },
+    {
+     "kind": "act",
+     "name": "The Crystal Veins (4)"
+    },
+    {
+     "kind": "act",
+     "name": "The Desecrated Chambers (10)"
+    },
+    {
+     "kind": "act",
+     "name": "The Docks (3)"
+    },
+    {
+     "kind": "act",
+     "name": "The Foothills (9)"
+    },
+    {
+     "kind": "act",
+     "name": "The Harbour Bridge (8)"
+    },
+    {
+     "kind": "act",
+     "name": "The Oasis (9)"
+    },
+    {
+     "kind": "act",
+     "name": "The Ossuary (10)"
+    },
+    {
+     "kind": "act",
+     "name": "The Quarry (9)"
+    },
+    {
+     "kind": "act",
+     "name": "The Ravaged Square (10)"
+    },
+    {
+     "kind": "act",
+     "name": "The Reliquary (10)"
+    },
+    {
+     "kind": "act",
+     "name": "The Ruined Square (5)"
+    },
+    {
+     "kind": "act",
+     "name": "The Slave Pens (5)"
+    },
+    {
+     "kind": "act",
+     "name": "The Solaris Temple Level 1 (3)"
+    },
+    {
+     "kind": "act",
+     "name": "The Temple of Decay Level 2 (7)"
+    },
+    {
+     "kind": "act",
+     "name": "The Vastiri Desert (9)"
+    },
+    {
+     "kind": "act",
+     "name": "The Wetlands (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Slums (3)"
+    },
+    {
+     "kind": "act",
+     "name": "The Toxic Conduits (8)"
+    },
+    {
+     "kind": "act",
+     "name": "The Chamber of Innocence (5)"
+    }
+   ]
+  },
+  {
+   "name": "Rebirth and Renewal",
+   "stack": 4,
+   "reward": "Simplex Amulet · Item Level: 86",
+   "weight": 1,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Burial Chambers"
+    }
+   ]
+  },
+  {
+   "name": "Reckless Ambition",
+   "stack": 6,
+   "reward": "Omeyocan",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Courtyard of Wasting"
+    },
+    {
+     "kind": "other",
+     "name": "Elder Guardian Boss: The Eradicator"
+    }
+   ]
+  },
+  {
+   "name": "Reflection of the Heart",
+   "stack": 2,
+   "reward": "Kalandra's Touch",
+   "weight": 3,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Relic Chambers"
+    }
+   ]
+  },
+  {
+   "name": "Remembrance",
+   "stack": 8,
+   "reward": "Precursor's Emblem · Corrupted",
+   "weight": null,
+   "boss": true
+  },
+  {
+   "name": "Runic Luck",
+   "stack": 4,
+   "reward": "10x Vendor Refresh Currency",
+   "weight": 1667,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Crystal Ore"
+    },
+    {
+     "kind": "map",
+     "name": "Geode"
+    },
+    {
+     "kind": "map",
+     "name": "Citadel"
+    }
+   ]
+  },
+  {
+   "name": "Sambodhi's Vow",
+   "stack": 3,
+   "reward": "Mortal Fragment",
+   "weight": 1,
+   "disabled": true,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Haku, Warmaster"
+    },
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Elreon"
+    },
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Tora"
+    },
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Vagan"
+    },
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Vorici"
+    },
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Hillock, the Blacksmith"
+    },
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Leo, Wolf of the Pits"
+    },
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Guff \"Tiny\" Grenn"
+    },
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Janus Perandus"
+    },
+    {
+     "kind": "other",
+     "name": "Syndicate Member: It That Fled"
+    },
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Gravicius"
+    },
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Thane Jorgin"
+    },
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Korell Goya"
+    },
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Rin Yuushu"
+    },
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Cameria the Coldblooded"
+    },
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Aisling Laffrey"
+    },
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Riker Maloney"
+    }
+   ]
+  },
+  {
+   "name": "Sambodhi's Wisdom",
+   "stack": 3,
+   "reward": "Tabula Rasa · Two-Implicit · Corrupted",
+   "weight": 45,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Museum"
+    }
+   ]
+  },
+  {
+   "name": "Scholar of the Seas",
+   "stack": 7,
+   "reward": "Mao Kun",
+   "weight": 2206,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Mao Kun"
+    }
+   ]
+  },
+  {
+   "name": "Seven Years Bad Luck",
+   "stack": 13,
+   "reward": "Mirror Shard",
+   "weight": 40,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Temple"
+    },
+    {
+     "kind": "map",
+     "name": "Theatre of Lies"
+    },
+    {
+     "kind": "act",
+     "name": "The Desecrated Chambers (10)"
+    }
+   ]
+  },
+  {
+   "name": "Shard of Fate",
+   "stack": 4,
+   "reward": "Vivid Jewel",
+   "weight": 5367,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Overgrown Ruin"
+    },
+    {
+     "kind": "map",
+     "name": "Mud Geyser"
+    },
+    {
+     "kind": "map",
+     "name": "Acton's Nightmare"
+    },
+    {
+     "kind": "act",
+     "name": "The Chamber of Sins Level 1 (7)"
+    },
+    {
+     "kind": "act",
+     "name": "The Chamber of Sins Level 2 (7)"
+    }
+   ]
+  },
+  {
+   "name": "Silence and Frost",
+   "stack": 7,
+   "reward": "The Pandemonius",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Beast Boss: Farrul, First of the Plains"
+    },
+    {
+     "kind": "other",
+     "name": "Beast Boss: Fenumus, First of the Night"
+    },
+    {
+     "kind": "other",
+     "name": "Beast Boss: Saqawal, First of the Sky"
+    }
+   ]
+  },
+  {
+   "name": "Society's Remorse",
+   "stack": 1,
+   "reward": "10x Orb of Alteration",
+   "weight": 3461,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Chest: Voltaxic Sulphite"
+    }
+   ]
+  },
+  {
+   "name": "Something Dark",
+   "stack": 5,
+   "reward": "Blueprint · Area Level: 83 · Fully Revealed",
+   "weight": 567,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Fortress"
+    },
+    {
+     "kind": "other",
+     "name": "Breachlord Boss Domain: Xoph, Dark Embers"
+    },
+    {
+     "kind": "other",
+     "name": "Breachlord Boss Domain: Tul, Creeping Avalanche"
+    },
+    {
+     "kind": "other",
+     "name": "Breachlord Boss Domain: Esh, Forked Thought"
+    },
+    {
+     "kind": "other",
+     "name": "Breachlord Boss Domain: Chayula, Who Dreamt"
+    },
+    {
+     "kind": "other",
+     "name": "Uul-Netol, Unburdened Flesh (in Breachstones)"
+    },
+    {
+     "kind": "other",
+     "name": "Breachlord Boss Domain: It That Was Tul"
+    },
+    {
+     "kind": "other",
+     "name": "Breachlord Boss Domain: It That Was Esh"
+    }
+   ]
+  },
+  {
+   "name": "Soul Quenched",
+   "stack": 5,
+   "reward": "Disabled",
+   "weight": 1,
+   "disabled": true,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Forge Area"
+    }
+   ]
+  },
+  {
+   "name": "Squandered Prosperity",
+   "stack": 5,
+   "reward": "The Light of Meaning · Corrupted",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Residence"
+    }
+   ]
+  },
+  {
+   "name": "Struck by Lightning",
+   "stack": 3,
+   "reward": "Electrocuting Jewellery · Item Level: 76",
+   "weight": 7498,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Infested Valley"
+    },
+    {
+     "kind": "map",
+     "name": "Graveyard"
+    }
+   ]
+  },
+  {
+   "name": "Succor of the Sinless",
+   "stack": 6,
+   "reward": "Bottled Faith",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Sanctuary"
+    },
+    {
+     "kind": "other",
+     "name": "Elder Slayer: Baran, The Crusader"
+    }
+   ]
+  },
+  {
+   "name": "Temperance",
+   "stack": 4,
+   "reward": "Relic · Item Level: 83",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Relic Chambers"
+    },
+    {
+     "kind": "map",
+     "name": "Sanctuary"
+    }
+   ]
+  },
+  {
+   "name": "Terrible Secret of Space",
+   "stack": 8,
+   "reward": "Level 21 Transfigured Golem Gem · Quality: +23% · Corrupted",
+   "weight": 8,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Geode"
+    }
+   ]
+  },
+  {
+   "name": "The Academic",
+   "stack": 8,
+   "reward": "Inspired Learning",
+   "weight": 135,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Academy"
+    },
+    {
+     "kind": "map",
+     "name": "Theatre of Lies"
+    }
+   ]
+  },
+  {
+   "name": "The Admirer",
+   "stack": 9,
+   "reward": "Atziri Item",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Bone Crypt"
+    },
+    {
+     "kind": "map",
+     "name": "Vaal Temple"
+    }
+   ]
+  },
+  {
+   "name": "The Adventuring Spirit",
+   "stack": 6,
+   "reward": "Victario's Influence",
+   "weight": 9373,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Jungle Valley"
+    },
+    {
+     "kind": "map",
+     "name": "Thicket"
+    }
+   ]
+  },
+  {
+   "name": "The Aesthete",
+   "stack": 8,
+   "reward": "Shavronne Item",
+   "weight": 5645,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Tower"
+    },
+    {
+     "kind": "map",
+     "name": "Carcass"
+    },
+    {
+     "kind": "act",
+     "name": "The Harvest (4)"
+    },
+    {
+     "kind": "act",
+     "name": "The Rotting Core (9)"
+    },
+    {
+     "kind": "act",
+     "name": "Shavronne's Tower (6)"
+    }
+   ]
+  },
+  {
+   "name": "The Apothecary",
+   "stack": 5,
+   "reward": "Mageblood",
+   "weight": 8,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Crimson Temple"
+    }
+   ]
+  },
+  {
+   "name": "The Archmage's Right Hand",
+   "stack": 7,
+   "reward": "Glyphic Prophecy Wand · Item Level: 100",
+   "weight": 2312,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Area-Specific: Chayula's Domain"
+    },
+    {
+     "kind": "other",
+     "name": "Area-Specific: Uul-Netol's Domain"
+    },
+    {
+     "kind": "other",
+     "name": "Area-Specific: Esh's Domain"
+    },
+    {
+     "kind": "other",
+     "name": "Area-Specific: Xoph's Domain"
+    },
+    {
+     "kind": "other",
+     "name": "Area-Specific: Tul's Domain"
+    },
+    {
+     "kind": "other",
+     "name": "Area-Specific: Hive Colony"
+    }
+   ]
+  },
+  {
+   "name": "The Arena Champion",
+   "stack": 10,
+   "reward": "Map · Map Tier: 12",
+   "weight": 11906,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Pit"
+    },
+    {
+     "kind": "map",
+     "name": "Racecourse"
+    }
+   ]
+  },
+  {
+   "name": "The Army of Blood",
+   "stack": 6,
+   "reward": "Bloodbond",
+   "weight": 9196,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Crimson Temple"
+    },
+    {
+     "kind": "map",
+     "name": "Moon Temple"
+    },
+    {
+     "kind": "map",
+     "name": "Shrine"
+    },
+    {
+     "kind": "act",
+     "name": "The Lunaris Temple Level 2 (3)"
+    },
+    {
+     "kind": "act",
+     "name": "The Lunaris Temple Level 2 (8)"
+    }
+   ]
+  },
+  {
+   "name": "The Artist",
+   "stack": 11,
+   "reward": "Level 4 Enhance · Corrupted",
+   "weight": 35,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Abomination"
+    }
+   ]
+  },
+  {
+   "name": "The Aspirant",
+   "stack": 5,
+   "reward": "Item · Elevated Item · Influenced Item",
+   "weight": 18,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Oshabi Boss: Oshabi, Avatar of the Grove"
+    }
+   ]
+  },
+  {
+   "name": "The Astromancer",
+   "stack": 7,
+   "reward": "The Eternity Shroud · Two-Implicit · Corrupted",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Cortex"
+    },
+    {
+     "kind": "map",
+     "name": "Altered Distant Memory"
+    },
+    {
+     "kind": "map",
+     "name": "Augmented Distant Memory"
+    },
+    {
+     "kind": "map",
+     "name": "Twisted Distant Memory"
+    },
+    {
+     "kind": "map",
+     "name": "Rewritten Distant Memory"
+    },
+    {
+     "kind": "other",
+     "name": "Heist Boss: Corpse Stitcher"
+    },
+    {
+     "kind": "other",
+     "name": "Heist Boss: Flesh Sculptor"
+    }
+   ]
+  },
+  {
+   "name": "The Avenger",
+   "stack": 12,
+   "reward": "Mjölner · Corrupted",
+   "weight": 163,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Citadel"
+    },
+    {
+     "kind": "map",
+     "name": "Maelström of Chaos"
+    }
+   ]
+  },
+  {
+   "name": "The Awakened",
+   "stack": 6,
+   "reward": "Jewellery · Item Level: 86 · Double-Influenced Item",
+   "weight": 10,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Olmec's Sanctum"
+    }
+   ]
+  },
+  {
+   "name": "The Bargain",
+   "stack": 5,
+   "reward": "Flawless Breachstone",
+   "weight": 1,
+   "disabled": true,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Betrayal breach"
+    }
+   ]
+  },
+  {
+   "name": "The Battle Born",
+   "stack": 5,
+   "reward": "Axe",
+   "weight": 6011,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Volcano"
+    },
+    {
+     "kind": "map",
+     "name": "Caldera"
+    },
+    {
+     "kind": "act",
+     "name": "Kaom's Dream (4)"
+    },
+    {
+     "kind": "act",
+     "name": "Kaom's Stronghold (4)"
+    }
+   ]
+  },
+  {
+   "name": "The Bear Woman",
+   "stack": 6,
+   "reward": "Fecund Ursine Pelt · Warlord Item",
+   "weight": 821,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Basilica"
+    }
+   ]
+  },
+  {
+   "name": "The Beast",
+   "stack": 6,
+   "reward": "Belly of the Beast",
+   "weight": 1742,
+   "sources": [
+    {
+     "kind": "act",
+     "name": "The Belly of the Beast (9)"
+    }
+   ]
+  },
+  {
+   "name": "The Betrayal",
+   "stack": 9,
+   "reward": "Maligaro's Virtuosity",
+   "weight": 2597,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Mesa"
+    },
+    {
+     "kind": "map",
+     "name": "Fungal Hollow"
+    }
+   ]
+  },
+  {
+   "name": "The Bitter Blossom",
+   "stack": 3,
+   "reward": "Level 21 Chaos Gem · Quality: +23% · Corrupted",
+   "weight": 97,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Sulphur Vents"
+    }
+   ]
+  },
+  {
+   "name": "The Blazing Fire",
+   "stack": 6,
+   "reward": "Chin Sol",
+   "weight": 12211,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Cage"
+    },
+    {
+     "kind": "map",
+     "name": "Pen"
+    },
+    {
+     "kind": "map",
+     "name": "Lookout"
+    },
+    {
+     "kind": "act",
+     "name": "The Canals (10)"
+    },
+    {
+     "kind": "act",
+     "name": "The Feeding Trough (10)"
+    },
+    {
+     "kind": "act",
+     "name": "The Desecrated Chambers (10)"
+    },
+    {
+     "kind": "act",
+     "name": "The Ravaged Square (10)"
+    },
+    {
+     "kind": "act",
+     "name": "The Torched Courts (10)"
+    },
+    {
+     "kind": "act",
+     "name": "The Cathedral Rooftop (10)"
+    },
+    {
+     "kind": "act",
+     "name": "The Control Blocks (10)"
+    }
+   ]
+  },
+  {
+   "name": "The Blessing of Moosh",
+   "stack": 4,
+   "reward": "Level 21 Transfigured Gem · Corrupted",
+   "weight": 140
+  },
+  {
+   "name": "The Body",
+   "stack": 4,
+   "reward": "Body Armour",
+   "weight": 4669,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Strongbox: Armourer's Strongbox"
+    }
+   ]
+  },
+  {
+   "name": "The Bones",
+   "stack": 6,
+   "reward": "Level 21 Vaal Summon Skeletons · Corrupted",
+   "weight": 458,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Rogue Exile: Minara Anemina"
+    }
+   ]
+  },
+  {
+   "name": "The Brawny Battle Mage",
+   "stack": 5,
+   "reward": "Merciless Tornado Wand · Item Level: 100",
+   "weight": 149,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Waste Pool"
+    },
+    {
+     "kind": "map",
+     "name": "The Putrid Cloister"
+    }
+   ]
+  },
+  {
+   "name": "The Breach",
+   "stack": 4,
+   "reward": "Breach Item",
+   "weight": 210,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Elder portal monster"
+    }
+   ]
+  },
+  {
+   "name": "The Brittle Emperor",
+   "stack": 8,
+   "reward": "Voll's Devotion · Corrupted",
+   "weight": 112,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Wasteland"
+    }
+   ]
+  },
+  {
+   "name": "The Cache",
+   "stack": 6,
+   "reward": "Jewellery",
+   "weight": 7014,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Vaults of Atziri"
+    }
+   ]
+  },
+  {
+   "name": "The Cacophony",
+   "stack": 8,
+   "reward": "3x Deafening Essence",
+   "weight": 176,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Sepulchre"
+    }
+   ]
+  },
+  {
+   "name": "The Calling",
+   "stack": 6,
+   "reward": "Beyond Item",
+   "weight": 4295,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "All (Scourge) beyond demons"
+    },
+    {
+     "kind": "other",
+     "name": "Hiveborn monsters"
+    }
+   ]
+  },
+  {
+   "name": "The Card Sharp",
+   "stack": 4,
+   "reward": "Divination Scarab",
+   "weight": 1,
+   "disabled": true,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Architect: Paquate, Architect of Corruption"
+    },
+    {
+     "kind": "other",
+     "name": "Architect: Ahuana, Architect of Ceremonies"
+    },
+    {
+     "kind": "other",
+     "name": "Architect: Zalatl, Architect of Thaumaturgy"
+    }
+   ]
+  },
+  {
+   "name": "The Carrion Crow",
+   "stack": 4,
+   "reward": "Life Armour",
+   "weight": 24027,
+   "sources": [
+    {
+     "kind": "act",
+     "name": "The Grand Promenade (8)"
+    },
+    {
+     "kind": "act",
+     "name": "The Blood Aqueduct (9)"
+    },
+    {
+     "kind": "act",
+     "name": "The Imperial Gardens (3)"
+    },
+    {
+     "kind": "act",
+     "name": "The Ascent (4)"
+    },
+    {
+     "kind": "act",
+     "name": "The Aqueduct (4)"
+    },
+    {
+     "kind": "act",
+     "name": "The Battlefront (3)"
+    },
+    {
+     "kind": "act",
+     "name": "The Ebony Barracks (3)"
+    },
+    {
+     "kind": "act",
+     "name": "Oriath Square (5)"
+    }
+   ]
+  },
+  {
+   "name": "The Cartographer",
+   "stack": 1,
+   "reward": "10x Cartographer's Chisel",
+   "weight": 1,
+   "disabled": true
+  },
+  {
+   "name": "The Cataclysm",
+   "stack": 13,
+   "reward": "Level 21 Spell Gem · Corrupted",
+   "weight": 2366,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Vaal Temple"
+    }
+   ]
+  },
+  {
+   "name": "The Catalyst",
+   "stack": 3,
+   "reward": "Vaal Orb",
+   "weight": 25627,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Maze"
+    },
+    {
+     "kind": "map",
+     "name": "Vaal Temple"
+    },
+    {
+     "kind": "map",
+     "name": "Doryani's Machinarium"
+    },
+    {
+     "kind": "map",
+     "name": "Vaults of Atziri"
+    },
+    {
+     "kind": "act",
+     "name": "The Temple of Decay Level 1 (7)"
+    },
+    {
+     "kind": "act",
+     "name": "The Temple of Decay Level 2 (7)"
+    },
+    {
+     "kind": "act",
+     "name": "The Ancient Pyramid (2)"
+    }
+   ]
+  },
+  {
+   "name": "The Catch",
+   "stack": 18,
+   "reward": "Fishing Rod · Item Level: 99",
+   "weight": 15,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Shore"
+    }
+   ]
+  },
+  {
+   "name": "The Celestial Justicar",
+   "stack": 6,
+   "reward": "Six-Link Astral Plate",
+   "weight": 737,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Necropolis"
+    },
+    {
+     "kind": "map",
+     "name": "Bone Crypt"
+    }
+   ]
+  },
+  {
+   "name": "The Celestial Stone",
+   "stack": 10,
+   "reward": "Opal Ring · Item Level: 100 · Shaper Item",
+   "weight": 27
+  },
+  {
+   "name": "The Chains that Bind",
+   "stack": 11,
+   "reward": "Six-Link Body Armour",
+   "weight": 9393,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Pen"
+    },
+    {
+     "kind": "map",
+     "name": "Hallowed Ground"
+    },
+    {
+     "kind": "act",
+     "name": "The Lower Prison (6)"
+    },
+    {
+     "kind": "act",
+     "name": "Shavronne's Tower (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Slave Pens (5)"
+    }
+   ]
+  },
+  {
+   "name": "The Cheater",
+   "stack": 3,
+   "reward": "Level 6 Awakened Support Gem · Quality: +20% · Corrupted",
+   "weight": 1,
+   "disabled": true
+  },
+  {
+   "name": "The Chosen",
+   "stack": 5,
+   "reward": "Skin of the Lords · Corrupted",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Chest: Breach Clasped Hand"
+    },
+    {
+     "kind": "other",
+     "name": "Breach encounters (Keepers)"
+    }
+   ]
+  },
+  {
+   "name": "The Coming Storm",
+   "stack": 8,
+   "reward": "Lightning Coil",
+   "weight": 2414,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Colonnade"
+    },
+    {
+     "kind": "map",
+     "name": "Villa"
+    }
+   ]
+  },
+  {
+   "name": "The Conduit",
+   "stack": 9,
+   "reward": "Doryani's Fist",
+   "weight": 496,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Palace"
+    }
+   ]
+  },
+  {
+   "name": "The Craving",
+   "stack": 4,
+   "reward": "Unending Hunger",
+   "weight": 80,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Acton's Nightmare"
+    }
+   ]
+  },
+  {
+   "name": "The Cursed King",
+   "stack": 8,
+   "reward": "Rigwald's Curse",
+   "weight": 675,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Underground River"
+    }
+   ]
+  },
+  {
+   "name": "The Damned",
+   "stack": 6,
+   "reward": "Soul Ripper",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Cemetery"
+    },
+    {
+     "kind": "map",
+     "name": "Vaal Temple"
+    }
+   ]
+  },
+  {
+   "name": "The Dapper Prodigy",
+   "stack": 6,
+   "reward": "Six-Link Body Armour · Item Level: 100",
+   "weight": 2383,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Villa"
+    }
+   ]
+  },
+  {
+   "name": "The Dark Mage",
+   "stack": 6,
+   "reward": "Six-Link Staff · Item Level: 55",
+   "weight": 1074,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Spider Lair"
+    },
+    {
+     "kind": "map",
+     "name": "Overgrown Shrine"
+    }
+   ]
+  },
+  {
+   "name": "The Darkest Dream",
+   "stack": 6,
+   "reward": "Severed in Sleep · Corrupted",
+   "weight": 288,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Sulphur Vents"
+    }
+   ]
+  },
+  {
+   "name": "The Deal",
+   "stack": 5,
+   "reward": "Cartography Scarab",
+   "weight": 1,
+   "disabled": true,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Cameria the Coldblooded"
+    }
+   ]
+  },
+  {
+   "name": "The Deceiver",
+   "stack": 4,
+   "reward": "Belt of the Deceiver · Corrupted",
+   "weight": 1759,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Pit"
+    }
+   ]
+  },
+  {
+   "name": "The Deep Ones",
+   "stack": 5,
+   "reward": "Tidebreaker",
+   "weight": 149,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Strand"
+    }
+   ]
+  },
+  {
+   "name": "The Demon",
+   "stack": 10,
+   "reward": "Headhunter · Two-Implicit · Corrupted",
+   "weight": 1,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Haunted Mansion"
+    },
+    {
+     "kind": "map",
+     "name": "Belfry"
+    }
+   ]
+  },
+  {
+   "name": "The Demoness",
+   "stack": 5,
+   "reward": "Death's Hand",
+   "weight": 10104,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Arachnid Nest"
+    },
+    {
+     "kind": "map",
+     "name": "Thicket"
+    }
+   ]
+  },
+  {
+   "name": "The Destination",
+   "stack": 9,
+   "reward": "Watcher's Eye · Two-Implicit · Corrupted",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Channel"
+    }
+   ]
+  },
+  {
+   "name": "The Doctor",
+   "stack": 8,
+   "reward": "Headhunter",
+   "weight": 11,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Waste Pool"
+    },
+    {
+     "kind": "map",
+     "name": "Burial Chambers"
+    }
+   ]
+  },
+  {
+   "name": "The Doppelganger",
+   "stack": 2,
+   "reward": "Mirror Arrow · Quality: +20%",
+   "weight": 20410,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Underground Sea"
+    },
+    {
+     "kind": "map",
+     "name": "Mineral Pools"
+    },
+    {
+     "kind": "map",
+     "name": "Maelström of Chaos"
+    }
+   ]
+  },
+  {
+   "name": "The Dragon",
+   "stack": 4,
+   "reward": "Coruscating Elixir",
+   "weight": 6131,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Barrows"
+    },
+    {
+     "kind": "map",
+     "name": "Tropical Island"
+    },
+    {
+     "kind": "map",
+     "name": "Fungal Hollow"
+    },
+    {
+     "kind": "act",
+     "name": "The Den (7)"
+    }
+   ]
+  },
+  {
+   "name": "The Dragon's Heart",
+   "stack": 11,
+   "reward": "Level 4 Empower · Corrupted",
+   "weight": 31,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Fortress"
+    }
+   ]
+  },
+  {
+   "name": "The Dreamer",
+   "stack": 6,
+   "reward": "Chayula Item",
+   "weight": 100,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Shaper void entity monster"
+    }
+   ]
+  },
+  {
+   "name": "The Dreamland",
+   "stack": 8,
+   "reward": "Poorjoy's Asylum",
+   "weight": 1125,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Strongbox: Cartographer's Strongbox"
+    }
+   ]
+  },
+  {
+   "name": "The Drunken Aristocrat",
+   "stack": 8,
+   "reward": "Divination Distillate",
+   "weight": 2408,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Residence"
+    }
+   ]
+  },
+  {
+   "name": "The Dungeon Master",
+   "stack": 7,
+   "reward": "Belt · Double-Influenced Item",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Dungeon"
+    }
+   ]
+  },
+  {
+   "name": "The Easy Stroll",
+   "stack": 2,
+   "reward": "Map · Map Tier: 15 · Modifiers: 8 · Corrupted",
+   "weight": 1628,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Terrace"
+    }
+   ]
+  },
+  {
+   "name": "The Eldritch Decay",
+   "stack": 4,
+   "reward": "Uber Elder Fragment",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Elder Guardian Boss: The Enslaver"
+    },
+    {
+     "kind": "other",
+     "name": "Elder Guardian Boss: The Eradicator"
+    },
+    {
+     "kind": "other",
+     "name": "Elder Guardian Boss: The Constrictor"
+    },
+    {
+     "kind": "other",
+     "name": "Elder Guardian Boss: The Purifier"
+    }
+   ]
+  },
+  {
+   "name": "The Emptiness",
+   "stack": 6,
+   "reward": "Vaal Breach · Quality: +6% · Corrupted",
+   "weight": 1,
+   "boss": true,
+   "disabled": true
+  },
+  {
+   "name": "The Encroaching Darkness",
+   "stack": 8,
+   "reward": "Map · Corrupted",
+   "weight": 916,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Whakawairua Tuahu"
+    },
+    {
+     "kind": "map",
+     "name": "Oba's Cursed Trove"
+    }
+   ]
+  },
+  {
+   "name": "The Endless Darkness",
+   "stack": 9,
+   "reward": "Voidforge",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "The King in the Mists"
+    }
+   ]
+  },
+  {
+   "name": "The Endurance",
+   "stack": 4,
+   "reward": "Vivid Crimson Jewel",
+   "weight": 5372,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Dig"
+    },
+    {
+     "kind": "map",
+     "name": "Excavation"
+    },
+    {
+     "kind": "act",
+     "name": "The Tunnel (9)"
+    },
+    {
+     "kind": "act",
+     "name": "The Quarry (9)"
+    },
+    {
+     "kind": "act",
+     "name": "The Mines Level 2 (4)"
+    }
+   ]
+  },
+  {
+   "name": "The Enforcer",
+   "stack": 4,
+   "reward": "Spiked Gloves of the Conquest (Culling Strike) · Item Level: 86 · Warlord Item",
+   "weight": 8,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Pen"
+    }
+   ]
+  },
+  {
+   "name": "The Enlightened",
+   "stack": 6,
+   "reward": "Level 3 Enlighten",
+   "weight": 62,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Moon Temple"
+    },
+    {
+     "kind": "map",
+     "name": "Graveyard"
+    },
+    {
+     "kind": "map",
+     "name": "Sanctuary"
+    },
+    {
+     "kind": "map",
+     "name": "Ziggurat"
+    }
+   ]
+  },
+  {
+   "name": "The Enthusiasts",
+   "stack": 3,
+   "reward": "Victario's Influence · Two-Implicit · Corrupted",
+   "weight": 309,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Castle Ruins"
+    }
+   ]
+  },
+  {
+   "name": "The Escape",
+   "stack": 5,
+   "reward": "Seven-League Step",
+   "weight": 548,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Breachlord Boss Domain: Xoph, Dark Embers"
+    },
+    {
+     "kind": "other",
+     "name": "Breachlord Boss Domain: Tul, Creeping Avalanche"
+    },
+    {
+     "kind": "other",
+     "name": "Breachlord Boss Domain: Esh, Forked Thought"
+    },
+    {
+     "kind": "other",
+     "name": "Breachlord Boss Domain: Chayula, Who Dreamt"
+    },
+    {
+     "kind": "other",
+     "name": "Breachlord Boss Domain: Uul-Netol, Unburdened Flesh"
+    }
+   ]
+  },
+  {
+   "name": "The Eternal War",
+   "stack": 4,
+   "reward": "Timeless Jewel · Two-Implicit · Corrupted",
+   "weight": null,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Crusader conqueror boss"
+    },
+    {
+     "kind": "tag",
+     "name": "Hunter conqueror boss"
+    },
+    {
+     "kind": "tag",
+     "name": "Redeemer conqueror boss"
+    },
+    {
+     "kind": "tag",
+     "name": "Warlord conqueror boss"
+    }
+   ]
+  },
+  {
+   "name": "The Ethereal",
+   "stack": 7,
+   "reward": "Six-Link Vaal Regalia",
+   "weight": 515,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Atziri area"
+    }
+   ]
+  },
+  {
+   "name": "The Everlasting",
+   "stack": 3,
+   "reward": "Originator Incarnation Item",
+   "weight": null,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Pit of the Chimera"
+    },
+    {
+     "kind": "map",
+     "name": "Lair of the Hydra"
+    },
+    {
+     "kind": "map",
+     "name": "Maze of the Minotaur"
+    },
+    {
+     "kind": "map",
+     "name": "Forge of the Phoenix"
+    }
+   ]
+  },
+  {
+   "name": "The Explorer",
+   "stack": 6,
+   "reward": "Map · Corrupted",
+   "weight": 8058,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Arachnid Nest"
+    },
+    {
+     "kind": "map",
+     "name": "Thicket"
+    }
+   ]
+  },
+  {
+   "name": "The Eye of Terror",
+   "stack": 8,
+   "reward": "Mageblood · Foulborn",
+   "weight": 15,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Syndicate Member: It That Fled"
+    }
+   ]
+  },
+  {
+   "name": "The Eye of the Dragon",
+   "stack": 10,
+   "reward": "Jewel · Corrupted",
+   "weight": 47,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Marshes"
+    },
+    {
+     "kind": "act",
+     "name": "The Boiling Lake (9)"
+    }
+   ]
+  },
+  {
+   "name": "The Fathomless Depths",
+   "stack": 8,
+   "reward": "Lightpoacher",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Mineral Pools"
+    }
+   ]
+  },
+  {
+   "name": "The Feast",
+   "stack": 5,
+   "reward": "Romira's Banquet · Corrupted",
+   "weight": 2137,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Waste Pool"
+    },
+    {
+     "kind": "act",
+     "name": "Doedre's Cesspool (8)"
+    }
+   ]
+  },
+  {
+   "name": "The Fiend",
+   "stack": 11,
+   "reward": "Headhunter · Corrupted",
+   "weight": 5,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Chambers of Impurity"
+    },
+    {
+     "kind": "map",
+     "name": "The Coward's Trial"
+    }
+   ]
+  },
+  {
+   "name": "The Finishing Touch",
+   "stack": 2,
+   "reward": "1x Fertile Catalyst",
+   "weight": 462,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Hillock, the Blacksmith"
+    }
+   ]
+  },
+  {
+   "name": "The Fishmonger",
+   "stack": 4,
+   "reward": "Albino Rhoa Feather",
+   "weight": 21,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Peninsula"
+    }
+   ]
+  },
+  {
+   "name": "The Fletcher",
+   "stack": 5,
+   "reward": "Drillneck · Corrupted",
+   "weight": 1939,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Graveyard"
+    },
+    {
+     "kind": "map",
+     "name": "Iceberg"
+    },
+    {
+     "kind": "other",
+     "name": "Act Boss: Eyepecker"
+    }
+   ]
+  },
+  {
+   "name": "The Flora's Gift",
+   "stack": 5,
+   "reward": "Five-Link Staff · Item Level: 66",
+   "weight": 28402,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Terrace"
+    },
+    {
+     "kind": "map",
+     "name": "Conservatory"
+    }
+   ]
+  },
+  {
+   "name": "The Fool",
+   "stack": 4,
+   "reward": "20x Orb of Chance",
+   "weight": 137,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Syndicate Member: Janus Perandus"
+    }
+   ]
+  },
+  {
+   "name": "The Forbidden Fruit",
+   "stack": 1,
+   "reward": "Uber Pinnacle Fragment",
+   "weight": 241,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Tropical Island"
+    }
+   ]
+  },
+  {
+   "name": "The Forgotten Treasure",
+   "stack": 6,
+   "reward": "Leather Belt · Double-Influenced Item",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Temple"
+    },
+    {
+     "kind": "map",
+     "name": "Chambers of Impurity"
+    }
+   ]
+  },
+  {
+   "name": "The Formless Sea",
+   "stack": 7,
+   "reward": "Varunastra",
+   "weight": 11,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Mao Kun"
+    }
+   ]
+  },
+  {
+   "name": "The Forsaken",
+   "stack": 7,
+   "reward": "Umbilicus Immortalis",
+   "weight": 2129,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Mausoleum"
+    },
+    {
+     "kind": "map",
+     "name": "Bone Crypt"
+    },
+    {
+     "kind": "map",
+     "name": "The Coward's Trial"
+    }
+   ]
+  },
+  {
+   "name": "The Fortunate",
+   "stack": 12,
+   "reward": "2x Divine Orb",
+   "weight": 1239,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Dunes"
+    }
+   ]
+  },
+  {
+   "name": "The Forward Gaze",
+   "stack": 6,
+   "reward": "Replica Item",
+   "weight": 1135,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Doryani's Machinarium"
+    }
+   ]
+  },
+  {
+   "name": "The Fox",
+   "stack": 6,
+   "reward": "Level 20 Gem",
+   "weight": 2210,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Sunken City"
+    }
+   ]
+  },
+  {
+   "name": "The Fox in the Brambles",
+   "stack": 7,
+   "reward": "Bramblejack · Two-Implicit · Corrupted",
+   "weight": 772,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Acton's Nightmare"
+    }
+   ]
+  },
+  {
+   "name": "The Gambler",
+   "stack": 5,
+   "reward": "Divination Card",
+   "weight": 5269,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Mineral Pools"
+    },
+    {
+     "kind": "map",
+     "name": "Mao Kun"
+    }
+   ]
+  },
+  {
+   "name": "The Garish Power",
+   "stack": 4,
+   "reward": "Jewel",
+   "weight": 88,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Overgrown Shrine"
+    },
+    {
+     "kind": "map",
+     "name": "Death and Taxes"
+    }
+   ]
+  },
+  {
+   "name": "The Gemcutter",
+   "stack": 3,
+   "reward": "Gemcutter's Prism",
+   "weight": 5277,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Strongbox: Gemcutter's Strongbox"
+    }
+   ]
+  },
+  {
+   "name": "The Gentleman",
+   "stack": 4,
+   "reward": "Sword · Corrupted",
+   "weight": 1176,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Arcade"
+    }
+   ]
+  },
+  {
+   "name": "The Gladiator",
+   "stack": 5,
+   "reward": "Nightmare Bascinet",
+   "weight": 6028,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Colosseum"
+    },
+    {
+     "kind": "map",
+     "name": "Pit"
+    }
+   ]
+  },
+  {
+   "name": "The Golden Era",
+   "stack": 7,
+   "reward": "Flaring Eclipse Staff · Item Level: 100",
+   "weight": 1293,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Factory"
+    },
+    {
+     "kind": "map",
+     "name": "Shrine"
+    }
+   ]
+  },
+  {
+   "name": "The Greatest Intentions",
+   "stack": 10,
+   "reward": "The Saviour · Two-Implicit · Corrupted",
+   "weight": null,
+   "boss": true
+  },
+  {
+   "name": "The Gulf",
+   "stack": 5,
+   "reward": "Thread of Hope · Two-Implicit · Corrupted",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Courtyard of Wasting"
+    }
+   ]
+  },
+  {
+   "name": "The Hale Heart",
+   "stack": 4,
+   "reward": "Item · Item Level: 100 · Elder Item",
+   "weight": 42,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Elder Guardian Boss: The Constrictor"
+    },
+    {
+     "kind": "other",
+     "name": "Elder Guardian Boss: The Enslaver"
+    },
+    {
+     "kind": "other",
+     "name": "Elder Guardian Boss: The Eradicator"
+    },
+    {
+     "kind": "other",
+     "name": "Elder Guardian Boss: The Purifier"
+    }
+   ]
+  },
+  {
+   "name": "The Harvester",
+   "stack": 11,
+   "reward": "The Harvest",
+   "weight": 16264,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Peninsula"
+    },
+    {
+     "kind": "map",
+     "name": "Fields"
+    },
+    {
+     "kind": "map",
+     "name": "Olmec's Sanctum"
+    },
+    {
+     "kind": "act",
+     "name": "The Crossroads (7)"
+    },
+    {
+     "kind": "act",
+     "name": "The Imperial Fields (8)"
+    }
+   ]
+  },
+  {
+   "name": "The Hermit",
+   "stack": 9,
+   "reward": "Lifesprig",
+   "weight": 17349,
+   "sources": [
+    {
+     "kind": "act",
+     "name": "The Northern Forest (7)"
+    },
+    {
+     "kind": "act",
+     "name": "The Crossroads (7)"
+    },
+    {
+     "kind": "act",
+     "name": "The Ashen Fields (7)"
+    },
+    {
+     "kind": "act",
+     "name": "The Causeway (7)"
+    },
+    {
+     "kind": "act",
+     "name": "The Fellshrine Ruins (7)"
+    },
+    {
+     "kind": "act",
+     "name": "Maligaro's Sanctum (7)"
+    },
+    {
+     "kind": "act",
+     "name": "The Broken Bridge (7)"
+    },
+    {
+     "kind": "act",
+     "name": "The Vaal City (7)"
+    }
+   ]
+  },
+  {
+   "name": "The Heroic Shot",
+   "stack": 1,
+   "reward": "17x Chromatic Orb",
+   "weight": 98
+  },
+  {
+   "name": "The Hive of Knowledge",
+   "stack": 6,
+   "reward": "Machina Mitts · Two-Implicit · Corrupted",
+   "weight": 20,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "The Temple of Atzoatl"
+    }
+   ]
+  },
+  {
+   "name": "The Hoarder",
+   "stack": 12,
+   "reward": "Exalted Orb",
+   "weight": 24789,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Underground Sea"
+    },
+    {
+     "kind": "map",
+     "name": "Vaults of Atziri"
+    },
+    {
+     "kind": "map",
+     "name": "Mao Kun"
+    }
+   ]
+  },
+  {
+   "name": "The Hook",
+   "stack": 8,
+   "reward": "Level 21 Transfigured Gem · Quality: +23% · Corrupted",
+   "weight": 73,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Venarius"
+    }
+   ]
+  },
+  {
+   "name": "The Hunger",
+   "stack": 9,
+   "reward": "Taste of Hate",
+   "weight": 461,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Carcass"
+    },
+    {
+     "kind": "map",
+     "name": "Malformation"
+    }
+   ]
+  },
+  {
+   "name": "The Immortal",
+   "stack": 10,
+   "reward": "House of Mirrors",
+   "weight": 19,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Hall of grandmasters"
+    }
+   ]
+  },
+  {
+   "name": "The Incantation",
+   "stack": 4,
+   "reward": "The Whispering Ice",
+   "weight": 1288,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Burial Chambers"
+    },
+    {
+     "kind": "map",
+     "name": "Spider Forest"
+    }
+   ]
+  },
+  {
+   "name": "The Innocent",
+   "stack": 10,
+   "reward": "40x Orb of Regret",
+   "weight": 434,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Defiled Cathedral"
+    },
+    {
+     "kind": "map",
+     "name": "Theatre of Lies"
+    },
+    {
+     "kind": "act",
+     "name": "The Chamber of Innocence (5)"
+    }
+   ]
+  },
+  {
+   "name": "The Inoculated",
+   "stack": 4,
+   "reward": "Seraphim's Armour",
+   "weight": 6791,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Primordial Pool"
+    },
+    {
+     "kind": "map",
+     "name": "Marshes"
+    }
+   ]
+  },
+  {
+   "name": "The Insane Cat",
+   "stack": 9,
+   "reward": "Mageblood · Item Level: 84 · Corrupted",
+   "weight": 2,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Maps Only: Omniphobia, Fear Manifest (maps only)"
+    },
+    {
+     "kind": "other",
+     "name": "Maps Only: Kosis, The Revelation (maps only)"
+    }
+   ]
+  },
+  {
+   "name": "The Insatiable",
+   "stack": 3,
+   "reward": "The Harvest · Corrupted",
+   "weight": 1145,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Core"
+    },
+    {
+     "kind": "map",
+     "name": "Abomination"
+    }
+   ]
+  },
+  {
+   "name": "The Inventor",
+   "stack": 6,
+   "reward": "10x Vaal Orb",
+   "weight": 6375,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Maze"
+    },
+    {
+     "kind": "map",
+     "name": "Vaal Pyramid"
+    },
+    {
+     "kind": "map",
+     "name": "Vaal Temple"
+    },
+    {
+     "kind": "map",
+     "name": "Doryani's Machinarium"
+    }
+   ]
+  },
+  {
+   "name": "The Jester",
+   "stack": 9,
+   "reward": "Merciless One-Hand Weapon · Item Level: 100",
+   "weight": 371,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Trap exile"
+    }
+   ]
+  },
+  {
+   "name": "The Jeweller's Boon",
+   "stack": 5,
+   "reward": "Five-Linked Body Armour · Influenced Item",
+   "weight": 3930,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Grotto"
+    },
+    {
+     "kind": "map",
+     "name": "Malformation"
+    }
+   ]
+  },
+  {
+   "name": "The Journalist",
+   "stack": 10,
+   "reward": "Helmet · Double-Veiled Item",
+   "weight": 11985,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Cage"
+    },
+    {
+     "kind": "map",
+     "name": "Haunted Mansion"
+    },
+    {
+     "kind": "map",
+     "name": "Pen"
+    },
+    {
+     "kind": "act",
+     "name": "The Feeding Trough (10)"
+    },
+    {
+     "kind": "act",
+     "name": "The Canals (10)"
+    }
+   ]
+  },
+  {
+   "name": "The Journey",
+   "stack": 4,
+   "reward": "Journey Tattoo",
+   "weight": 1,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Coral Ruins"
+    }
+   ]
+  },
+  {
+   "name": "The King's Blade",
+   "stack": 5,
+   "reward": "Bloodthirsty Eternal Sword · Item Level: 66",
+   "weight": 43750,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Colosseum"
+    },
+    {
+     "kind": "map",
+     "name": "Racecourse"
+    }
+   ]
+  },
+  {
+   "name": "The King's Heart",
+   "stack": 8,
+   "reward": "Kaom's Heart",
+   "weight": 479,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Volcano"
+    },
+    {
+     "kind": "map",
+     "name": "Lava Lake"
+    }
+   ]
+  },
+  {
+   "name": "The Lake",
+   "stack": 8,
+   "reward": "Reflecting Mist",
+   "weight": 4,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Arid Lake"
+    }
+   ]
+  },
+  {
+   "name": "The Landing",
+   "stack": 5,
+   "reward": "The Beachhead · Map Tier: 15 · Corrupted",
+   "weight": 1,
+   "disabled": true,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Coast boat area"
+    }
+   ]
+  },
+  {
+   "name": "The Last Laugh",
+   "stack": 5,
+   "reward": "Replica Dragonfang's Flight · Corrupted",
+   "weight": 373,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Colonnade"
+    },
+    {
+     "kind": "map",
+     "name": "Arcade"
+    }
+   ]
+  },
+  {
+   "name": "The Last One Standing",
+   "stack": 10,
+   "reward": "Atziri's Disfavour",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Racecourse"
+    }
+   ]
+  },
+  {
+   "name": "The Last Supper",
+   "stack": 6,
+   "reward": "Bino's Kitchen Knife",
+   "weight": 14,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Cage"
+    }
+   ]
+  },
+  {
+   "name": "The Leviathan",
+   "stack": 7,
+   "reward": "Maven Item · Two-Implicit · Corrupted",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Shore"
+    }
+   ]
+  },
+  {
+   "name": "The Lich",
+   "stack": 12,
+   "reward": "Midnight Bargain · Corrupted",
+   "weight": 4510,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Cursed Crypt"
+    },
+    {
+     "kind": "map",
+     "name": "Mausoleum"
+    },
+    {
+     "kind": "map",
+     "name": "Oba's Cursed Trove"
+    },
+    {
+     "kind": "other",
+     "name": "Act Boss: The Bone Sculptor"
+    }
+   ]
+  },
+  {
+   "name": "The Life Thief",
+   "stack": 6,
+   "reward": "Zerphi's Heart",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Defiled Cathedral"
+    },
+    {
+     "kind": "map",
+     "name": "Belfry"
+    }
+   ]
+  },
+  {
+   "name": "The Lion",
+   "stack": 5,
+   "reward": "Lioneye Item",
+   "weight": 4156,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Volcano"
+    },
+    {
+     "kind": "map",
+     "name": "Crater"
+    }
+   ]
+  },
+  {
+   "name": "The Long Con",
+   "stack": 4,
+   "reward": "Elderslayer's Exalted Orb",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Chest: Izaro's Treasure"
+    }
+   ]
+  },
+  {
+   "name": "The Long Watch",
+   "stack": 3,
+   "reward": "The Fourth Vow",
+   "weight": 68,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Infested Valley"
+    }
+   ]
+  },
+  {
+   "name": "The Lord in Black",
+   "stack": 6,
+   "reward": "Ring of Bameth · Item Level: 83",
+   "weight": 950,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Beyond Boss: K'tash, the Hate Shepherd"
+    }
+   ]
+  },
+  {
+   "name": "The Lord of Celebration",
+   "stack": 4,
+   "reward": "Sceptre of Celebration · Shaper Item",
+   "weight": 730,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Haunted Mansion"
+    }
+   ]
+  },
+  {
+   "name": "The Lover",
+   "stack": 2,
+   "reward": "Jewellery · Item Level: 79",
+   "weight": 63596,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Whakawairua Tuahu"
+    },
+    {
+     "kind": "map",
+     "name": "Maelström of Chaos"
+    }
+   ]
+  },
+  {
+   "name": "The Lunaris Priestess",
+   "stack": 5,
+   "reward": "Sire of Shards",
+   "weight": 7831,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Moon Temple"
+    },
+    {
+     "kind": "map",
+     "name": "Cold River"
+    },
+    {
+     "kind": "map",
+     "name": "The Twilight Temple"
+    },
+    {
+     "kind": "act",
+     "name": "The Lunaris Temple Level 1 (8)"
+    },
+    {
+     "kind": "act",
+     "name": "The Lunaris Temple Level 2 (8)"
+    },
+    {
+     "kind": "act",
+     "name": "The Harbour Bridge (8)"
+    }
+   ]
+  },
+  {
+   "name": "The Mad King",
+   "stack": 7,
+   "reward": "Vaal Aspect",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Reef"
+    }
+   ]
+  },
+  {
+   "name": "The Magma Crab",
+   "stack": 6,
+   "reward": "Level 21 Vaal Molten Shell · Corrupted",
+   "weight": 395,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Rogue Exile: Magnus Stonethorn"
+    }
+   ]
+  },
+  {
+   "name": "The Master",
+   "stack": 4,
+   "reward": "Disabled",
+   "weight": 1,
+   "disabled": true,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Boss summons canine beast minion"
+    }
+   ]
+  },
+  {
+   "name": "The Master Artisan",
+   "stack": 5,
+   "reward": "20x Quality Currency",
+   "weight": 3272
+  },
+  {
+   "name": "The Mayor",
+   "stack": 5,
+   "reward": "The Light of Meaning",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Arcade"
+    }
+   ]
+  },
+  {
+   "name": "The Mercenary",
+   "stack": 5,
+   "reward": "Shield · Corrupted",
+   "weight": 1505,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Mesa"
+    },
+    {
+     "kind": "map",
+     "name": "Fungal Hollow"
+    }
+   ]
+  },
+  {
+   "name": "The Messenger",
+   "stack": 4,
+   "reward": "Harbinger Item",
+   "weight": 649,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Strand"
+    }
+   ]
+  },
+  {
+   "name": "The Metalsmith's Gift",
+   "stack": 6,
+   "reward": "Prismatic Ring",
+   "weight": 35044,
+   "sources": [
+    {
+     "kind": "act",
+     "name": "The Beacon (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Brine King's Reef (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Lower Prison (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Coast (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Karui Fortress (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Mud Flats (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Cavern of Anger (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Twilight Strand (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Southern Forest (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Wetlands (6)"
+    },
+    {
+     "kind": "act",
+     "name": "Prisoner's Gate (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Western Forest (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Riverways (6)"
+    },
+    {
+     "kind": "act",
+     "name": "Shavronne's Tower (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Ridge (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Tidal Island (6)"
+    }
+   ]
+  },
+  {
+   "name": "The Mind's Eyes",
+   "stack": 7,
+   "reward": "Astral Projector",
+   "weight": 384,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Arid Lake"
+    }
+   ]
+  },
+  {
+   "name": "The Miracle",
+   "stack": 3,
+   "reward": "Awakened Exceptional Gem",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Siege"
+    }
+   ]
+  },
+  {
+   "name": "The Mountain",
+   "stack": 6,
+   "reward": "Jewel of Potency",
+   "weight": 5179,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Cold River"
+    },
+    {
+     "kind": "act",
+     "name": "The Descent (9)"
+    },
+    {
+     "kind": "act",
+     "name": "The Ascent (4)"
+    }
+   ]
+  },
+  {
+   "name": "The Nurse",
+   "stack": 8,
+   "reward": "The Doctor",
+   "weight": 114,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Carcass"
+    },
+    {
+     "kind": "map",
+     "name": "Abomination"
+    }
+   ]
+  },
+  {
+   "name": "The Oath",
+   "stack": 6,
+   "reward": "Death's Oath",
+   "weight": 1858,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Iceberg"
+    }
+   ]
+  },
+  {
+   "name": "The Obscured",
+   "stack": 7,
+   "reward": "Breachstone",
+   "weight": 1,
+   "disabled": true,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Abyssal"
+    }
+   ]
+  },
+  {
+   "name": "The Offering",
+   "stack": 8,
+   "reward": "Shavronne's Wrappings",
+   "weight": 376,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Tower"
+    },
+    {
+     "kind": "map",
+     "name": "Abomination"
+    }
+   ]
+  },
+  {
+   "name": "The Offspring",
+   "stack": 9,
+   "reward": "Ryslatha's Coil",
+   "weight": 246,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Mud Geyser"
+    }
+   ]
+  },
+  {
+   "name": "The Old Man",
+   "stack": 12,
+   "reward": "Fishing Rod · Two-Implicit · Corrupted",
+   "weight": 3,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Arid Lake"
+    }
+   ]
+  },
+  {
+   "name": "The One That Got Away",
+   "stack": 7,
+   "reward": "Replica Bated Breath",
+   "weight": 4,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Reef"
+    }
+   ]
+  },
+  {
+   "name": "The One With All",
+   "stack": 6,
+   "reward": "Le Heup of All · Corrupted",
+   "weight": 2356,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Grave Trough"
+    },
+    {
+     "kind": "map",
+     "name": "Death and Taxes"
+    }
+   ]
+  },
+  {
+   "name": "The Opulent",
+   "stack": 5,
+   "reward": "Ring · Item Level: 100",
+   "weight": 11679,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Relic Chambers"
+    }
+   ]
+  },
+  {
+   "name": "The Pack Leader",
+   "stack": 6,
+   "reward": "Alpha's Howl",
+   "weight": 1852,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Summit"
+    }
+   ]
+  },
+  {
+   "name": "The Pact",
+   "stack": 9,
+   "reward": "Pledge of Hands",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Port"
+    },
+    {
+     "kind": "act",
+     "name": "The Quay (8)"
+    }
+   ]
+  },
+  {
+   "name": "The Patient",
+   "stack": 8,
+   "reward": "The Nurse",
+   "weight": 722,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Promenade"
+    }
+   ]
+  },
+  {
+   "name": "The Penitent",
+   "stack": 5,
+   "reward": "Unset Ring",
+   "weight": 5903,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Dungeon"
+    },
+    {
+     "kind": "map",
+     "name": "Hallowed Ground"
+    }
+   ]
+  },
+  {
+   "name": "The Poet",
+   "stack": 9,
+   "reward": "Blood of Corruption · Corrupted",
+   "weight": 1852,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Park"
+    }
+   ]
+  },
+  {
+   "name": "The Polymath",
+   "stack": 3,
+   "reward": "Astramentis",
+   "weight": 124,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Silo"
+    },
+    {
+     "kind": "map",
+     "name": "Chambers of Impurity"
+    }
+   ]
+  },
+  {
+   "name": "The Porcupine",
+   "stack": 6,
+   "reward": "Six-Link Short Bow · Item Level: 50",
+   "weight": 3732,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Terrace"
+    },
+    {
+     "kind": "map",
+     "name": "Conservatory"
+    },
+    {
+     "kind": "act",
+     "name": "The High Gardens (8)"
+    }
+   ]
+  },
+  {
+   "name": "The Price of Devotion",
+   "stack": 7,
+   "reward": "Mageblood · Quality: +20% · Two-Implicit · Corrupted",
+   "weight": 1,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Uber atziri boss"
+    }
+   ]
+  },
+  {
+   "name": "The Price of Loyalty",
+   "stack": 4,
+   "reward": "Skin of the Loyal · Item Level: 25 · Two-Implicit · Corrupted",
+   "weight": 3,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Incursion architect breach"
+    }
+   ]
+  },
+  {
+   "name": "The Price of Prescience",
+   "stack": 5,
+   "reward": "Vaal Temple Map · Delirium: 100% · Corrupted",
+   "weight": 181,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Crusader conqueror boss"
+    },
+    {
+     "kind": "tag",
+     "name": "Hunter conqueror boss"
+    },
+    {
+     "kind": "tag",
+     "name": "Redeemer conqueror boss"
+    },
+    {
+     "kind": "tag",
+     "name": "Warlord conqueror boss"
+    }
+   ]
+  },
+  {
+   "name": "The Price of Protection",
+   "stack": 5,
+   "reward": "Elder Guardian Occupied Map · Modifiers: 8 · Corrupted",
+   "weight": 1494,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "All Vaal Side Area Bosses"
+    },
+    {
+     "kind": "other",
+     "name": "All Invasion Bosses"
+    }
+   ]
+  },
+  {
+   "name": "The Primordial",
+   "stack": 5,
+   "reward": "Jewel · Primordial",
+   "weight": 868,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Coves"
+    }
+   ]
+  },
+  {
+   "name": "The Prince of Darkness",
+   "stack": 6,
+   "reward": "Elegant Hubris",
+   "weight": 185,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Phantasmagoria"
+    }
+   ]
+  },
+  {
+   "name": "The Professor",
+   "stack": 4,
+   "reward": "The Putrid Cloister",
+   "weight": 140,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Silo"
+    }
+   ]
+  },
+  {
+   "name": "The Progeny of Lunaris",
+   "stack": 2,
+   "reward": "Dying Sun",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Shrine"
+    },
+    {
+     "kind": "map",
+     "name": "The Twilight Temple"
+    },
+    {
+     "kind": "map",
+     "name": "Poorjoy's Asylum"
+    }
+   ]
+  },
+  {
+   "name": "The Puzzle",
+   "stack": 5,
+   "reward": "5x Breachstone Splinter",
+   "weight": 1,
+   "disabled": true,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Beyond demon"
+    }
+   ]
+  },
+  {
+   "name": "The Queen",
+   "stack": 16,
+   "reward": "Atziri's Acuity",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Maze"
+    }
+   ]
+  },
+  {
+   "name": "The Rabbit's Foot",
+   "stack": 8,
+   "reward": "10x Incursion Vial",
+   "weight": 1,
+   "boss": true,
+   "disabled": true,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Crypt area"
+    }
+   ]
+  },
+  {
+   "name": "The Rabid Rhoa",
+   "stack": 4,
+   "reward": "Malicious Gemini Claw · Item Level: 83",
+   "weight": 5114,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Arid Lake"
+    }
+   ]
+  },
+  {
+   "name": "The Realm",
+   "stack": 5,
+   "reward": "Portal · Quality: +1-20%",
+   "weight": 841,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Breach monsters"
+    },
+    {
+     "kind": "other",
+     "name": "Hiveborn monsters"
+    }
+   ]
+  },
+  {
+   "name": "The Return of the Rat",
+   "stack": 3,
+   "reward": "Tavukai",
+   "weight": 942,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Mausoleum"
+    },
+    {
+     "kind": "act",
+     "name": "The Refinery (9)"
+    }
+   ]
+  },
+  {
+   "name": "The Risk",
+   "stack": 3,
+   "reward": "Ventor's Gamble",
+   "weight": 4874
+  },
+  {
+   "name": "The Rite of Elements",
+   "stack": 5,
+   "reward": "Level 21 Golem Gem · Corrupted",
+   "weight": 2202,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Grotto"
+    },
+    {
+     "kind": "map",
+     "name": "Coves"
+    }
+   ]
+  },
+  {
+   "name": "The Road to Power",
+   "stack": 7,
+   "reward": "Runic One-Hand Weapon · Item Level: 100",
+   "weight": 209,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Park"
+    },
+    {
+     "kind": "map",
+     "name": "Citadel"
+    }
+   ]
+  },
+  {
+   "name": "The Rusted Bard",
+   "stack": 9,
+   "reward": "4x Tainted Mythic Orb",
+   "weight": 128,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "The Vinktar Square"
+    }
+   ]
+  },
+  {
+   "name": "The Ruthless Ceinture",
+   "stack": 7,
+   "reward": "Meginord's Girdle · Corrupted",
+   "weight": 2766,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Ramparts"
+    },
+    {
+     "kind": "map",
+     "name": "Colonnade"
+    },
+    {
+     "kind": "act",
+     "name": "The Ascent (4)"
+    },
+    {
+     "kind": "act",
+     "name": "The Descent (9)"
+    },
+    {
+     "kind": "act",
+     "name": "The Foothills (9)"
+    }
+   ]
+  },
+  {
+   "name": "The Sacrifice",
+   "stack": 4,
+   "reward": "Six-Link Sacrificial Garb · Item Level: 100",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "The Temple of Atzoatl"
+    }
+   ]
+  },
+  {
+   "name": "The Saint's Treasure",
+   "stack": 10,
+   "reward": "2x Exalted Orb",
+   "weight": 11019,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Arcade"
+    }
+   ]
+  },
+  {
+   "name": "The Samurai's Eye",
+   "stack": 3,
+   "reward": "Watcher's Eye",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Ziggurat"
+    }
+   ]
+  },
+  {
+   "name": "The Scarred Meadow",
+   "stack": 9,
+   "reward": "Wake of Destruction",
+   "weight": 18610,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Mesa"
+    },
+    {
+     "kind": "map",
+     "name": "Fields"
+    },
+    {
+     "kind": "act",
+     "name": "The Imperial Fields (8)"
+    },
+    {
+     "kind": "act",
+     "name": "The Ashen Fields (7)"
+    }
+   ]
+  },
+  {
+   "name": "The Scavenger",
+   "stack": 8,
+   "reward": "Carcass Jack",
+   "weight": 2352,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Malformation"
+    }
+   ]
+  },
+  {
+   "name": "The Scholar",
+   "stack": 3,
+   "reward": "40x Scroll of Wisdom",
+   "weight": 47100,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Museum"
+    },
+    {
+     "kind": "map",
+     "name": "Academy"
+    },
+    {
+     "kind": "map",
+     "name": "Scriptorium"
+    },
+    {
+     "kind": "act",
+     "name": "The Library (3)"
+    },
+    {
+     "kind": "act",
+     "name": "The Archives (3)"
+    }
+   ]
+  },
+  {
+   "name": "The Scout",
+   "stack": 8,
+   "reward": "7x Exalted Orb",
+   "weight": 2439,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Jungle Valley"
+    }
+   ]
+  },
+  {
+   "name": "The Seeker",
+   "stack": 9,
+   "reward": "3x Orb of Annulment",
+   "weight": 678,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "The Temple of Atzoatl"
+    }
+   ]
+  },
+  {
+   "name": "The Sephirot",
+   "stack": 11,
+   "reward": "10x Divine Orb",
+   "weight": 250,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Residence"
+    },
+    {
+     "kind": "other",
+     "name": "Act Boss: Dominus, Ascendant"
+    }
+   ]
+  },
+  {
+   "name": "The Shepherd's Sandals",
+   "stack": 3,
+   "reward": "Boots · Item Level: 100 · Two-Implicit · Corrupted",
+   "weight": 200,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Barrows"
+    },
+    {
+     "kind": "map",
+     "name": "Caer Blaidd, Wolfpack's Den"
+    }
+   ]
+  },
+  {
+   "name": "The Shieldbearer",
+   "stack": 8,
+   "reward": "The Squire",
+   "weight": 11,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Citadel"
+    }
+   ]
+  },
+  {
+   "name": "The Shortcut",
+   "stack": 1,
+   "reward": "Quicksilver Flask of the Cheetah · Item Level: 100",
+   "weight": 112
+  },
+  {
+   "name": "The Side Quest",
+   "stack": 5,
+   "reward": "Incarnation Echo",
+   "weight": null,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Armoury"
+    },
+    {
+     "kind": "map",
+     "name": "Courtyard of Wasting"
+    }
+   ]
+  },
+  {
+   "name": "The Sigil",
+   "stack": 3,
+   "reward": "Unassailable Amulet",
+   "weight": 7544,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "City Square"
+    }
+   ]
+  },
+  {
+   "name": "The Silly Boy",
+   "stack": 9,
+   "reward": "6x Horned Scarab",
+   "weight": 1,
+   "disabled": true
+  },
+  {
+   "name": "The Siren",
+   "stack": 7,
+   "reward": "The Whispering Ice · Corrupted",
+   "weight": 571,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Whakawairua Tuahu"
+    }
+   ]
+  },
+  {
+   "name": "The Skeleton",
+   "stack": 6,
+   "reward": "Level 1 Summon Skeletons · Quality: +23% · Corrupted",
+   "weight": 5408,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Spider Lair"
+    },
+    {
+     "kind": "map",
+     "name": "Cursed Crypt"
+    }
+   ]
+  },
+  {
+   "name": "The Slumbering Beast",
+   "stack": 5,
+   "reward": "Hinekora's Lock",
+   "weight": 1,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "City Square"
+    }
+   ]
+  },
+  {
+   "name": "The Soul",
+   "stack": 9,
+   "reward": "Soul Taker",
+   "weight": 15,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Phantasmagoria"
+    },
+    {
+     "kind": "map",
+     "name": "Abomination"
+    },
+    {
+     "kind": "map",
+     "name": "The Putrid Cloister"
+    }
+   ]
+  },
+  {
+   "name": "The Spark and the Flame",
+   "stack": 2,
+   "reward": "Berek's Respite",
+   "weight": 568,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Olmec's Sanctum"
+    }
+   ]
+  },
+  {
+   "name": "The Spoiled Prince",
+   "stack": 4,
+   "reward": "Dictator's Prophecy Wand · Item Level: 100",
+   "weight": 907,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Vaal Pyramid"
+    }
+   ]
+  },
+  {
+   "name": "The Standoff",
+   "stack": 3,
+   "reward": "Rustic Sash",
+   "weight": 6297,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Caldera"
+    },
+    {
+     "kind": "act",
+     "name": "The Ruined Square (5)"
+    },
+    {
+     "kind": "act",
+     "name": "The Ravaged Square (10)"
+    },
+    {
+     "kind": "act",
+     "name": "The Torched Courts (10)"
+    },
+    {
+     "kind": "act",
+     "name": "The Crematorium (3)"
+    }
+   ]
+  },
+  {
+   "name": "The Stormcaller",
+   "stack": 4,
+   "reward": "Agnerod Staff",
+   "weight": 6312,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Coral Ruins"
+    },
+    {
+     "kind": "map",
+     "name": "Tower"
+    },
+    {
+     "kind": "map",
+     "name": "Plateau"
+    }
+   ]
+  },
+  {
+   "name": "The Strategist",
+   "stack": 6,
+   "reward": "Inspired Learning · Corrupted",
+   "weight": 38,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Elder Slayer: Drox, The Warlord"
+    }
+   ]
+  },
+  {
+   "name": "The Summoner",
+   "stack": 6,
+   "reward": "Minion Gem · Quality: +20%",
+   "weight": 6413,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Burial Chambers"
+    },
+    {
+     "kind": "act",
+     "name": "The Lower Prison (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Chamber of Sins Level 1 (7)"
+    },
+    {
+     "kind": "act",
+     "name": "The Crematorium (3)"
+    },
+    {
+     "kind": "act",
+     "name": "Shavronne's Tower (6)"
+    }
+   ]
+  },
+  {
+   "name": "The Sun",
+   "stack": 7,
+   "reward": "Rise of the Phoenix",
+   "weight": 10735,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Haunted Mansion"
+    },
+    {
+     "kind": "map",
+     "name": "Park"
+    },
+    {
+     "kind": "map",
+     "name": "Temple"
+    },
+    {
+     "kind": "act",
+     "name": "The Solaris Temple Level 1 (8)"
+    },
+    {
+     "kind": "act",
+     "name": "The Solaris Temple Level 2 (8)"
+    },
+    {
+     "kind": "act",
+     "name": "The Harbour Bridge (8)"
+    }
+   ]
+  },
+  {
+   "name": "The Surgeon",
+   "stack": 4,
+   "reward": "Surgeon's Flask",
+   "weight": 5012,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Overgrown Ruin"
+    },
+    {
+     "kind": "map",
+     "name": "Overgrown Shrine"
+    }
+   ]
+  },
+  {
+   "name": "The Surveyor",
+   "stack": 4,
+   "reward": "Map · Map Tier: 14",
+   "weight": 4290,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Belfry"
+    },
+    {
+     "kind": "map",
+     "name": "Pillars of Arun"
+    }
+   ]
+  },
+  {
+   "name": "The Survivalist",
+   "stack": 3,
+   "reward": "7x Orb of Alchemy",
+   "weight": 7636,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Primordial Pool"
+    },
+    {
+     "kind": "map",
+     "name": "Mud Geyser"
+    },
+    {
+     "kind": "act",
+     "name": "The Cavern of Anger (6)"
+    }
+   ]
+  },
+  {
+   "name": "The Sustenance",
+   "stack": 3,
+   "reward": "Disabled",
+   "weight": 1,
+   "disabled": true,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Doedre monster map"
+    }
+   ]
+  },
+  {
+   "name": "The Sword King's Salute",
+   "stack": 7,
+   "reward": "Daresso's Salute",
+   "weight": 14189,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Colosseum"
+    },
+    {
+     "kind": "map",
+     "name": "Pit"
+    },
+    {
+     "kind": "map",
+     "name": "Racecourse"
+    },
+    {
+     "kind": "act",
+     "name": "The Grand Arena (4)"
+    },
+    {
+     "kind": "act",
+     "name": "Daresso's Dream (4)"
+    }
+   ]
+  },
+  {
+   "name": "The Thaumaturgist",
+   "stack": 8,
+   "reward": "Shavronne's Revelation · Corrupted",
+   "weight": 117,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Poorjoy's Asylum"
+    }
+   ]
+  },
+  {
+   "name": "The Throne",
+   "stack": 2,
+   "reward": "Kaom's Roots · Corrupted",
+   "weight": 155,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Sulphur Vents"
+    }
+   ]
+  },
+  {
+   "name": "The Tinkerer's Table",
+   "stack": 5,
+   "reward": "5x Fossil",
+   "weight": 208,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Excavation"
+    }
+   ]
+  },
+  {
+   "name": "The Tireless Extractor",
+   "stack": 8,
+   "reward": "10x Oil",
+   "weight": 9808,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Factory"
+    }
+   ]
+  },
+  {
+   "name": "The Tower",
+   "stack": 6,
+   "reward": "Staff",
+   "weight": 6922,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Belfry"
+    },
+    {
+     "kind": "act",
+     "name": "Shavronne's Tower (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Upper Sceptre of God (3)"
+    }
+   ]
+  },
+  {
+   "name": "The Traitor",
+   "stack": 4,
+   "reward": "Wand · Corrupted",
+   "weight": 1191,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Lookout"
+    },
+    {
+     "kind": "act",
+     "name": "The Solaris Concourse (8)"
+    }
+   ]
+  },
+  {
+   "name": "The Transformation",
+   "stack": 5,
+   "reward": "Tainted Mythic Orb",
+   "weight": 249,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Palace"
+    },
+    {
+     "kind": "map",
+     "name": "Olmec's Sanctum"
+    }
+   ]
+  },
+  {
+   "name": "The Trial",
+   "stack": 7,
+   "reward": "Map · Map Tier: 15 · Corrupted",
+   "weight": 6214,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Siege"
+    },
+    {
+     "kind": "map",
+     "name": "Plateau"
+    }
+   ]
+  },
+  {
+   "name": "The Tumbleweed",
+   "stack": 2,
+   "reward": "Diamond Ring of Redemption · Item Level: 100 · Redeemer Item",
+   "weight": 24,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Dunes"
+    },
+    {
+     "kind": "map",
+     "name": "Desert Spring"
+    }
+   ]
+  },
+  {
+   "name": "The Twilight Moon",
+   "stack": 6,
+   "reward": "The Twilight Temple",
+   "weight": 390,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Poorjoy's Asylum"
+    }
+   ]
+  },
+  {
+   "name": "The Twins",
+   "stack": 8,
+   "reward": "Gemini Claw of Celebration · Item Level: 83",
+   "weight": 5028,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "The Twilight Temple"
+    }
+   ]
+  },
+  {
+   "name": "The Tyrant",
+   "stack": 9,
+   "reward": "Merciless Weapon · Item Level: 100",
+   "weight": 404,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Castle Ruins"
+    }
+   ]
+  },
+  {
+   "name": "The Undaunted",
+   "stack": 5,
+   "reward": "Nemesis Item · Corrupted",
+   "weight": 898,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Iceberg"
+    }
+   ]
+  },
+  {
+   "name": "The Undisputed",
+   "stack": 8,
+   "reward": "Merciless Vaal Axe · Item Level: 100 · Elder Item",
+   "weight": 24,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Vruun, Marshal of Xesht"
+    }
+   ]
+  },
+  {
+   "name": "The Unexpected Prize",
+   "stack": 2,
+   "reward": "Attribute Transforming Jewel · Corrupted",
+   "weight": 353,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Palace"
+    }
+   ]
+  },
+  {
+   "name": "The Union",
+   "stack": 7,
+   "reward": "10x Gemcutter's Prism",
+   "weight": 1340,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Grave Trough"
+    },
+    {
+     "kind": "map",
+     "name": "Cemetery"
+    }
+   ]
+  },
+  {
+   "name": "The Valkyrie",
+   "stack": 8,
+   "reward": "Nemesis Item",
+   "weight": 3523,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Female Rogue Exile: Dena Lorenni"
+    },
+    {
+     "kind": "other",
+     "name": "Female Rogue Exile: Igna Phoenix"
+    },
+    {
+     "kind": "other",
+     "name": "Rogue Exile: Minara Anemina"
+    },
+    {
+     "kind": "other",
+     "name": "Female Rogue Exile: Ultima Thule"
+    },
+    {
+     "kind": "other",
+     "name": "Female Rogue Exile: Kirmes Olli"
+    },
+    {
+     "kind": "other",
+     "name": "Female Rogue Exile: Ailentia Rac"
+    },
+    {
+     "kind": "other",
+     "name": "Female Rogue Exile: Antalie Napora"
+    },
+    {
+     "kind": "other",
+     "name": "Female Rogue Exile: Orra Greengate"
+    },
+    {
+     "kind": "other",
+     "name": "Female Rogue Exile: Thena Moga"
+    },
+    {
+     "kind": "other",
+     "name": "Female Rogue Exile: Augustina Solaria"
+    },
+    {
+     "kind": "other",
+     "name": "Female Rogue Exile: Vanth Agiel"
+    },
+    {
+     "kind": "other",
+     "name": "Female Rogue Exile: Lael Furia"
+    }
+   ]
+  },
+  {
+   "name": "The Valley of Steel Boxes",
+   "stack": 9,
+   "reward": "Disabled",
+   "weight": 1,
+   "disabled": true
+  },
+  {
+   "name": "The Vast",
+   "stack": 7,
+   "reward": "Song of the Sirens",
+   "weight": 8,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Coves"
+    }
+   ]
+  },
+  {
+   "name": "The Visionary",
+   "stack": 6,
+   "reward": "Lioneye's Vision",
+   "weight": 9124,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Lookout"
+    },
+    {
+     "kind": "map",
+     "name": "Siege"
+    }
+   ]
+  },
+  {
+   "name": "The Void",
+   "stack": 1,
+   "reward": "—",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Sanctuary"
+    },
+    {
+     "kind": "map",
+     "name": "Citadel"
+    },
+    {
+     "kind": "map",
+     "name": "Fortress"
+    },
+    {
+     "kind": "map",
+     "name": "Abomination"
+    },
+    {
+     "kind": "map",
+     "name": "Ziggurat"
+    }
+   ]
+  },
+  {
+   "name": "The Warden",
+   "stack": 4,
+   "reward": "Amulet · Corrupted",
+   "weight": 9366,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Cage"
+    },
+    {
+     "kind": "map",
+     "name": "Hallowed Ground"
+    },
+    {
+     "kind": "act",
+     "name": "Shavronne's Tower (6)"
+    },
+    {
+     "kind": "act",
+     "name": "The Slave Pens (5)"
+    },
+    {
+     "kind": "act",
+     "name": "The Control Blocks (5)"
+    },
+    {
+     "kind": "act",
+     "name": "The Lower Prison (6)"
+    }
+   ]
+  },
+  {
+   "name": "The Warlord",
+   "stack": 6,
+   "reward": "Six-Link Coronal Maul · Item Level: 83",
+   "weight": 558,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Armoury"
+    }
+   ]
+  },
+  {
+   "name": "The Watcher",
+   "stack": 12,
+   "reward": "Crown of Eyes",
+   "weight": 3330,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Colosseum"
+    },
+    {
+     "kind": "map",
+     "name": "Reef"
+    },
+    {
+     "kind": "map",
+     "name": "Caldera"
+    }
+   ]
+  },
+  {
+   "name": "The Web",
+   "stack": 8,
+   "reward": "Weapon of Crafting",
+   "weight": 7676,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Spider Lair"
+    },
+    {
+     "kind": "map",
+     "name": "Jungle Valley"
+    },
+    {
+     "kind": "map",
+     "name": "Sunken City"
+    }
+   ]
+  },
+  {
+   "name": "The Wedding Gift",
+   "stack": 2,
+   "reward": "Arakaali's Fang",
+   "weight": 57,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Overgrown Ruin"
+    }
+   ]
+  },
+  {
+   "name": "The White Knight",
+   "stack": 8,
+   "reward": "Six-Link Astral Plate · Item Level: 100 · Crusader Item",
+   "weight": 25,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Eternal Lab Trial: Trial of Stinging Doubt"
+    },
+    {
+     "kind": "other",
+     "name": "Eternal Lab Trial: Trial of Crippling Grief"
+    }
+   ]
+  },
+  {
+   "name": "The Whiteout",
+   "stack": 8,
+   "reward": "Cospri's Malice",
+   "weight": 390,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Summit"
+    }
+   ]
+  },
+  {
+   "name": "The Wilted Rose",
+   "stack": 7,
+   "reward": "Level 21 Aura Gem · Corrupted",
+   "weight": 2335,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Terrace"
+    }
+   ]
+  },
+  {
+   "name": "The Wind",
+   "stack": 7,
+   "reward": "Windripper",
+   "weight": 361,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Desert"
+    }
+   ]
+  },
+  {
+   "name": "The Witch",
+   "stack": 8,
+   "reward": "Kiara's Determination",
+   "weight": 15706,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Spider Forest"
+    },
+    {
+     "kind": "map",
+     "name": "Sepulchre"
+    }
+   ]
+  },
+  {
+   "name": "The Wolf",
+   "stack": 5,
+   "reward": "Rigwald Item",
+   "weight": 4898,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Caer Blaidd, Wolfpack's Den"
+    }
+   ]
+  },
+  {
+   "name": "The Wolf's Legacy",
+   "stack": 4,
+   "reward": "Vaults of Atziri",
+   "weight": 297,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Chest: Izaro's Treasure, Labyrinth Trove, Curious Lockbox (Merciless/Uber/Enriched Labyrinth)"
+    }
+   ]
+  },
+  {
+   "name": "The Wolf's Shadow",
+   "stack": 3,
+   "reward": "Hyaon's Fury",
+   "weight": 4472,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Underground River"
+    },
+    {
+     "kind": "map",
+     "name": "Barrows"
+    }
+   ]
+  },
+  {
+   "name": "The Wolven King's Bite",
+   "stack": 8,
+   "reward": "Rigwald's Quills",
+   "weight": 475,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Underground River"
+    }
+   ]
+  },
+  {
+   "name": "The Wolverine",
+   "stack": 4,
+   "reward": "Claw · Corrupted",
+   "weight": 1168,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Underground River"
+    },
+    {
+     "kind": "act",
+     "name": "Prisoner's Gate (6)"
+    }
+   ]
+  },
+  {
+   "name": "The World Eater",
+   "stack": 8,
+   "reward": "Starforge",
+   "weight": null,
+   "boss": true,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Hellscape flesh boss"
+    }
+   ]
+  },
+  {
+   "name": "The Wrath",
+   "stack": 8,
+   "reward": "10x Chaos Orb",
+   "weight": 8200,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Crimson Temple"
+    },
+    {
+     "kind": "map",
+     "name": "Defiled Cathedral"
+    },
+    {
+     "kind": "act",
+     "name": "The Feeding Trough (10)"
+    },
+    {
+     "kind": "act",
+     "name": "The Cathedral Rooftop (5)"
+    }
+   ]
+  },
+  {
+   "name": "The Wretched",
+   "stack": 6,
+   "reward": "Belt",
+   "weight": 4344,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Spider Lair"
+    },
+    {
+     "kind": "map",
+     "name": "The Coward's Trial"
+    },
+    {
+     "kind": "act",
+     "name": "The Den (7)"
+    }
+   ]
+  },
+  {
+   "name": "Thirst for Knowledge",
+   "stack": 5,
+   "reward": "Gluttony",
+   "weight": 7915,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Academy"
+    },
+    {
+     "kind": "map",
+     "name": "Scriptorium"
+    }
+   ]
+  },
+  {
+   "name": "Three Faces in the Dark",
+   "stack": 7,
+   "reward": "3x Chaos Orb",
+   "weight": 23969,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Armoury"
+    },
+    {
+     "kind": "map",
+     "name": "City Square"
+    },
+    {
+     "kind": "act",
+     "name": "The Grain Gate (8)"
+    },
+    {
+     "kind": "act",
+     "name": "The Refinery (9)"
+    }
+   ]
+  },
+  {
+   "name": "Three Voices",
+   "stack": 3,
+   "reward": "3x Essence",
+   "weight": 11729,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Vaal Pyramid"
+    }
+   ]
+  },
+  {
+   "name": "Thunderous Skies",
+   "stack": 5,
+   "reward": "Storm Cloud",
+   "weight": 10314,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Coral Ruins"
+    },
+    {
+     "kind": "map",
+     "name": "Tower"
+    },
+    {
+     "kind": "map",
+     "name": "Plateau"
+    },
+    {
+     "kind": "act",
+     "name": "The Twilight Strand (6)"
+    },
+    {
+     "kind": "act",
+     "name": "Shavronne's Tower (6)"
+    }
+   ]
+  },
+  {
+   "name": "Time-Lost Relic",
+   "stack": 10,
+   "reward": "League-Specific Item",
+   "weight": 6506,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Crystal Ore"
+    },
+    {
+     "kind": "map",
+     "name": "Dig"
+    },
+    {
+     "kind": "map",
+     "name": "Excavation"
+    }
+   ]
+  },
+  {
+   "name": "Toxic Tidings",
+   "stack": 5,
+   "reward": "Dendrobate · Two-Implicit · Corrupted",
+   "weight": 157,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Mud Geyser"
+    }
+   ]
+  },
+  {
+   "name": "Tranquillity",
+   "stack": 7,
+   "reward": "Voltaxic Rift",
+   "weight": 12,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Mesa"
+    }
+   ]
+  },
+  {
+   "name": "Treasure Hunter",
+   "stack": 7,
+   "reward": "Vaults of Atziri · Corrupted",
+   "weight": 113,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Grotto"
+    },
+    {
+     "kind": "map",
+     "name": "Mausoleum"
+    }
+   ]
+  },
+  {
+   "name": "Triskaidekaphobia",
+   "stack": 13,
+   "reward": "Map · Map Tier: 13 · Delirium: 100% · Modifiers: 8 · Corrupted",
+   "weight": 1122,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Endgame Boss: Atziri, Queen of the Vaal (Uber)"
+    }
+   ]
+  },
+  {
+   "name": "Turn the Other Cheek",
+   "stack": 3,
+   "reward": "Pacifism · Corrupted",
+   "weight": 537,
+   "sources": [
+    {
+     "kind": "tag",
+     "name": "Library area"
+    }
+   ]
+  },
+  {
+   "name": "Unchained",
+   "stack": 4,
+   "reward": "Facebreaker · Two-Implicit · Corrupted",
+   "weight": 369,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Siege"
+    },
+    {
+     "kind": "map",
+     "name": "Hallowed Ground"
+    }
+   ]
+  },
+  {
+   "name": "Underground Forest",
+   "stack": 4,
+   "reward": "10x Grand Eldritch Ichor",
+   "weight": 192,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Geode"
+    }
+   ]
+  },
+  {
+   "name": "Unrequited Love",
+   "stack": 16,
+   "reward": "19x Mirror Shard",
+   "weight": 3,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Desert Spring"
+    },
+    {
+     "kind": "map",
+     "name": "Vaal Temple"
+    },
+    {
+     "kind": "act",
+     "name": "The Temple of Decay Level 1 (7)"
+    },
+    {
+     "kind": "act",
+     "name": "The Temple of Decay Level 2 (7)"
+    }
+   ]
+  },
+  {
+   "name": "Vanity",
+   "stack": 9,
+   "reward": "Tabula Rasa · Corrupted",
+   "weight": 707,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Chest: Vaal Vessel (Vaal Side Areas)"
+    }
+   ]
+  },
+  {
+   "name": "Vile Power",
+   "stack": 5,
+   "reward": "Doomfletch",
+   "weight": 1402,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Malformation"
+    },
+    {
+     "kind": "act",
+     "name": "The Sewers (3)"
+    },
+    {
+     "kind": "act",
+     "name": "Doedre's Cesspool (8)"
+    },
+    {
+     "kind": "act",
+     "name": "The Toxic Conduits (8)"
+    },
+    {
+     "kind": "act",
+     "name": "The Belly of the Beast (9)"
+    }
+   ]
+  },
+  {
+   "name": "Vinia's Token",
+   "stack": 5,
+   "reward": "10x Orb of Regret",
+   "weight": 4656,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Carcass"
+    },
+    {
+     "kind": "map",
+     "name": "Phantasmagoria"
+    },
+    {
+     "kind": "map",
+     "name": "Shrine"
+    }
+   ]
+  },
+  {
+   "name": "Void of the Elements",
+   "stack": 3,
+   "reward": "Overpowering Opal Ring · Item Level: 100 · Elder Item",
+   "weight": 19,
+   "sources": [
+    {
+     "kind": "other",
+     "name": "Endgame Boss: The Elder"
+    },
+    {
+     "kind": "other",
+     "name": "Endgame Boss: Uber Elder"
+    }
+   ]
+  },
+  {
+   "name": "Volatile Power",
+   "stack": 9,
+   "reward": "Vaal Gem · Quality: +20% · Corrupted",
+   "weight": 6105,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Dig"
+    },
+    {
+     "kind": "act",
+     "name": "The Quarry (9)"
+    },
+    {
+     "kind": "act",
+     "name": "The Tunnel (9)"
+    },
+    {
+     "kind": "act",
+     "name": "The Mines Level 2 (4)"
+    },
+    {
+     "kind": "act",
+     "name": "The Crystal Veins (4)"
+    }
+   ]
+  },
+  {
+   "name": "Wealth and Power",
+   "stack": 11,
+   "reward": "Level 4 Enlighten · Corrupted",
+   "weight": 39,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Citadel"
+    }
+   ]
+  },
+  {
+   "name": "When Currents Blaze",
+   "stack": 2,
+   "reward": "Stormfire · Quality: +20% · Corrupted",
+   "weight": 135,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Lava Lake"
+    }
+   ]
+  },
+  {
+   "name": "Who Asked",
+   "stack": 9,
+   "reward": "Dictator's Weapon · Item Level: 83 · Fractured",
+   "weight": 11,
+   "sources": [
+    {
+     "kind": "map",
+     "name": "Factory"
+    },
+    {
+     "kind": "map",
+     "name": "Fortress"
+    }
+   ]
+  },
+  {
+   "name": "Winter's Embrace",
+   "stack": 2,
+   "reward": "Circle of Fear · Three-Implicit · Synthesised",
+   "weight": null,
+   "boss": true
+  }
+ ]
+}

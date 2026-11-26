@@ -2,6 +2,9 @@
   <Widget :config="{ ...config, anchor }" move-handles="none" :removable="false" :inline-edit="false">
     <div ref="windowEl" :class="$style.window" class="relative text-gray-200 shadow-lg flex flex-col"
       :style="mode === 'browse' ? 'width: 64rem; max-width: 96vw; height: 88vh;' : 'width: 36rem; max-width: 96vw; max-height: 92vh;'">
+      <!-- codex facts about the item (dust, divination card weight…) next to the window -->
+      <ItemFacts v-if="mode === 'item' && item" :item="item" class="absolute top-0" style="width: 15rem;"
+        :style="factsOnRight ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'" />
       <!-- header -->
       <div :class="$style.titlebar" class="px-3 py-2 flex items-baseline gap-2">
         <span v-if="mode === 'browse'" class="font-bold truncate">{{ t(':browse_title') }}</span>
@@ -326,6 +329,7 @@ import { parseClipboard, type ParsedItem } from '@/parser'
 import type { WidgetManager } from '../overlay/interfaces'
 import Widget from '../overlay/Widget.vue'
 import TierEditor, { type TierChange } from './TierEditor.vue'
+import ItemFacts from '../codex/ItemFacts.vue'
 import MoveBar from './MoveBar.vue'
 import type { CustomAction } from './CustomRules.vue'
 import type { RankChange } from './ranks'
@@ -1196,6 +1200,13 @@ function openFilterBlade () {
 }
 
 // ---- position (same as item info widget) ----
+
+// the codex facts go to the left of the window, unless the window is at the left edge
+const factsOnRight = computed(() => {
+  if (anchor.value.pos !== 'cl') return false
+  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16
+  return wm.poePanelWidth.value < 16 * rem
+})
 
 const anchor = computed(() => {
   if (mode.value === 'browse') return { pos: 'cc', x: 50, y: 50 }
