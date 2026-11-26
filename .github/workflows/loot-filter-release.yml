@@ -107,6 +107,8 @@ jobs:
 
       - run: npm ci
         working-directory: ./renderer
+      - run: npm test
+        working-directory: ./renderer
       - run: npm run build
         working-directory: ./renderer
 
