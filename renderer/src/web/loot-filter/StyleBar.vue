@@ -270,12 +270,17 @@ function cssColor (c: RGBA) {
 
 // about the size it has in the game
 const shown = computed(() => props.below ? layerStyle(props.below, style.value) : style.value)
-const previewCss = computed(() => ({
-  ...styleCss(shown.value, props.hidden),
-  // a long name fits into a narrow window
-  fontSize: `clamp(11px, ${140 / (props.previewName.length + (shown.value.minimap ? 3 : 1))}cqi, ${(shown.value.fontSize ?? 32) * 0.7}px)`,
-  lineHeight: 1.25
-}))
+const previewCss = computed(() => {
+  const size = Math.min(45, Math.max(1, shown.value.fontSize ?? 32))
+  const chars = props.previewName.length + (shown.value.minimap ? 3 : 1)
+  return {
+    ...styleCss(shown.value, props.hidden),
+    // a long name fits into a narrow window: the largest size (45) takes the whole width,
+    // smaller ones are smaller in proportion, so the font size slider is always seen
+    fontSize: `max(7px, min(${size * 0.7}px, ${(140 / chars) * (size / 45)}cqi))`,
+    lineHeight: 1.25
+  }
+})
 </script>
 
 <style lang="postcss" module>
