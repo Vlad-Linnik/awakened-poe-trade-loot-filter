@@ -51,6 +51,32 @@ export function itemConditions (item: FilterItem): string[] {
   return out
 }
 
+// A hiding rule can hide only the small stacks: `StackSize < N`. Bigger stacks
+// are not caught by it and get the style the filter gives them.
+export function stackLimitOf (rule: AptRule): number | null {
+  const c = ruleConditions(rule).find(c => c.keyword === 'StackSize' && c.op === '<')
+  const n = c ? Number(c.values[0]) : NaN
+  return Number.isInteger(n) ? n : null
+}
+
+// `limit`: stacks of this size and bigger are not hidden; null - all of them are
+export function withStackLimit (rule: AptRule, limit: number | null): AptRule {
+  const conditions = rule.conditions.filter(raw => {
+    const c = parseLine(raw)
+    return !(c?.keyword === 'StackSize' && c.op === '<')
+  })
+  if (limit != null && limit > 1) conditions.push(`StackSize < ${limit}`)
+  return { ...rule, conditions }
+}
+
+// "Hide this item" rule of the item that hides only smaller stacks: it doesn't catch
+// the item in hand when its stack is big enough, but must still be found for it
+export function stackHideRuleOf (rules: AptRule[], item: FilterItem): AptRule | null {
+  const own = itemConditions(item).join('\n')
+  return rules.filter(r => !r.custom && r.visibility === 'Hide' && stackLimitOf(r) != null &&
+    withStackLimit(r, null).conditions.join('\n') === own).pop() ?? null
+}
+
 // a rule without conditions would restyle everything
 export function isActive (rule: AptRule): boolean {
   return !rule.disabled && rule.conditions.length > 0

@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'vitest'
 import { allBlocks, parseFilter, type ParsedFilter } from './filter-parser'
-import { MANAGED_HEADER, ruleForBase, ruleForItem, SECTION_START } from './apt-rules'
+import {
+  MANAGED_HEADER, ruleForBase, ruleForItem, SECTION_START, stackHideRuleOf, stackLimitOf, withStackLimit
+} from './apt-rules'
 import {
   applyEdits, buildCopy, emptyEdits, newId, selectorOf, withMove,
   type FilterEdits, type FilterSource, type TierPatch
@@ -170,5 +172,27 @@ describe('buildCopy', () => {
     expect(tierOf(filter, currency('Chaos Orb', 20))).toBe('currency->stackedsix/t2')
     const ruleAt = filter.blocks.findIndex(b => b.headerComment.includes(`[apt:${rule.id}]`))
     expect(filter.blocks[ruleAt + 1].tags.tier).toBe('t4chaos')
+  })
+})
+
+describe('hidden item shown in big stacks', () => {
+  test('"Hide this item" with a stack limit hides only the smaller stacks', () => {
+    const rule = withStackLimit(ruleForItem(currency('Orb of Alchemy'), 'Hide'), 20)
+    expect(stackLimitOf(rule)).toBe(20)
+    const { text } = buildCopy(SOURCE, NEVERSINK, edits({ rules: [rule] }))
+    expect(finalBlock(text, currency('Orb of Alchemy', 5))?.visibility).toBe('Hide')
+    const big = finalBlock(text, currency('Orb of Alchemy', 20))
+    expect(big?.visibility).toBe('Show')
+    expect(big?.headerComment).not.toContain(`[apt:${rule.id}]`)
+    // the rule is still found for a big stack, so it can be changed from it
+    expect(stackHideRuleOf([rule], currency('Orb of Alchemy', 25))?.id).toBe(rule.id)
+    expect(stackHideRuleOf([rule], currency('Chaos Orb', 25))).toBeNull()
+  })
+
+  test('the limit is replaced or removed, other stack conditions stay', () => {
+    const rule = { ...ruleForItem(currency('Orb of Alchemy'), 'Hide'), conditions: ['BaseType == "Orb of Alchemy"', 'StackSize >= 3'] }
+    const limited = withStackLimit(withStackLimit(rule, 10), 30)
+    expect(limited.conditions).toEqual(['BaseType == "Orb of Alchemy"', 'StackSize >= 3', 'StackSize < 30'])
+    expect(withStackLimit(limited, null).conditions).toEqual(rule.conditions)
   })
 })

@@ -187,13 +187,39 @@
           <!-- item actions -->
           <div class="flex flex-col gap-2 border-t border-gray-700 pt-3">
             <div class="text-xs uppercase text-gray-500">{{ t(':this_item') }}</div>
-            <button v-if="itemRule" class="btn" :disabled="busy" @click="removeRule(itemRule.id)">
+            <button v-if="itemRule || stackHide" class="btn" :disabled="busy" @click="removeRule((itemRule ?? stackHide)!.id)">
               <i class="fas fa-undo"></i> {{ t(':remove_override') }}
             </button>
-            <template v-else>
-              <button v-if="finalBlock?.visibility !== 'Hide'" class="btn bg-red-800" :disabled="busy || !info.source" @click="addItemRule('Hide')">
-                <i class="fas fa-eye-slash"></i> {{ t(':hide_item') }}
-              </button>
+            <!-- hidden currency, cards…: big stacks can still be shown -->
+            <div v-if="stackHide" class="flex flex-col gap-1">
+              <form class="flex items-center gap-2 text-sm" @submit.prevent="setStackLimit(stackLimitInput ? Number(stackLimitInput) : null)">
+                <i class="fas fa-layer-group text-gray-400"></i>
+                <span>{{ t(':stack_limit') }}</span>
+                <input v-model.trim="stackLimitInput" inputmode="numeric" :placeholder="t(':stack_limit_none')"
+                  class="rounded bg-gray-900 px-1 w-20">
+                <button type="submit" class="btn" :disabled="busy || stackLimitInput === (stackLimit != null ? String(stackLimit) : '')">
+                  <i class="fas fa-check"></i> {{ t(':apply') }}
+                </button>
+                <button v-if="stackLimit != null" type="button" class="btn" :disabled="busy" @click="setStackLimit(null)">
+                  {{ t(':stack_limit_clear') }}
+                </button>
+              </form>
+              <div class="text-xs text-gray-500">
+                {{ stackLimit != null ? t(':stack_limit_hint', [stackLimit]) : t(':stack_limit_hint_all') }}
+              </div>
+            </div>
+            <template v-else-if="!itemRule">
+              <form v-if="finalBlock?.visibility !== 'Hide'" class="flex items-center gap-2" @submit.prevent="addItemRule('Hide')">
+                <button type="submit" class="btn bg-red-800 flex-1" :disabled="busy || !info.source">
+                  <i class="fas fa-eye-slash"></i> {{ hideBelowInput ? t(':hide_item_below', [hideBelowInput]) : t(':hide_item') }}
+                </button>
+                <!-- currency, cards…: only the small stacks; empty - all of them -->
+                <label v-if="item?.stackSize" class="flex items-center gap-1 text-sm text-gray-400" :title="t(':hide_below_hint')">
+                  <i class="fas fa-layer-group"></i> {{ t(':hide_below') }}
+                  <input v-model.trim="hideBelowInput" inputmode="numeric" :placeholder="t(':hide_below_all')"
+                    class="rounded bg-gray-900 px-1 w-16 text-gray-200">
+                </label>
+              </form>
               <button v-else class="btn" :disabled="busy || !info.source" @click="addItemRule('Show')">
                 <i class="fas fa-eye"></i> {{ t(':show_item') }}
               </button>
@@ -321,7 +347,7 @@ export default {
 </script>
 
 <script setup lang="ts">
-import { computed, inject, provide, ref, shallowRef } from 'vue'
+import { computed, inject, provide, ref, shallowRef, watch } from 'vue'
 import { useI18nNs } from '@/web/i18n'
 import { MainProcess } from '@/web/background/IPC'
 import { AppConfig } from '@/web/Config'
@@ -341,7 +367,8 @@ import { blocksUnder, isRuleCopy, mainBlockOf, shadowedRule } from './rule-prior
 import { isPositiveBaseType, listsBase } from './filter-edit'
 import {
   ruleForItem, ruleForBase, ruleLines, ruleFromLines, ownRuleOf, withoutHiding,
-  itemConditions, ruleIdOfBlock, onlineVersion, newCustomRule, newRule, withLook, isActive, ruleBlock, ruleConditions, type AptRule, type NewBase
+  itemConditions, ruleIdOfBlock, onlineVersion, newCustomRule, newRule, withLook, isActive, ruleBlock, ruleConditions, type AptRule, type NewBase,
+  stackLimitOf, withStackLimit, stackHideRuleOf
 } from './apt-rules'
 import {
   emptyEdits, editsCount, normalizeStore, storeKey as storeKeyOf, newId, selectorOf, patchForBlock, findBlock,
@@ -565,6 +592,30 @@ function raiseRule (rule: AptRule) {
 const itemRule = computed(() => matchedRule.value?.custom ? null : matchedRule.value)
 const itemCondText = computed(() => fItem.value ? itemConditions(fItem.value).join(', ') : '')
 
+// ---- a hidden stackable item can still be shown in big stacks ----
+
+// my rule hiding this item: the one that caught it, or one that hides only smaller stacks
+const stackHide = computed(() => {
+  if (!item.value?.stackSize || !fItem.value) return null
+  if (itemRule.value) return itemRule.value.visibility === 'Hide' ? itemRule.value : null
+  return stackHideRuleOf(edits.value.rules, fItem.value)
+})
+const stackLimit = computed(() => stackHide.value ? stackLimitOf(stackHide.value) : null)
+const stackLimitInput = ref('')
+watch(stackLimit, n => { stackLimitInput.value = n != null ? String(n) : '' }, { immediate: true })
+
+function setStackLimit (limit: number | null) {
+  const rule = stackHide.value
+  if (busy.value || !rule) return
+  if (limit != null && (!Number.isInteger(limit) || limit < 2)) {
+    error.value = t(':stack_limit_invalid')
+    return
+  }
+  error.value = null
+  return withEdits(e => ({ ...e, rules: e.rules.map(r => r.id === rule.id ? withStackLimit(r, limit) : r) }),
+    limit != null ? t(':done_stack_limit', [limit]) : t(':done_hidden'))
+}
+
 function assume (index: number) {
   assumed.value = new Set([...assumed.value, index])
 }
@@ -766,10 +817,25 @@ function withEdits (fn: (e: FilterEdits) => FilterEdits, message: string) {
   return commit(fn(structuredClone({ ...edits.value })), message)
 }
 
+// "Hide this item" of a stackable item: stacks of this size and bigger stay; empty - all are hidden
+const hideBelowInput = ref('')
+watch(item, () => { hideBelowInput.value = '' })
+
 function addItemRule (visibility: Visibility) {
-  const rule = ruleForItem(fItem.value!, visibility)
+  if (busy.value) return
+  let rule = ruleForItem(fItem.value!, visibility)
+  const limit = (visibility === 'Hide' && item.value?.stackSize && hideBelowInput.value) ? Number(hideBelowInput.value) : null
+  if (limit != null) {
+    if (!Number.isInteger(limit) || limit < 2) {
+      error.value = t(':stack_limit_invalid')
+      return
+    }
+    rule = withStackLimit(rule, limit)
+  }
+  error.value = null
+  hideBelowInput.value = ''
   return withEdits(e => ({ ...e, rules: [...e.rules, rule] }),
-    visibility === 'Hide' ? t(':done_hidden') : t(':done_shown'))
+    limit != null ? t(':done_stack_limit', [limit]) : visibility === 'Hide' ? t(':done_hidden') : t(':done_shown'))
 }
 
 function tierItemRule (baseType: string, block: FilterBlock, visibility: Visibility) {
