@@ -7,7 +7,7 @@
     <button v-for="h of handles" :key="h.key" type="button" role="slider" :class="$style.handle"
       :style="{ left: `${h.pos}%` }" :disabled="disabled"
       :aria-valuemin="min" :aria-valuemax="max" :aria-valuenow="h.value"
-      @keydown.left.prevent="set(h.key, h.value - 1)" @keydown.right.prevent="set(h.key, h.value + 1)">{{ disabled ? '' : h.value }}</button>
+      @keydown.left.prevent="set(h.key, h.value - stepOf)" @keydown.right.prevent="set(h.key, h.value + stepOf)">{{ disabled ? '' : h.value }}</button>
   </div>
 </template>
 
@@ -21,7 +21,19 @@ const props = defineProps<{
   value: number
   // the end of the range
   value2: number
+  // 1 by default; 0.1, 0.5… for values that aren't whole
+  step?: number
+  // the other way round: ">=" fills from the left up to the handle, "<=" from it to the right
+  fillToValue?: boolean
 }>()
+
+const stepOf = computed(() => props.step ?? 1)
+
+function snap (value: number) {
+  const step = stepOf.value
+  const n = Math.round((value - props.min) / step) * step + props.min
+  return Math.round(n * 1e6) / 1e6
+}
 
 const emit = defineEmits<{
   (e: 'update:value' | 'update:value2', value: number): void
@@ -41,6 +53,10 @@ const handles = computed(() => [
 ])
 
 const fill = computed<[number, number] | null>(() => {
+  if (props.fillToValue) {
+    if (props.op === '>=' || props.op === '>') return [0, pos(props.value)]
+    if (props.op === '<=' || props.op === '<') return [pos(props.value), 100]
+  }
   switch (props.op) {
     case '>':
     case '>=': return [pos(props.value), 100]
@@ -52,7 +68,7 @@ const fill = computed<[number, number] | null>(() => {
 })
 
 function set (key: 'value' | 'value2', value: number) {
-  value = Math.max(props.min, Math.min(props.max, value))
+  value = snap(Math.max(props.min, Math.min(props.max, value)))
   if (props.op === 'range') {
     value = key === 'value' ? Math.min(value, props.value2) : Math.max(value, props.value)
   }
@@ -65,7 +81,7 @@ let dragged: 'value' | 'value2' | null = null
 function valueAt (e: PointerEvent) {
   const track = rootEl.value!.firstElementChild!.getBoundingClientRect()
   const part = Math.max(0, Math.min(1, (e.clientX - track.left) / track.width))
-  return Math.round(props.min + part * (props.max - props.min))
+  return snap(props.min + part * (props.max - props.min))
 }
 
 function start (e: PointerEvent) {

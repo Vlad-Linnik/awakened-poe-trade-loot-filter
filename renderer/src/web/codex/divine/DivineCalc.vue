@@ -14,11 +14,28 @@
             <span class="text-gray-500 text-xs whitespace-nowrap">[{{ rangeText(line.rolls) }}]</span>
           </span>
         </div>
-        <div v-if="sel(mi, li).on" class="flex items-center gap-x-1.5 pl-5 mt-0.5">
-          <button :class="$style.cmp" @click="flipCmp(sel(mi, li))"
-            :title="t('divine_calc.compare_hint')">{{ sel(mi, li).cmp === 'gte' ? '≥' : '≤' }}</button>
-          <input v-model.number="sel(mi, li).target" type="number" step="any" @mousewheel.stop :class="$style.input" />
-          <span class="ml-auto text-xs tabular-nums">{{ pct(lineChance(line.rolls, sel(mi, li))) }}</span>
+        <div v-if="sel(mi, li).on" class="pl-5 mt-0.5">
+          <div class="flex items-center gap-x-1">
+            <button :class="$style.cmp" @click="flipCmp(sel(mi, li))"
+              :title="t('divine_calc.compare_hint')">{{ cmpSign(sel(mi, li).cmp) }}</button>
+            <!-- "Adds # to #": a target for each value, or for their average -->
+            <button v-if="line.rolls.length > 1" :class="$style.cmp"
+              :title="t('divine_calc.avg_hint')" @click="sel(mi, li).avg = !sel(mi, li).avg">
+              {{ sel(mi, li).avg ? t('divine_calc.by_avg') : t('divine_calc.by_each') }}
+            </button>
+            <span class="ml-auto text-xs tabular-nums">{{ pct(lineChance(line.rolls, sel(mi, li))) }}</span>
+          </div>
+          <template v-if="line.rolls.length > 1 && sel(mi, li).avg">
+            <RangeSlider fill-to-value :min="avgRange(line.rolls).min" :max="avgRange(line.rolls).max" :step="avgRange(line.rolls).step"
+              :op="cmpSign(sel(mi, li).cmp)" :value="sel(mi, li).avgTarget" :value2="avgRange(line.rolls).max"
+              @update:value="sel(mi, li).avgTarget = $event" />
+          </template>
+          <template v-else>
+            <RangeSlider fill-to-value v-for="(r, ri) in line.rolls" :key="ri"
+              :min="r.min" :max="r.max" :step="r.step"
+              :op="cmpSign(sel(mi, li).cmp)" :value="sel(mi, li).targets[ri]" :value2="r.max"
+              @update:value="sel(mi, li).targets[ri] = $event" />
+          </template>
         </div>
       </div>
     </div>
@@ -34,10 +51,13 @@
         <input v-model.number="row.min" type="number" step="any" @mousewheel.stop :placeholder="t('divine_calc.min')" :class="$style.input" />
         <span>–</span>
         <input v-model.number="row.max" type="number" step="any" @mousewheel.stop :placeholder="t('divine_calc.max')" :class="$style.input" />
-        <button :class="$style.cmp" @click="flipCmp(row)">{{ row.cmp === 'gte' ? '≥' : '≤' }}</button>
-        <input v-model.number="row.target" type="number" step="any" @mousewheel.stop :class="$style.input" />
+        <button :class="$style.cmp" @click="flipCmp(row)">{{ cmpSign(row.cmp) }}</button>
+        <input v-if="!manualRange(row)" v-model.number="row.target" type="number" step="any" @mousewheel.stop :class="$style.input" />
         <span class="ml-auto text-xs tabular-nums">{{ pct(manualChance(row)) }}</span>
       </div>
+      <RangeSlider fill-to-value v-if="manualRange(row)" :min="manualRange(row)!.min" :max="manualRange(row)!.max" :step="manualRange(row)!.step"
+        :op="cmpSign(row.cmp)" :value="typeof row.target === 'number' ? row.target : manualRange(row)!.max" :value2="manualRange(row)!.max"
+        @update:value="row.target = $event" />
     </div>
     <button class="text-xs text-gray-500 hover:text-gray-300" @click="addManual">
       <i class="fas fa-plus" /> {{ t('divine_calc.add_mod') }}
@@ -93,6 +113,7 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useLocalStorage } from '@vueuse/core'
 import type { ParsedItem } from '@/parser'
+import RangeSlider from '@/web/loot-filter/RangeSlider.vue'
 import { parseDivineMods, isDivineable, type DivineMod } from './divine-mods'
 import {
   type Compare, type RollRange,
@@ -105,7 +126,15 @@ const props = defineProps<{
 
 const { t } = useI18n()
 
-interface Selection { on: boolean, cmp: Compare, target: number }
+interface Selection {
+  on: boolean
+  cmp: Compare
+  // a target for each value of the line
+  targets: number[]
+  // or one for the average of its values ("Adds # to #")
+  avg: boolean
+  avgTarget: number
+}
 interface ManualRow { id: number, label: string, min: number | '', max: number | '', target: number | '', cmp: Compare }
 
 const confidence = useLocalStorage('divine-calc.confidence', 90)
@@ -127,7 +156,13 @@ watch(mods, (mods) => {
   selections.value = mods.map(mod => mod.lines.map(line => {
     // negative rolls (e.g. "-10% to ...") are usually better when lower
     const cmp: Compare = line.rolls.every(r => r.max <= 0) ? 'lte' : 'gte'
-    return { on: false, cmp, target: avgOf(line.rolls.map(r => r.value)) }
+    return {
+      on: false,
+      cmp,
+      targets: line.rolls.map(r => r.value),
+      avg: false,
+      avgTarget: avgOf(line.rolls.map(r => r.value))
+    }
   }))
 }, { immediate: true })
 
@@ -148,15 +183,48 @@ function addManual () {
   manual.value.push({ id: manualId++, label: '', min: '', max: '', target: '', cmp: 'gte' })
 }
 
+function isNum (n: unknown): n is number {
+  return typeof n === 'number' && !Number.isNaN(n)
+}
+
 function lineChance (rolls: RollRange[], s: Selection): number {
-  if (typeof s.target !== 'number' || Number.isNaN(s.target)) return 1
-  return lineSuccessChance(rolls, s.target, s.cmp)
+  if (rolls.length > 1 && s.avg) {
+    return isNum(s.avgTarget) ? lineSuccessChance(rolls, s.avgTarget, s.cmp) : 1
+  }
+  // values of a line roll independently
+  return rolls.reduce((p, r, i) =>
+    isNum(s.targets[i]) ? p * lineSuccessChance([r], s.targets[i], s.cmp) : p, 1)
+}
+
+// the game font has no ≥ / ≤
+function cmpSign (cmp: Compare) {
+  return cmp === 'gte' ? '>=' : '<='
+}
+
+// the slider of the average of the values: (sum of mins / n) .. (sum of maxes / n)
+function avgRange (rolls: RollRange[]) {
+  const n = rolls.length
+  return {
+    min: avgOf(rolls.map(r => r.min)),
+    max: avgOf(rolls.map(r => r.max)),
+    step: Math.min(...rolls.map(r => r.step)) / n
+  }
+}
+
+function manualRange (row: ManualRow) {
+  if (!isNum(row.min) || !isNum(row.max) || row.min === row.max) return null
+  const min = Math.min(row.min, row.max)
+  const max = Math.max(row.min, row.max)
+  return { min, max, step: stepFromStrings(String(min), String(max)) }
 }
 
 function manualChance (row: ManualRow): number | undefined {
-  if (typeof row.min !== 'number' || typeof row.max !== 'number' || typeof row.target !== 'number') return undefined
-  const step = stepFromStrings(String(row.min), String(row.max), String(row.target))
-  return lineSuccessChance([{ value: row.target, min: row.min, max: row.max, step }], row.target, row.cmp)
+  const range = manualRange(row)
+  if (!range) return undefined
+  // the slider starts at the top of the range
+  const target = isNum(row.target) ? row.target : range.max
+  const step = stepFromStrings(String(range.min), String(range.max), String(target))
+  return lineSuccessChance([{ value: target, ...range, step }], target, row.cmp)
 }
 
 const selectedCount = computed(() => {
@@ -227,7 +295,8 @@ function fmt (n: number) {
 
 <style lang="postcss" module>
 .cmp {
-  @apply w-5 text-center bg-gray-900 rounded;
+  @apply px-1 text-center bg-gray-900 rounded text-xs;
+  &:hover { @apply bg-gray-700; }
 }
 .mode {
   @apply flex-1 rounded bg-gray-900 px-1 py-0.5 text-gray-400;
