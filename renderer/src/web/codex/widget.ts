@@ -4,7 +4,7 @@ import type { Reqs } from './sockets'
 
 export interface CodexWidget extends Widget {
   hotkey: string | null
-  tab: 'dust' | 'cards' | 'sockets'
+  tab: 'dust' | 'cards' | 'sockets' | 'divine'
   dust: {
     itemLevel: number
     quality: number

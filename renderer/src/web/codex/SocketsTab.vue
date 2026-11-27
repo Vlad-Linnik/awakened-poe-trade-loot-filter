@@ -44,6 +44,7 @@ import SocketCalc from './SocketCalc.vue'
 import { BASE_REQS } from './data'
 import type { Reqs } from './sockets'
 import type { CodexWidget } from './widget'
+import { socketsFromItem } from './open-codex'
 
 type SocketSettings = CodexWidget['sockets']
 
@@ -59,6 +60,7 @@ const { t } = useI18nNs('codex')
 const REQ_LABELS = [':sockets_str', ':sockets_dex', ':sockets_int']
 
 function update (patch: Partial<SocketSettings>) {
+  if (patch.count != null && patch.count !== model.value.count) socketsFromItem.value = null
   emit('update:modelValue', { ...props.modelValue, ...patch })
 }
 
@@ -86,7 +88,12 @@ function setReq (i: number, raw: string) {
   update({ reqs, base: null })
 }
 
-const initial = computed(() => Array.from({ length: model.value.count }, () => 'W' as const))
+// the item's own colours when opened from an item, white otherwise
+const initial = computed(() => {
+  const own = socketsFromItem.value
+  if (own && own.length === model.value.count) return own
+  return Array.from({ length: model.value.count }, () => 'W' as const)
+})
 
 function clampInt (raw: string, min: number, max: number, fallback: number) {
   const n = Math.round(Number(raw))

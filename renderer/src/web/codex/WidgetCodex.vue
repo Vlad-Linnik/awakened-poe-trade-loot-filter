@@ -13,7 +13,8 @@
       </div>
       <DustTab v-if="config.tab === 'dust'" v-model="config.dust" class="flex-1 min-h-0" />
       <CardsTab v-else-if="config.tab === 'cards'" v-model="config.cards" class="flex-1 min-h-0" />
-      <SocketsTab v-else v-model="config.sockets" class="flex-1 min-h-0" />
+      <SocketsTab v-else-if="config.tab === 'sockets'" v-model="config.sockets" class="flex-1 min-h-0" />
+      <DivineTab v-else class="flex-1 min-h-0" />
     </div>
   </Widget>
 </template>
@@ -50,6 +51,7 @@ import Widget from '../overlay/Widget.vue'
 import DustTab from './DustTab.vue'
 import CardsTab from './CardsTab.vue'
 import SocketsTab from './SocketsTab.vue'
+import DivineTab from './DivineTab.vue'
 
 const props = defineProps<{
   config: CodexWidget
@@ -61,7 +63,8 @@ const { t } = useI18nNs('codex')
 const TABS = [
   { id: 'dust' as const, label: ':tab_dust' },
   { id: 'cards' as const, label: ':tab_cards' },
-  { id: 'sockets' as const, label: ':tab_sockets' }
+  { id: 'sockets' as const, label: ':tab_sockets' },
+  { id: 'divine' as const, label: ':tab_divine' }
 ]
 
 // configs saved by older versions

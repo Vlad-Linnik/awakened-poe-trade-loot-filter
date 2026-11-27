@@ -72,6 +72,7 @@ import { AppConfig } from '@/web/Config'
 import { FilterPreset } from './filters/interfaces'
 import { PriceCheckWidget } from '../overlay/interfaces'
 import { useLeagues } from '@/web/background/Leagues'
+import { rememberDivineItem } from '@/web/codex/divine/last-item'
 
 let _showSupportLinksCounter = 0
 
@@ -114,6 +115,7 @@ export default defineComponent({
     const filtersComponent = ref<ComponentPublicInstance>(null!)
 
     watch(() => props.item, (item, prevItem) => {
+      rememberDivineItem(item)
       const prevCurrency = (presets.value != null) ? itemFilters.value.trade.currency : null
 
       presets.value = createPresets(item, {

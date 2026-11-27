@@ -1,6 +1,6 @@
 <template>
   <!-- facts about the item from the codex: dust of a unique, weight of a divination card… -->
-  <div v-if="dust || card || sockets" :class="$style.panel" class="text-gray-200 shadow-lg flex flex-col gap-2 p-2">
+  <div v-if="dust || card || sockets || divine" :class="$style.panel" class="text-gray-200 shadow-lg flex flex-col gap-2 p-2">
     <template v-if="dust">
       <div :class="$style.head"><img src="/images/dust.png" class="w-5 h-5 object-contain"> {{ t(':facts_dust') }}</div>
       <template v-if="dust.kind === 'one'">
@@ -24,15 +24,23 @@
       <CardFacts :card="card" :max-sources="6" />
       <div class="text-xs text-gray-600">{{ t(':facts_card_data', [CARD_DATA.league]) }}</div>
     </template>
-    <template v-if="sockets">
-      <div :class="$style.head"><i class="fas fa-palette"></i> {{ t(':facts_sockets') }}</div>
-      <SocketCalc :reqs="sockets.reqs" :initial="sockets.colors" :item-level="sockets.itemLevel" :quality="sockets.quality" />
-    </template>
+    <!-- calculators open in the codex, in the middle of the screen -->
+    <button v-if="sockets" :class="$style.toolBtn" @click="openSockets">
+      <i class="fas fa-palette w-5 text-center"></i>
+      <span class="flex-1 text-left">{{ t(':facts_sockets') }}</span>
+      <span class="text-xs tabular-nums tracking-wider">{{ sockets.colors.join('') }}</span>
+      <i class="fas fa-external-link-alt text-xs text-gray-500"></i>
+    </button>
+    <button v-if="divine" :class="$style.toolBtn" @click="openDivine">
+      <img src="/images/divine.png" class="w-5 h-5 object-contain">
+      <span class="flex-1 text-left">{{ t(':facts_divine') }}</span>
+      <i class="fas fa-external-link-alt text-xs text-gray-500"></i>
+    </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, inject, watch } from 'vue'
 import { useI18nNs } from '@/web/i18n'
 import { ItemCategory, ItemRarity, type ParsedItem } from '@/parser'
 import { ModifierMechanic } from '@/parser/modifiers'
@@ -41,13 +49,17 @@ import { dustValue } from './dust'
 import { parseSockets } from './sockets'
 import { CARD_DATA, baseReqs, cardByName, dustEntriesOfBase } from './data'
 import CardFacts from './CardFacts.vue'
-import SocketCalc from './SocketCalc.vue'
+import { isDivineable, parseDivineMods } from './divine/divine-mods'
+import { rememberDivineItem } from './divine/last-item'
+import { openDivineCalc, openSocketCalc } from './open-codex'
+import type { WidgetManager } from '../overlay/interfaces'
 
 const props = defineProps<{
   item: ParsedItem
 }>()
 
 const { t } = useI18nNs('codex')
+const wm = inject<WidgetManager>('wm')!
 
 const dust = computed(() => {
   const item = props.item
@@ -95,8 +107,21 @@ const sockets = computed(() => {
   const baseRef = item.info.unique?.base ?? item.uniqueBase?.refName ?? item.info.refName
   const reqs = baseReqs(baseRef)
   if (!reqs) return null
-  return { colors, reqs, itemLevel: item.itemLevel ?? 84, quality: item.quality ?? 0 }
+  return { colors, baseRef, reqs, itemLevel: item.itemLevel ?? 84, quality: item.quality ?? 0 }
 })
+
+// re-roll calculator for an item a Divine Orb can be used on
+const divine = computed(() => isDivineable(props.item) && parseDivineMods(props.item.rawText).length > 0)
+
+watch(() => props.item, rememberDivineItem, { immediate: true })
+
+function openSockets () {
+  if (sockets.value) openSocketCalc(wm, sockets.value)
+}
+
+function openDivine () {
+  openDivineCalc(wm, props.item)
+}
 
 function compact (n: number) {
   if (n >= 1e6) return `${(n / 1e6).toFixed(2)}M`
@@ -118,6 +143,21 @@ function compact (n: number) {
   color: #c3cbf0;
   border-bottom: 1px solid #1d2560;
   padding-bottom: 0.2rem;
+}
+.toolBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: bold;
+  color: #c3cbf0;
+  background: #0d1335;
+  border: 1px solid #2a3470;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.4rem;
+  &:hover {
+    background: #1d2560;
+    color: #fff;
+  }
 }
 .unique {
   color: #af6025;
