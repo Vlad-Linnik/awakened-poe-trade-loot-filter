@@ -66,6 +66,7 @@ const parsers: Array<ParserFn | { virtual: VirtualParserFn }> = [
   parseMirrored,
   parseSplit,
   parseSentinelCharge,
+  parseFacetorsLens,
   parseScryingOrb,
   parseMercenary,
   parseViscera,
@@ -136,6 +137,9 @@ export function parseClipboard (clipboard: string): Result<ParsedItem, string> {
 }
 
 function itemTextToSections (text: string) {
+  const ZWSP = '\u200b' // gem icons representation in copied text
+  text = text.replaceAll(ZWSP, '')
+
   const lines = text.split(/\r?\n/)
   if (lines[lines.length - 1] === '') {
     lines.pop()
@@ -914,6 +918,20 @@ function parseSentinelCharge (section: string[], item: ParsedItem) {
   if (section.length === 1) {
     if (section[0].startsWith(_$.SENTINEL_CHARGE)) {
       item.sentinelCharge = parseInt(section[0].slice(_$.SENTINEL_CHARGE.length), 10)
+      return 'SECTION_PARSED'
+    }
+  }
+  return 'SECTION_SKIPPED'
+}
+
+function parseFacetorsLens (section: string[], item: ParsedItem) {
+  if (item.info.refName !== "Facetor's Lens") return 'PARSER_SKIPPED'
+
+  if (section.length === 1) {
+    if (section[0].startsWith(_$.STORED_EXPERIENCE)) {
+      item.storedExperience = Number(section[0]
+        .slice(_$.STORED_EXPERIENCE.length)
+        .replaceAll(/\D/g, ''))
       return 'SECTION_PARSED'
     }
   }

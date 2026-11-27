@@ -42,7 +42,24 @@ export function filterMemoryStrands (ctx: FiltersCreationContext, hidden?: strin
   }
 }
 
-export const ARMOUR_STATS = new Set<string>([
+export function filterStoredExperience (ctx: FiltersCreationContext) {
+  if (ctx.item.storedExperience != null) {
+    ctx.filters.push(propToFilter({
+      ref: 'Stored Experience: # (millions)',
+      tradeId: 'item.stored_experience',
+      roll: { min: 0, max: Number.MAX_SAFE_INTEGER, value: ctx.item.storedExperience / 1_000_000 },
+      disabled: false,
+      sources: []
+    }, ctx))
+  }
+}
+
+const BLOCK_STATS = {
+  flat: [stat('+#% Chance to Block')],
+  incr: [stat('#% increased Chance to Block')]
+}
+
+const ARMOUR_STATS = new Set<string>([
   ...QUALITY_STATS.ARMOUR.flat,
   ...QUALITY_STATS.EVASION.flat,
   ...QUALITY_STATS.ENERGY_SHIELD.flat,
@@ -51,7 +68,8 @@ export const ARMOUR_STATS = new Set<string>([
   ...QUALITY_STATS.EVASION.incr,
   ...QUALITY_STATS.ENERGY_SHIELD.incr,
   ...QUALITY_STATS.WARD.incr,
-  stat('+#% Chance to Block')
+  ...BLOCK_STATS.flat,
+  ...BLOCK_STATS.incr
 ])
 
 function armourProps (ctx: FiltersCreationContext) {
@@ -108,7 +126,7 @@ function armourProps (ctx: FiltersCreationContext) {
   }
 
   if (item.armourBLOCK) {
-    const block = calcPropBounds(item.armourBLOCK, { flat: ['+#% Chance to Block'], incr: [] }, item)
+    const block = calcPropBounds(item.armourBLOCK, BLOCK_STATS, item)
 
     ctx.filters.push(propToFilter({
       ref: 'Block: #%',
